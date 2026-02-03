@@ -1,0 +1,26 @@
+# 本地密钥与配置，切勿提交
+config_local.json
+.env
+*.local.json
+
+# 采集与分类输出（不建议提交）
+steam_library.json
+steam_library_classified.json
+steam_collections_result.json
+steam_collections_export.json
+steam_collections_guide.md
+steam_games_metadata.json
+game_library_classified.csv
+game_library_classified.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Node
+node_modules/
+npm-debug.log*
+pnpm-debug.log*

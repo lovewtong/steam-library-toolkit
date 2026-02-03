@@ -1,0 +1,14 @@
+{
+  "name": "steam-collections",
+  "private": true,
+  "description": "Steam 收藏分类与 LevelDB 同步",
+  "scripts": {
+    "classify": "node classify_steam.js",
+    "sync-leveldb": "node steam_sync_leveldb.js",
+    "sync-leveldb:dry": "node steam_sync_leveldb.js --dry-run"
+  },
+  "dependencies": {
+    "classic-level": "^1.2.0",
+    "steam-categories": "^1.1.4"
+  }
+}

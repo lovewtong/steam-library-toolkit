@@ -1,0 +1,5 @@
+{
+  "steam_api_key": "YOUR_STEAM_WEB_API_KEY",
+  "steam_id": "YOUR_STEAM_64_ID",
+  "steam_install_path": "C:\\Program Files (x86)\\Steam"
+}

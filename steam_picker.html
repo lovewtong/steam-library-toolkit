@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steam 游戏库 · 按分类选游戏</title>
+  <style>
+    :root { --bg: #1b2838; --card: #2a475e; --accent: #66c0f4; --text: #c7d5e0; --muted: #8f98a0; }
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1rem; min-height: 100vh; }
+    h1 { font-size: 1.25rem; margin: 0 0 1rem; color: var(--accent); }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; align-items: center; }
+    .filters label { display: flex; align-items: center; gap: 0.35rem; }
+    .filters select, .filters input { background: var(--card); color: var(--text); border: 1px solid #3d5a6e; padding: 0.4rem 0.6rem; border-radius: 4px; }
+    .filters input[type="text"] { min-width: 140px; }
+    .count { color: var(--muted); font-size: 0.9rem; }
+    .list { display: grid; gap: 0.5rem; }
+    .game { background: var(--card); padding: 0.6rem 0.8rem; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    .game .name { font-weight: 600; }
+    .game .meta { font-size: 0.85rem; color: var(--muted); }
+    .game .slogan { font-size: 0.8rem; font-style: italic; color: var(--accent); margin-top: 0.2rem; }
+    .game a { color: var(--accent); text-decoration: none; padding: 0.25rem 0.5rem; background: rgba(102,192,244,0.2); border-radius: 4px; }
+    .game a:hover { background: rgba(102,192,244,0.35); }
+    .tip { font-size: 0.8rem; color: var(--muted); margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Steam 游戏库 · 按分类选游戏</h1>
+  <div class="filters">
+    <label>核心玩法 <select id="primary"><option value="">全部</option></select></label>
+    <label>细分流派 <select id="sub"><option value="">全部</option></select></label>
+    <label>氛围 <select id="vibe"><option value="">全部</option></select></label>
+    <label>强度 <select id="intensity"><option value="">全部</option><option value="低">低</option><option value="中">中</option><option value="高">高</option></select></label>
+    <label>名称 <input type="text" id="name" placeholder="搜索名称" /></label>
+    <span class="count" id="count">0 款</span>
+  </div>
+  <div class="list" id="list"></div>
+  <p class="tip">需先运行 <code>python steam_picker.py --serve</code> 从本目录启动服务，再打开本页面。点击「在 Steam 中打开」会唤起 Steam 启动游戏。</p>
+
+  <script>
+    let data = [];
+    const primaryEl = document.getElementById("primary");
+    const subEl = document.getElementById("sub");
+    const vibeEl = document.getElementById("vibe");
+    const intensityEl = document.getElementById("intensity");
+    const nameEl = document.getElementById("name");
+    const countEl = document.getElementById("count");
+    const listEl = document.getElementById("list");
+
+    function distinct(arr) {
+      const s = new Set(arr.filter(Boolean));
+      return [...s].sort((a, b) => a.localeCompare(b));
+    }
+
+    function fillOptions() {
+      const primaries = distinct(data.map(g => g.analysis?.primary));
+      const subs = distinct(data.map(g => g.analysis?.sub));
+      const vibes = distinct(data.map(g => g.analysis?.vibe));
+      primaries.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; primaryEl.appendChild(o); });
+      subs.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; subEl.appendChild(o); });
+      vibes.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; vibeEl.appendChild(o); });
+    }
+
+    function filter() {
+      const primary = primaryEl.value.trim();
+      const sub = subEl.value.trim();
+      const vibe = vibeEl.value.trim();
+      const intensity = intensityEl.value.trim();
+      const name = nameEl.value.trim().toLowerCase();
+      const filtered = data.filter(g => {
+        const a = g.analysis || {};
+        if (primary && a.primary !== primary) return false;
+        if (sub && a.sub !== sub) return false;
+        if (vibe && a.vibe !== vibe) return false;
+        if (intensity && a.intensity !== intensity) return false;
+        if (name && !(g.name || "").toLowerCase().includes(name)) return false;
+        return true;
+      });
+      countEl.textContent = filtered.length + " 款";
+      listEl.innerHTML = filtered.map(g => {
+        const a = g.analysis || {};
+        const url = "steam://rungameid/" + g.appid;
+        return `<div class="game">
+          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div></div>
+          <a href="${url}">在 Steam 中打开</a>
+        </div>`;
+      }).join("");
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    primaryEl.addEventListener("change", filter);
+    subEl.addEventListener("change", filter);
+    vibeEl.addEventListener("change", filter);
+    intensityEl.addEventListener("change", filter);
+    nameEl.addEventListener("input", filter);
+
+    fetch("steam_library_classified.json")
+      .then(r => r.json())
+      .then(json => {
+        data = json;
+        fillOptions();
+        filter();
+      })
+      .catch(e => {
+        listEl.innerHTML = "<p style='color:#a34'>无法加载 steam_library_classified.json，请用 <code>python steam_picker.py --serve</code> 从项目目录启动服务后再打开本页。</p>";
+      });
+  </script>
+</body>
+</html>
