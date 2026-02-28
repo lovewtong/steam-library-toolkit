@@ -2,6 +2,7 @@
 Steam 游戏库本地采集脚本
 从 Steam API 获取：游戏名、appid、总时长、最近游玩时间；
 可选从商店 API 获取：类型/标签、是否多人、是否手柄支持。
+默认会包含已游玩免费游戏/免费许可记录；可用 --owned-only 关闭。
 密钥仅从本地 config_local.json 读取，不提交到仓库。
 """
 import json
@@ -38,8 +39,8 @@ def load_config():
     return {"api_key": api_key, "steam_id": steam_id}
 
 
-def get_owned_games(api_key: str, steam_id: str):
-    """获取拥有游戏列表：appid、name、playtime_forever、rtime_last_played 等。"""
+def get_owned_games(api_key: str, steam_id: str, include_non_inventory: bool = True):
+    """获取游戏列表：appid、name、playtime_forever、rtime_last_played 等。"""
     url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
     params = {
         "key": api_key,
@@ -47,6 +48,9 @@ def get_owned_games(api_key: str, steam_id: str):
         "include_appinfo": True,
         "format": "json",
     }
+    if include_non_inventory:
+        params["include_played_free_games"] = True
+        params["include_free_sub"] = True
     resp = requests.get(url, params=params, timeout=15)
     if resp.status_code != 200:
         raise RuntimeError(f"GetOwnedGames 请求失败: {resp.status_code} - {resp.text[:200]}")
@@ -87,13 +91,17 @@ def get_store_details(appid: int):
     }
 
 
-def collect(fetch_store: bool = True):
+def collect(fetch_store: bool = True, include_non_inventory: bool = True):
     """
     执行采集：必选字段来自 GetOwnedGames，可选字段来自商店 API。
     fetch_store=True 时会逐条请求商店并写入类型/多人/手柄，耗时会变长。
     """
     config = load_config()
-    games_raw = get_owned_games(config["api_key"], config["steam_id"])
+    games_raw = get_owned_games(
+        config["api_key"],
+        config["steam_id"],
+        include_non_inventory=include_non_inventory,
+    )
     if not games_raw:
         print("未获取到游戏列表，请检查 Steam ID 与 API Key，以及账号是否公开游戏库。")
         return []
@@ -145,11 +153,19 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="Steam 游戏库本地采集，输出 JSON")
     parser.add_argument("--no-store", action="store_true", help="不请求商店 API，仅基础字段，速度快")
+    parser.add_argument(
+        "--owned-only",
+        action="store_true",
+        help="仅拉取传统拥有游戏；不额外包含免费/非库存计数游戏记录",
+    )
     parser.add_argument("-o", "--output", default=str(OUTPUT_FILE), help="输出 JSON 路径")
     args = parser.parse_args()
 
     print("正在从 Steam 获取游戏库...")
-    library = collect(fetch_store=not args.no_store)
+    library = collect(
+        fetch_store=not args.no_store,
+        include_non_inventory=not args.owned_only,
+    )
     if not library:
         return
 

@@ -194,3 +194,5 @@ def main():
     print_summary(classified)
     if RULES_FILE.exists():
         print(f"维护规则: {RULES_FILE}")
+if __name__ == "__main__":
+    main()
