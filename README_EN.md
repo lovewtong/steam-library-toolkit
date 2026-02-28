@@ -59,7 +59,9 @@ python steam_collect.py
 ```
 
 - Default mode calls Steam Store API to enrich metadata (slower)
+- Default mode includes played free games/free-license records
 - Fast mode: `python steam_collect.py --no-store`
+- Owned-only mode (exclude free/non-inventory-counted records): `python steam_collect.py --owned-only`
 
 ---
 

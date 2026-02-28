@@ -59,8 +59,11 @@ python steam_collect.py
 ```
 
 - **默认**：会请求 Steam 商店 API，为每款游戏补充类型、是否多人、是否手柄等，写入 `steam_library.json`。耗时较长（每款约 1.5 秒）。
+- **默认会包含已游玩免费游戏/免费许可记录**。
 - **仅要基础字段**（名称、appid、总时长、最近游玩）：  
   `python steam_collect.py --no-store`，速度快，不写可选字段。
+- **只拉传统拥有游戏**（不含免费/非库存计数记录）：  
+  `python steam_collect.py --owned-only`
 
 输出 JSON 字段：
 
