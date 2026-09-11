@@ -5,6 +5,10 @@ config_local.json
 
 # 采集与分类输出（不建议提交）
 steam_library.json
+steam_owned_apps.txt
+*.audit.json
+*.snapshot.json
+.steam_cache/
 steam_library_classified.json
 steam_collections_result.json
 steam_collections_export.json

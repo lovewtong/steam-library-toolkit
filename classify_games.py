@@ -3,8 +3,10 @@
 输出：主分类 + 多标签；分类结果表格（CSV/Markdown）及维护规则引用。
 """
 import json
+import csv
 from pathlib import Path
 from collections import defaultdict
+from steam_sources import select_for_classification
 
 # --- 路径 ---
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -89,7 +91,7 @@ def match_tags(game: dict) -> list[str]:
         elif rule.get("condition") == "coop" and any("co-op" in c or "合作" in c for c in categories):
             tags.append(rule["tag"])
         elif rule.get("condition") == "single":
-            if game.get("is_multiplayer") is False or (not any("multi" in c or "多人" in c for c in categories)):
+            if game.get("is_multiplayer") is False or any("single-player" in c or "单人" in c for c in categories):
                 tags.append(rule["tag"])
         elif rule.get("keywords"):
             for kw in rule["keywords"]:
@@ -109,7 +111,9 @@ def classify_library(library: list) -> list[dict]:
         result.append({
             "appid": g.get("appid"),
             "name": g.get("name"),
-            "playtime_minutes": g.get("playtime_minutes", 0),
+            "playtime_minutes": g.get("playtime_minutes") if g.get("playtime_available", True) else None,
+            "playtime_available": g.get("playtime_available", g.get("playtime_minutes") is not None),
+            "app_type": g.get("app_type", "unknown"),
             "last_played_iso": g.get("last_played_iso"),
             "main_category": main,
             "tags": tags,
@@ -119,8 +123,10 @@ def classify_library(library: list) -> list[dict]:
     return result
 
 
-def playtime_str(minutes: int) -> str:
-    if minutes is None or minutes == 0:
+def playtime_str(minutes: int, available=True) -> str:
+    if not available or minutes is None:
+        return "未知"
+    if minutes == 0:
         return "0h"
     h, m = divmod(int(minutes), 60)
     if m:
@@ -131,16 +137,16 @@ def playtime_str(minutes: int) -> str:
 def write_csv(classified: list[dict], path: Path) -> None:
     """输出 CSV 表格。"""
     rows = []
-    rows.append("appid,name,playtime,last_played,main_category,tags,multiplayer,controller")
+    rows.append(["appid", "name", "playtime", "last_played", "main_category", "tags", "multiplayer", "controller"])
     for r in classified:
         tags_str = ";".join(r["tags"]) if r["tags"] else ""
         last = (r.get("last_played_iso") or "")[:10]
         multi = "是" if r.get("is_multiplayer") else ("否" if r.get("is_multiplayer") is False else "")
         ctrl = "是" if r.get("is_controller") else ("否" if r.get("is_controller") is False else "")
-        rows.append(
-            f"{r['appid']},\"{r['name']}\",{playtime_str(r['playtime_minutes'])},{last},{r['main_category']},\"{tags_str}\",{multi},{ctrl}"
-        )
-    path.write_text("\n".join(rows), encoding="utf-8-sig")
+        rows.append([r['appid'], r['name'], playtime_str(r['playtime_minutes'], r.get('playtime_available', True)),
+                     last, r['main_category'], tags_str, multi, ctrl])
+    with path.open("w", encoding="utf-8-sig", newline="") as stream:
+        csv.writer(stream).writerows(rows)
 
 
 def write_md_table(classified: list[dict], path: Path) -> None:
@@ -159,8 +165,8 @@ def write_md_table(classified: list[dict], path: Path) -> None:
         multi = "是" if r.get("is_multiplayer") else ("否" if r.get("is_multiplayer") is False else "-")
         ctrl = "是" if r.get("is_controller") else ("否" if r.get("is_controller") is False else "-")
         name_esc = (r["name"] or "").replace("|", "\\|")
-        lines.append(f"| {name_esc} | {r['appid']} | {playtime_str(r['playtime_minutes'])} | {last} | {r['main_category']} | {tags_str} | {multi} | {ctrl} |")
-    lines.extend(["", f"共 {len(classified)} 款游戏。", ""])
+        lines.append(f"| {name_esc} | {r['appid']} | {playtime_str(r['playtime_minutes'], r.get('playtime_available', True))} | {last} | {r['main_category']} | {tags_str} | {multi} | {ctrl} |")
+    lines.extend(["", f"共 {len(classified)} 条分类记录。", ""])
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -180,15 +186,19 @@ def main():
     parser.add_argument("-i", "--input", default=str(DEFAULT_INPUT), help="输入 steam_library.json 路径")
     parser.add_argument("--csv", default=str(DEFAULT_TABLE_CSV), help="输出 CSV 路径")
     parser.add_argument("--md", default=str(DEFAULT_TABLE_MD), help="输出 Markdown 路径")
+    parser.add_argument("--include-demo", action="store_true")
+    parser.add_argument("--include-non-game", action="store_true")
+    parser.add_argument("--include-unknown", action="store_true", help="包含旧数据或未识别类型的条目")
     args = parser.parse_args()
 
     library = load_library(Path(args.input))
-    classified = classify_library(library)
+    selected = select_for_classification(library, args.include_demo, args.include_non_game, args.include_unknown)
+    classified = classify_library(selected)
 
     write_csv(classified, Path(args.csv))
     write_md_table(classified, Path(args.md))
 
-    print(f"已分类 {len(classified)} 款游戏")
+    print(f"采集记录 {len(library)} 条，已分类 {len(classified)} 条；未选条目仍保留在原始 JSON 中")
     print(f"  CSV: {args.csv}")
     print(f"  MD:  {args.md}")
     print_summary(classified)

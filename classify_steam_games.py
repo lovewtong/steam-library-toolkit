@@ -374,12 +374,24 @@ def classify_one(game):
     }
 
 def main():
-    with open(INPUT_FILE, "r", encoding="utf-8") as f:
+    import argparse
+    from pathlib import Path
+    from steam_sources import select_for_classification
+    parser = argparse.ArgumentParser(description="按五维规则分类，默认仅选择明确的 game 类型")
+    base = Path(__file__).resolve().parent
+    parser.add_argument("-i", "--input", type=Path, default=base / INPUT_FILE)
+    parser.add_argument("-o", "--output", type=Path, default=base / OUTPUT_FILE)
+    parser.add_argument("--include-demo", action="store_true")
+    parser.add_argument("--include-non-game", action="store_true")
+    parser.add_argument("--include-unknown", action="store_true")
+    args = parser.parse_args()
+    with open(args.input, "r", encoding="utf-8") as f:
         games = json.load(f)
-    out = [classify_one(g) for g in games]
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    selected = select_for_classification(games, args.include_demo, args.include_non_game, args.include_unknown)
+    out = [classify_one(g) for g in selected]
+    with open(args.output, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    print(f"已分类 {len(out)} 款游戏，结果已写入 {OUTPUT_FILE}")
+    print(f"采集记录 {len(games)} 条，已分类 {len(out)} 条，结果已写入 {args.output}")
 
 if __name__ == "__main__":
     main()
