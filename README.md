@@ -284,11 +284,13 @@ python steam_picker.py --serve
    ```bash
    npm install
    ```
-3. 执行导入：
-   ```bash
+3. 显式设置目标账号的 32 位 AccountID，再执行导入（不要填写 SteamID64）：
+   ```powershell
+   $env:STEAM_ID_32 = "你的32位AccountID"
    node import_script.js
    ```
 
 说明：
 - 脚本会优先写入 LevelDB，若未检测到收藏命名空间，会自动改用 `cloud-storage-namespace-1.json` 并生成 `.bak` 备份。
 - 导入完成后，启动 Steam，在「库」→「收藏夹」中核对分类与数量。
+- 未配置或配置无效时，脚本在写入前退出。此旧收藏路径仍待独立持久化验收；采集、补全和 picker 无需执行此步骤。

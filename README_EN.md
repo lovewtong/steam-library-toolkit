@@ -204,14 +204,16 @@ If you want to import `steam_collections_result.json` into Steam Collections:
    ```bash
    npm install
    ```
-3. Run:
-   ```bash
+3. Explicitly select the target account's 32-bit AccountID (not SteamID64), then run:
+   ```powershell
+   $env:STEAM_ID_32 = "YOUR_32_BIT_ACCOUNT_ID"
    node import_script.js
    ```
 
 Notes:
 - The script tries LevelDB first; if no namespace is found, it falls back to `cloud-storage-namespace-1.json` and writes a `.bak` backup.
 - After import, reopen Steam and verify in Library → Collections.
+- Missing or invalid account configuration exits before writes. This legacy collection path still needs separate persistence validation; collection, enrichment and the picker do not require it.
 
 ## Report implementation and migration
 
