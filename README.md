@@ -94,6 +94,17 @@ python steam_collect.py --local-session --no-store --strict
 python steam_collect.py --local-session
 ```
 
+已用 `--no-store` 采集后，可独立补全商店信息，无需重新认证 Steam：
+
+```powershell
+python steam_enrich.py --input steam_live_test.json -o steam_enriched.json
+python steam_picker.py --serve --input steam_enriched.json
+# 可先只补全库中指定应用（参数可重复）
+python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.json --appid 550
+```
+
+输入必须带有有效的运行指针，并来自可信客户端成员采集；输出必须与输入分开。补全会重新生成分类，但保留成员、应用类型、时长证据和原始采集时间，不代表重新核验当前所有权。审计记录 `operation=metadata_enrichment`、`parent_run` 和逐应用商店状态；`metadata.state=partial` 表示有应用未补全，旧元数据保留。`--appid` 只限制请求范围，输出仍包含整个原库。支持 `--cache-dir`、`--refresh-metadata`，沿用串行限速、缓存与有限重试。补全期间会锁定输入和输出，避免与采集同时更新同一目标；大库首次补全可能耗时较长。
+
 每次采集先在 `.steam_library.runs/<run_id>/` 写入库、审计、快照、两个分类结果、CSV/Markdown、摘要与探测状态。全部校验并刷盘后，最后原子替换 `steam_library.current.json`。这个指针是整轮运行的提交点；写入中断不会让读取者混用新旧产物。旧运行保留，不自动清理。
 
 `steam_library.json`、`.audit.json` 及 `--snapshot-out` 是兼容副本。副本导出失败会告警，已提交的完整运行仍可读取。两个 Python 分类入口优先读取对应 `.current.json` 指向的运行，并校验全部文件 SHA-256；未使用运行指针的外部工具不享有整轮一致性保证。`-o custom.json` 对应 `custom.current.json` 和 `.custom.runs/`。不要把 `.current.json` 当普通库输出路径。
@@ -192,7 +203,7 @@ CLI 从认证/采集开始到检查与发布结束持有操作系统文件锁，
 
 ### 已验证结果（2026-09-12）
 
-Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。报告落地版本 Python 56 项、Node 17 项回归测试通过。
+Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。报告落地版本 Python 62 项、Node 17 项回归测试通过。
 
 这些数字是一个账号的实测样本，不是其他账号的预期数量，也不代表 `GetOwnedGames` 已能返回全集。已验证的是本次客户端补充采集链路；未知时长、协议层全集证明及上面列出的跨平台/账号变化场景仍未解决或未验证。
 

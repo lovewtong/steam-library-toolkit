@@ -88,6 +88,17 @@ python steam_collect.py --local-session --no-store --strict
 python steam_collect.py --local-session
 ```
 
+Enrich an existing `--no-store` generation without authenticating again:
+
+```bash
+python steam_enrich.py --input steam_live_test.json -o steam_enriched.json
+python steam_picker.py --serve --input steam_enriched.json
+# Optional: request metadata only for selected library apps (repeatable)
+python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.json --appid 550
+```
+
+Requires a verified generation from client membership collection and a separate output path. Membership, app types, playtime evidence and original collection timestamps stay unchanged; enrichment does not revalidate current ownership. The audit records `operation=metadata_enrichment`, `parent_run`, and per-app store states. `metadata.state=partial` means some requests failed; previous metadata is retained. `--appid` restricts requests, not the output membership. Both classifications are regenerated. `--cache-dir` and `--refresh-metadata` reuse the sequential rate limit, cache and bounded retries. Input and output remain locked during enrichment; a first pass over a large library can take a while.
+
 Each collection writes an immutable `.steam_library.runs/<run_id>/` generation containing the library, audit, snapshot, both classifications, CSV/Markdown, summary and probe status. All files are validated and flushed before atomically replacing `steam_library.current.json`, the sole commit pointer. Old runs are retained.
 
 Flat library/audit files and `--snapshot-out` are compatibility exports. Export failure warns without invalidating the committed generation. Both Python classifiers prefer the adjacent `.current.json` and verify all artifact hashes. External readers of flat files do not get cross-file transactional consistency. `-o custom.json` uses `custom.current.json` and `.custom.runs/`. Do not use a `.current.json` filename as a normal output.
@@ -148,7 +159,7 @@ Audit includes type-grouped set differences, previous-run additions/removals, fi
 
 ### Verified results (2026-09-12)
 
-A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 56 Python and 17 Node tests.
+A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 62 Python and 17 Node tests.
 
 This is one account's observed result, not an expected count for other accounts or proof that GetOwnedGames returns the full library. Unknown playtime, protocol-level completeness guarantees and the untested platform/account-change scenarios above remain open.
 
