@@ -1,6 +1,6 @@
 # Steam 游戏库本地采集与自动分类
 
-English: `README_EN.md`
+English: [README_EN.md](README_EN.md)
 
 ## 如何实现自动分类（推荐流程）
 
@@ -8,14 +8,14 @@ English: `README_EN.md`
 
 | 步骤 | 命令 | 说明 |
 |------|------|------|
-| 1. 有游戏库数据 | `python steam_collect.py` 或已有 `steam_library.json` | 若已有 `steam_library.json` 可跳过 |
+| 1. 有游戏库数据 | `python steam_collect.py --local-session --no-store --strict` | Windows 已登录 Steam；其他授权方式见安装说明 |
 | 2. 自动分类 | `python classify_steam_games.py` | 生成 `steam_library_classified.json`（五维分类） |
 | 3. 按分类用 | `python steam_picker.py --serve` | 浏览器里按 核心玩法/强度/氛围 筛选，点「在 Steam 中打开」启动 |
 
 **一键打开选游戏页（分类已生成时）：**
 
 ```bash
-cd /path/to/steam-collections
+cd /path/to/steam-library-toolkit
 python steam_picker.py --serve
 ```
 
@@ -48,9 +48,22 @@ python classify_steam_games.py && python steam_picker.py --serve
 需要 Python 3.10+、Node.js 18+：
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 npm ci
 ```
+
+Windows 也可以使用项目独立环境，避免 `pip` 与运行脚本的 Python 不一致：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+npm ci
+.\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict
+```
+
+使用此环境时，将后续命令里的 `python` 替换为 `.\.venv\Scripts\python.exe`。缺少 `vdf` 会提示 `PYTHON_DEPENDENCY_MISSING`；这不表示 Steam 没有登录。扫码授权还需要 `keyring`。
+
+运行后会立即显示凭据读取、网络模式与当前采集阶段，等待期间每 10 秒报告一次。桌面 Steam 已登录后，脚本仍需建立自己的服务器连接；连接超过 60 秒会报 `CM_CONNECT_TIMEOUT`，认证成功后缺少网页授权会报 `WEB_SESSION_TIMEOUT`。检测到的 HTTP(S) 代理用于客户端连接、扫码认证及后续 Web 请求，日志不显示代理地址或密码。按 Ctrl+C 会清理采集子进程并正常报告中断；看到 `KeyboardInterrupt` 只说明旧版运行被中断，不能据此判断登录失效。
 
 推荐先启动桌面 Steam，再用手机 Steam App 扫码授权：
 
@@ -81,73 +94,89 @@ python steam_collect.py --local-session --no-store --strict
 python steam_collect.py --local-session
 ```
 
-输出保留原有顶层 JSON 数组格式，默认文件为 `steam_library.json`，来源审计为 `steam_library.audit.json`。使用 `-o 路径` 时默认审计文件为同名 `.audit.json`。原始记录包含应用类型，**两个 Python 分类入口默认只分类明确的 `game`**：
+每次采集先在 `.steam_library.runs/<run_id>/` 写入库、审计、快照、两个分类结果、CSV/Markdown、摘要与探测状态。全部校验并刷盘后，最后原子替换 `steam_library.current.json`。这个指针是整轮运行的提交点；写入中断不会让读取者混用新旧产物。旧运行保留，不自动清理。
+
+`steam_library.json`、`.audit.json` 及 `--snapshot-out` 是兼容副本。副本导出失败会告警，已提交的完整运行仍可读取。两个 Python 分类入口优先读取对应 `.current.json` 指向的运行，并校验全部文件 SHA-256；未使用运行指针的外部工具不享有整轮一致性保证。`-o custom.json` 对应 `custom.current.json` 和 `.custom.runs/`。不要把 `.current.json` 当普通库输出路径。
+
+使用自定义输出名后，分类时也必须指定同一输入，否则会读取默认的旧库。例如本地测试输出为 `steam_live_test.json`：
+
+```bash
+python classify_games.py -i steam_live_test.json
+python classify_steam_games.py -i steam_live_test.json
+python steam_picker.py --serve
+```
+
+采集生成的分类保存在本轮运行目录；上面的分类命令将结果导出到默认 CSV/Markdown 和 `steam_library_classified.json`，供现有 picker 使用。picker 当前读取这个平铺分类文件，不会自动跟随采集运行指针。`--no-store` 可验证库成员与时长，但会缺少部分商店标签，规则分类的细致程度会受影响。
+
+### 实时成员、候选与完整性
+
+`GetClientAppList` 是一次性 RPC，当前协议没有 AppOverview 流式接口的 `full_update/update_complete`。工具检查完整 JSON、明确 apps 数组、唯一机器会话、client_info 中的机器和账号，连续读取两次相同 AppID 集合，并复核会话未切换。只有通过这些检查的响应才可决定本次成员。来源记录 `state`、`error_code` 与 `completeness`。
+
+**两次一致是工程保护，并不能证明 Steam 服务端没有持续遗漏。** 审计明确保存 `protocol_completion_marker=false` 和 `semantic_completeness_proven=false`。相对同账号上次实时结果，成员移除比例超过 20% 时阻止发布；核实变化后可调整 `--max-unexplained-removal-ratio 0.5`，范围 0..1。账号不同则拒绝覆盖，使用独立 `-o` 路径。没有旧账号审计时会提示无法建立比较基线。
+
+实时清单经过核验时，快照/API/许可中的额外 AppID 只进入差异审计，不扩大当前成员。客户端不可用时，成功来源的并集是 **candidate**，默认另存 `steam_library.candidates.json` 及独立运行指针，保留当前库。即使是 API-only 或纯离线导入，也不冒充实时客户端集合。`--allow-candidates` 可显式把候选导出到指定路径。
+
+`--strict` 要求实时客户端与所有启用的成员来源成功；来源降级不切换运行指针。商店元数据和可选时长来源不影响严格模式的成员成功判定。来源失败、解析错误和疑似部分响应分别保留可诊断状态；账号冲突始终终止。
+
+### 字段证据与分类
+
+| 来源 | 用途 |
+|------|------|
+| `client_library` | 当前在线客户端的成员、名称、类型 |
+| `web_api` | `GetOwnedGames` 名称和时长；免费/未审核参数减少遗漏，不能保证库全集 |
+| `licenses` | 账号/共享许可及 PICS 信息，范围包含 DLC、工具等 |
+| `client_last_played_times` | 独立的可选客户端时长协议适配 |
+| `license_file` | 带账号快照或 TXT，属于历史证据 |
+
+类型优先级为客户端 > PICS > 商店/缓存 > 历史快照 > unknown。未知字符串或数值枚举映射为 `unknown`，原始类型保留在 `raw_app_types`，不从名称猜测类型。许可的 `own/shared/free/expiring/package_ids` 保留包级证据；`free_only`、`expiring_only`、`shared_only` 是筛选集合差分，区别于“也有免费/共享许可”。PICS 缺少包信息时标记 partial，不能成为完整许可来源。
+
+时长逐字段采用 Web API > ClientGetLastPlayedTimes > 客户端旧格式字段 > 许可旧格式字段 > 快照。`playtime_evidence` 保留全部数值、时间、来源和冲突标记，不简单取最大值。`playtime.state` 为 `unknown`、`known_zero`、`known_nonzero`、`historical`。快照值保留为历史时长，不当作本轮实时值；历史值不计入 `playtime_known`。表格分别显示“未知”“0 分钟”“3 分钟”“1h 5m”或带“历史”前缀。
+
+两个 Python 分类入口共用加载、运行校验与类型选择逻辑，保留各自原有分类体系：
 
 ```bash
 python classify_games.py
 python classify_steam_games.py
-# 需要时显式纳入 Demo、其他已知类型或未知类型
-python classify_games.py --include-demo
-python classify_games.py --include-non-game --include-unknown
+python classify_games.py --include-type game,demo
+python classify_games.py --include-type all
+# 候选库需要显式允许
+python classify_games.py -i steam_library.candidates.json --allow-candidates --include-unknown
 ```
 
-旧 JSON 或 TXT 清单可能没有 `app_type`，使用 `--include-unknown` 纳入分类，或重新采集补充类型。未知类型仍保留在原始 JSON；未知时长显示“未知”，不会伪装为 `0h`。
+默认只分类明确的 game。旧的 `--include-demo`、`--include-non-game`、`--include-unknown` 仍可用，新增 `--include-unknown-type` 别名。`--include-type` 存在时使用该精确集合，优先于旧开关。原始记录保留未选类型。空结果仍由运行 manifest 绑定版本。
 
-### 数据来源及边界
-
-| 来源 | 用途与限制 |
-|------|------------|
-| `web_api` | `GetOwnedGames` 提供名称、时长、最近游玩；默认启用免费游戏/免费许可并关闭未审核过滤，仍可能漏项 |
-| `client_library` | `IClientCommService` 查询所选在线桌面客户端；成功后，以这次清单决定输出成员 |
-| `licenses` | `steam-user` 的客户端许可及 PICS 产品信息，用于类型、账号/共享许可标识和差异核对；含 DLC、工具等，不能直接当作游戏库 |
-| `license_file` | 带账号的 JSON 快照或旧 TXT 导入；属于历史记录，不代表实时持有 |
-
-客户端游玩记录还通过 `Player.ClientGetLastPlayedTimes` 尝试补齐 API 缺失时长。这是独立的实验性协议适配：失败不会阻断成员采集，审计记录 `client_playtime_status`，未返回的数据保留 `null`。Web API 时长优先。
-
-实时客户端成功时，旧快照、API 和许可中额外的 AppID 只进入审计差异，不会把当前清单中已移除的应用重新加入。客户端不可用时，改用成功来源的并集并明确标记 `degraded`；许可候选可能包含客户端未显示的应用。`--strict` 要求实时客户端及所有启用的成员来源成功，否则不更新输出；它不要求商店详情或实验性时长补充成功。所有来源失败、账号冲突或输入损坏也不会覆盖原库文件。每个 JSON 文件使用原子替换，多个输出文件不构成整体事务。
-
-**`status=ok` 表示启用来源成功，不能证明所有 Steam 账号或未来版本都绝对完整。** 桌面筛选、共享许可、免费应用及个人资料计数口径可以不同。客户端必须在线；第三方客户端协议也可能随 Steam 更新改变。
-
-商店元数据成功结果缓存 7 天，默认目录 `.steam_cache`，可用 `--cache-dir` 改位置、`--refresh-metadata` 强制更新。首次请求每款间隔约 1.5 秒。商店失败或下架应用不会导致成员被丢弃；`--no-store` 完全跳过该步骤。
-
-### 其他模式与快照
+### 快照、其他模式与缓存
 
 ```bash
-# 仅 Web API；--owned-only 恢复传统 API 过滤
 python steam_collect.py --source api --no-store
 python steam_collect.py --owned-only --no-store
-# 仅客户端与许可，不调用 GetOwnedGames
 python steam_collect.py --source client --local-session --no-store
-# 导出绑定账号、生成时间和类型的客户端快照
 python steam_collect.py --local-session --no-store --snapshot-out library.snapshot.json
-# 离线重建：不读认证配置、不联网；快照时长不当作新采集时长
+# 纯离线，不读取凭据或联网；默认另存候选结果
 python steam_collect.py --apps-file library.snapshot.json --no-api --no-store
 ```
 
-JSON 快照结构为 `{"schema_version":2,"steam_id":"17位ID","generated_at":"带时区ISO时间","apps":[{"appid":10,"name":"名称","app_type":"game"}]}`。采集与快照账号必须一致。没有实时客户端时，快照结果明确降级。
+新快照保留 schema_version=2，增加 run_id、producer（Git 提交与 dirty 标记）、账号、生成时间、complete、completeness、record_count 和 apps_sha256。导入校验账号、条数及校验和；兼容旧 v2 快照和 UTF-8/UTF-16 BOM 的 `AppID 名称` 文本。TXT 无法核验账号与年龄。快照 `freshness` 保存年龄，24 小时以内记 fresh、之后 stale；只说明最近验证时间，不推断所有权失效。
 
-兼容旧清单：每行 `AppID 名称`，例如 `570 Dota 2`；支持 UTF-8、UTF-8 BOM、UTF-16 BOM。TXT 没有账号和生成时间，导入会提示无法核验。它只应来自你确认过账号的许可导出；包含登录提示、错误文本或为空时拒绝导入。`--apps-file` 不能和 `--owned-only` 同用。纯 API/TXT 且 `--no-store` 的记录可能没有类型，分类需 `--include-unknown`。
+商店元数据成功缓存 7 天，默认 `.steam_cache`。错误分别记录 not_found（6 小时）、access_denied（10 分钟）、rate_limited / parse_error（60 秒）、transient_error（30 秒），避免把短时网络问题长期缓存为下架。`--refresh-metadata` 强制更新，`--cache-dir` 改目录，`--no-store` 完全跳过。元数据失败不删除成员。
 
-### 输出字段
+### 安全和适用边界
 
-| 字段 | 说明 |
-|------|------|
-| `appid`, `name`, `app_type` | 应用 ID、名称、类型；未知类型保留为 `unknown` |
-| `playtime_minutes`, `playtime_2weeks_minutes` | 分钟；无法取得时为 `null`，有依据的零为 `0` |
-| `playtime_available` | 总时长是否有可用来源 |
-| `last_played_at`, `last_played_iso` | 最近游玩 Unix/UTC 时间，未知为 `null` |
-| `sources`, `provenance` | 条目来源以及名称、类型、时间等字段来源 |
-| `membership_source`, `membership_status` | 当前客户端观察值或完整性未经确认的候选 |
-| `ownership` | 许可报告的 `account_license`、`shared`，没有证据时 `unknown` |
-| `genres`, `categories`, `is_multiplayer`, `is_controller` | 可选商店信息；不可用时为 `[]` / `null` |
+访问令牌留在 Node helper，带令牌的 Web 请求也在 helper 内完成；Python 接收白名单应用字段与稳定错误码。刷新凭据仅经私有管道进入 helper；扫码授权仍由 Python 写入认可的系统密钥环，本机会话不持久化。HTTP(S) 系统代理由 Python 检测后经私有管道交给 helper。日志不输出原始网络异常、Cookie 或访问令牌。
 
-审计包含账号、时间、来源状态、类型统计、已知时长数量，以及客户端/API/快照/许可之间的 AppID 差异；不包含访问令牌。授权通过子进程私有管道传递，不写入命令参数或采集输出。扫码登录只更新系统凭据存储，`--local-session` 不持久化令牌。
+报告提到的 `CAppOverview` 不属于当前 ClientComm 响应，工具不会伪造字段或完成标记。运行目录的 `playtime_probe.json` 列出未解决 AppID 并记录 `APP_OVERVIEW_NOT_EXPOSED_BY_CLIENTCOMM`；这不是“已完成 AppOverview 真实补时长实验”。Windows QR 长期授权、macOS/Linux 密钥环、Steam Families 变化与退款场景仍需要相应真实环境验证，不能由单元测试代替。
 
-回归测试（无需 Steam 账号）：
+审计包含按类型统计的集合差异、上次运行的增减、字段证据、来源状态与元数据缓存统计；所有 JSON 运行产物及非空记录携带 run_id，manifest 为整套文件提供哈希和版本绑定。
+
+### 已验证结果（2026-09-12）
+
+Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。Python 42 项、Node 15 项回归测试通过。
+
+这些数字是一个账号的实测样本，不是其他账号的预期数量，也不代表 `GetOwnedGames` 已能返回全集。已验证的是本次客户端补充采集链路；未知时长、协议层全集证明及上面列出的跨平台/账号变化场景仍未解决或未验证。
 
 ```bash
 python -m unittest discover -s tests -v
-node --test tests/test_steam_client.cjs
+node --test tests/test_steam_client.cjs tests/test_steam_web_sources.cjs
 ```
 
 ## 3. 自动分类并输出表格

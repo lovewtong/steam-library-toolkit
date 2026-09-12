@@ -376,19 +376,18 @@ def classify_one(game):
 def main():
     import argparse
     from pathlib import Path
-    from steam_sources import select_for_classification
+    from steam_classification import add_selection_arguments, load_selected
     parser = argparse.ArgumentParser(description="按五维规则分类，默认仅选择明确的 game 类型")
     base = Path(__file__).resolve().parent
     parser.add_argument("-i", "--input", type=Path, default=base / INPUT_FILE)
     parser.add_argument("-o", "--output", type=Path, default=base / OUTPUT_FILE)
-    parser.add_argument("--include-demo", action="store_true")
-    parser.add_argument("--include-non-game", action="store_true")
-    parser.add_argument("--include-unknown", action="store_true")
+    add_selection_arguments(parser)
     args = parser.parse_args()
-    with open(args.input, "r", encoding="utf-8") as f:
-        games = json.load(f)
-    selected = select_for_classification(games, args.include_demo, args.include_non_game, args.include_unknown)
-    out = [classify_one(g) for g in selected]
+    try:
+        games, selected = load_selected(args)
+    except (OSError, ValueError) as exc:
+        parser.exit(1, f"分类失败：{exc}\n")
+    out = [{**classify_one(g), "run_id": g.get("run_id")} for g in selected]
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     print(f"采集记录 {len(games)} 条，已分类 {len(out)} 条，结果已写入 {args.output}")

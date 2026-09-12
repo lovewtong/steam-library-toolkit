@@ -11,10 +11,30 @@ import shutil
 import subprocess
 import threading
 import time
+import urllib.request
 
 from steam_sources import AccountMismatchError
 
 SERVICE = "steam-library-toolkit"
+STAGES = {
+    "starting": "正在启动客户端采集进程",
+    "qr_login": "正在连接 Steam 扫码认证服务",
+    "connecting_cm": "正在连接 Steam 客户端服务器（CM）",
+    "authenticated": "已认证，正在读取许可与游玩记录",
+    "reading_licenses": "正在读取许可与应用信息",
+    "web_session_ready": "网页授权已就绪，等待其他来源",
+    "reading_web_sources": "正在核验在线客户端与 Web API",
+}
+HELPER_ERRORS = {
+    "CM_CONNECT_TIMEOUT": "连接 Steam 客户端服务器超过 60 秒；请检查当前终端的网络或代理",
+    "WEB_SESSION_TIMEOUT": "客户端已认证，但未能取得网页授权；请检查 Steam 网络连接",
+}
+
+
+class AuthError(RuntimeError):
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f"{code}：{message}")
 
 
 def token_claims(token):
@@ -55,7 +75,7 @@ def secret_store():
             raise RuntimeError()
         return keyring
     except Exception:
-        raise RuntimeError("操作系统凭据存储不可用；请安装 keyring 并配置系统密钥环") from None
+        raise AuthError("KEYRING_UNAVAILABLE", "操作系统凭据存储不可用；请安装 keyring 并配置系统密钥环") from None
 
 
 def saved_credentials(account=None):
@@ -79,18 +99,18 @@ def save_credentials(account, token):
             raise RuntimeError()
         store.set_password(SERVICE, "default_account", account)
     except Exception:
-        raise RuntimeError("Steam 授权成功，但凭据保存失败，请检查系统密钥环") from None
+        raise AuthError("KEYRING_SAVE_FAILED", "Steam 授权成功，但凭据保存失败，请检查系统密钥环") from None
 
 
 def local_credentials(steam_path=None, account=None):
     """Opt-in Windows DPAPI path. Never inspect process memory or browser cookies."""
     if os.name != "nt":
-        raise RuntimeError("--local-session 目前仅支持 Windows；其他系统请使用 --login")
+        raise AuthError("LOCAL_SESSION_UNSUPPORTED", "--local-session 目前仅支持 Windows；其他系统请使用 --login")
     import winreg
     try:
         import vdf
     except ImportError:
-        raise RuntimeError("本地会话需要 vdf：pip install -r requirements.txt") from None
+        raise AuthError("PYTHON_DEPENDENCY_MISSING", "本地会话缺少 vdf，请使用项目 .venv 的 Python 或执行 python -m pip install -r requirements.txt") from None
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam\ActiveProcess") as key:
             active = winreg.QueryValueEx(key, "ActiveUser")[0]
@@ -108,7 +128,7 @@ def local_credentials(steam_path=None, account=None):
     except AccountMismatchError:
         raise
     except (OSError, KeyError, ValueError):
-        raise RuntimeError("无法读取 Steam 当前登录状态；请先登录 Steam 或使用 --login") from None
+        raise AuthError("LOCAL_SESSION_UNAVAILABLE", "无法读取当前用户的 Steam 登录状态；请在登录 Steam 的 Windows 用户下运行，或使用 --login") from None
 
     def find_cache(node):
         for key, value in node.items():
@@ -153,24 +173,26 @@ def local_credentials(steam_path=None, account=None):
                 return identity, token
         except ValueError:
             continue
-    raise RuntimeError("没有可用本地 Steam 凭据，请重新登录 Steam 或运行 --login")
+    raise AuthError("LOCAL_CREDENTIAL_UNAVAILABLE", "Steam 本地缓存没有可用凭据，请重新登录 Steam 或运行 --login")
 
 
 def collect_client(account=None, *, login=False, local_session=False, steam_path=None,
-                   machine=None, timeout=150, on_progress=print):
+                   machine=None, timeout=300, on_progress=print, use_api=True, expanded=True):
     credentials = local_credentials(steam_path, account) if local_session else (None if login else saved_credentials(account))
     if login:
         secret_store()  # Fail before asking the user to scan if secure persistence is unavailable.
     if not login and not credentials:
-        raise RuntimeError("未配置客户端授权；首次运行 --login，或在 Windows 使用 --local-session")
+        raise AuthError("AUTH_REQUIRED", "未配置客户端授权；首次运行 --login，或在 Windows 使用 --local-session")
     if credentials:
         account, token = credentials
     else:
         token = None
     node = shutil.which("node")
     if not node:
-        raise RuntimeError("客户端采集需要 Node.js 和 npm install")
+        raise AuthError("NODE_NOT_FOUND", "客户端采集需要 Node.js 和 npm ci")
     helper = Path(__file__).parent / "tools/steam_client_collect.cjs"
+    on_progress("Steam 客户端：本地凭据已读取，准备连接（尚未完成服务器认证）" if local_session
+                else "Steam 客户端：准备启动认证与采集")
     events = queue.Queue()
     process = subprocess.Popen(
         [node, str(helper)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
@@ -186,11 +208,22 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
     reader = threading.Thread(target=read_events, daemon=True)
     reader.start()
     try:
+        proxy = None if urllib.request.proxy_bypass("api.steampowered.com") else urllib.request.getproxies().get("https")
+        on_progress("Steam 网络：使用已配置的 HTTP(S) 代理" if proxy else "Steam 网络：直连（未检测到适用的 HTTP(S) 代理）")
         process.stdin.write(json.dumps({"refresh_token": token, "steam_id": account, "login": login,
+                                       "use_api": use_api, "expanded": expanded,
+                                       "https_proxy": proxy,
                                        "machine": machine or os.environ.get("COMPUTERNAME") or __import__("socket").gethostname()}))
         process.stdin.close()
-        deadline = time.monotonic() + timeout + (120 if login else 0)
+        started = time.monotonic()
+        deadline = started + timeout + (120 if login else 0)
+        next_notice = started + 10
+        stage = "starting"
         while time.monotonic() < deadline:
+            now = time.monotonic()
+            if now >= next_notice:
+                on_progress(f"Steam 客户端：{STAGES[stage]}；已等待 {int(now - started)} 秒")
+                next_notice = now + 10
             try:
                 line = events.get(timeout=min(1, max(.01, deadline - time.monotonic())))
             except queue.Empty:
@@ -200,7 +233,7 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
             try:
                 event = json.loads(line)
             except ValueError:
-                raise RuntimeError("客户端 helper 返回无效数据") from None
+                raise AuthError("HELPER_PROTOCOL_INVALID", "客户端 helper 返回无效数据") from None
             kind = event.get("event")
             if kind == "qr":
                 on_progress("请用 Steam 手机 App 扫码并确认：\n" + event["qr"])
@@ -212,18 +245,32 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
                 account = identity
                 on_progress("Steam 授权已保存至系统凭据存储")
             elif kind == "progress":
-                on_progress("Steam 客户端：" + event.get("stage", "处理中"))
+                if event.get("stage") in STAGES:
+                    stage = event["stage"]
+                    on_progress("Steam 客户端：" + STAGES[stage])
             elif kind == "error":
-                raise RuntimeError(f"Steam 客户端采集失败（代码 {event.get('code', 'unknown')}）；可重新 --login")
+                if event.get("code") == "ACCOUNT_MISMATCH":
+                    raise AccountMismatchError("ACCOUNT_MISMATCH：客户端认证账号不一致")
+                if event.get("code") in HELPER_ERRORS:
+                    code = event["code"]
+                    raise AuthError(code, HELPER_ERRORS[code])
+                eresult = event.get("eresult")
+                detail = f"（Steam EResult={eresult}）" if type(eresult) is int else ""
+                raise AuthError("CM_UNAVAILABLE", "Steam 客户端采集失败" + detail)
             elif kind == "result":
                 if account and event.get("steam_id") != account:
                     raise AccountMismatchError("客户端返回账号不一致")
-                validate_token(event.get("access_token"), event.get("steam_id"))
+                if not account or event.get("steam_id") != account:
+                    raise AccountMismatchError("ACCOUNT_MISMATCH：缺少已验证账号")
+                if "access_token" in event:
+                    raise AuthError("HELPER_PROTOCOL_INVALID", "helper 不应返回访问令牌")
                 process.wait(timeout=5)
                 if process.returncode:
-                    raise RuntimeError("客户端 helper 未正常退出")
+                    raise AuthError("HELPER_EXIT_FAILED", "客户端 helper 未正常退出")
                 return event
-        raise RuntimeError("客户端采集超时或 helper 不可用；请确认 npm install 和 Steam 登录状态")
+        if process.poll() is not None:
+            raise AuthError("HELPER_START_FAILED", "客户端 helper 提前退出；请确认 Node.js 18+ 并运行 npm ci")
+        raise AuthError("CLIENT_TIMEOUT", f"客户端采集超时；最后阶段：{STAGES[stage]}。请检查 Steam 网络连接")
     finally:
         if not process.stdin.closed:
             process.stdin.close()

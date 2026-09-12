@@ -9,6 +9,10 @@ import os
 from pathlib import Path
 import re
 import tempfile
+import hashlib
+
+APP_TYPES = {"game", "application", "tool", "demo", "dlc", "guide", "driver", "config", "hardware",
+             "video", "plugin", "music", "series", "comic", "beta", "shortcut", "depot", "unknown"}
 
 
 def utc_now():
@@ -20,8 +24,13 @@ class AccountMismatchError(ValueError):
 
 
 def app_type(value):
-    value = str(value or "unknown").lower()
-    return {"software": "application"}.get(value, value)
+    value = str(value or "unknown").strip().lower()
+    value = {"software": "application", "musicalbum": "music"}.get(value, value)
+    return value if value in APP_TYPES else "unknown"
+
+
+def records_hash(records):
+    return hashlib.sha256(json.dumps(records, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 def validate_records(records):
@@ -51,10 +60,23 @@ class SourceResult:
     fetched_at: str = field(default_factory=utc_now)
     error: str | None = None
     scope: str = "unknown"
+    state: str | None = None
+    error_code: str | None = None
+    completeness: dict = field(default_factory=dict)
+    freshness: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        self.state = self.state or ("complete" if self.status == "ok" else "unavailable")
+
+    @property
+    def authoritative(self):
+        return (self.source == "client_library" and self.status == "ok" and self.state == "complete"
+                and self.completeness.get("verified") is True)
 
     def audit(self):
         return {"status": self.status, "count": len(self.records), "fetched_at": self.fetched_at,
-                "error": self.error, "scope": self.scope}
+                "error": self.error, "scope": self.scope, "state": self.state, "error_code": self.error_code,
+                "completeness": self.completeness, "freshness": self.freshness}
 
 
 def read_snapshot(path, expected_account=None):
@@ -77,7 +99,15 @@ def read_snapshot(path, expected_account=None):
         if parsed.tzinfo is None:
             raise ValueError("快照时间必须包含时区")
         records = validate_records(data.get("apps"))
-        return SourceResult("license_file", records, steam_id=account, fetched_at=timestamp, scope="snapshot")
+        if "record_count" in data and data["record_count"] != len(records):
+            raise ValueError("SNAPSHOT_INVALID：快照条数不匹配")
+        if "apps_sha256" in data and data["apps_sha256"] != records_hash(records):
+            raise ValueError("SNAPSHOT_INVALID：快照校验和不匹配")
+        age = (datetime.now(timezone.utc) - parsed).total_seconds()
+        freshness = {"age_seconds": max(0, int(age)), "state": "unknown" if age < -300 else "fresh" if age < 86400 else "stale",
+                     "fresh_threshold_seconds": 86400}
+        return SourceResult("license_file", records, steam_id=account, fetched_at=timestamp, scope="snapshot",
+                            completeness={"declared_complete": data.get("complete"), "verified": False}, freshness=freshness)
     records = []
     for number, line in enumerate(text.splitlines(), 1):
         if not line.strip():
@@ -88,76 +118,104 @@ def read_snapshot(path, expected_account=None):
         records.append({"appid": int(match[1]), "name": match[2]})
     if not records:
         raise ValueError("许可清单为空")
-    return SourceResult("license_file", validate_records(records), scope="unbound_snapshot")
+    return SourceResult("license_file", validate_records(records), scope="unbound_snapshot", freshness={"state": "unknown"})
+
+
+def resolve_playtime(found, providers, field_name):
+    evidence = {}
+    order = ("web_api", "client_last_played_times", "client_library", "licenses", "license_file")
+    for name in order:
+        value = found.get(name, {}).get(field_name)
+        if value is not None:
+            evidence[name] = {"value": value, "observed_at": providers[name].fetched_at,
+                              "historical": name == "license_file"}
+    selected = next(iter(evidence), None)
+    value = evidence[selected]["value"] if selected else None
+    state = "unknown" if value is None else "historical" if selected == "license_file" else "known_zero" if value == 0 else "known_nonzero"
+    live = [e["value"] for e in evidence.values() if not e["historical"]]
+    return {"value": value, "state": state, "source": selected,
+            "observed_at": evidence[selected]["observed_at"] if selected else None,
+            "evidence": evidence, "conflict": len(set(live)) > 1}
 
 
 def reconcile(results, expected_account=None):
-    """Fresh client membership wins. Old snapshots never resurrect missing apps."""
-    usable = [source for source in results if source.status == "ok"]
-    if not usable:
-        raise RuntimeError("没有可用数据源；请配置 API 或运行 --login / --local-session，或提供 --apps-file")
-    accounts = {source.steam_id for source in usable if source.steam_id}
+    """Only validated client responses determine current membership; other sets remain candidates."""
+    accounts = {s.steam_id for s in results if s.steam_id}
     if expected_account:
         accounts.add(expected_account)
-    if len(accounts) > 1:
-        raise AccountMismatchError("数据源属于不同 Steam 账号，已拒绝合并")
-    by_source = {source.source: {row["appid"]: row for row in source.records} for source in usable}
-    client = next((s for s in usable if s.source == "client_library"), None)
-    if client:
-        ids = set(by_source["client_library"])
-        membership = "client_snapshot"
-    else:
-        ids = set().union(*(set(rows) for name, rows in by_source.items()
-                           if name in ("web_api", "license_file", "licenses")))
-        membership = "degraded"
+    if len(accounts) > 1 or any(s.state == "account_mismatch" for s in results):
+        raise AccountMismatchError("ACCOUNT_MISMATCH：数据源属于不同 Steam 账号，已拒绝合并")
+    usable = [s for s in results if s.status == "ok" and s.state == "complete"]
+    if not usable:
+        codes = ", ".join(s.error_code for s in results if s.error_code)
+        detail = next((s.error for s in results if s.source == "client_library" and s.error), None)
+        raise RuntimeError("NO_USABLE_SOURCE：没有可用数据源，请配置 API、客户端授权或快照" + (f" [{codes}]" if codes else "")
+                           + (f"\n客户端原因：{detail}" if detail else ""))
+    providers = {s.source: s for s in usable}
+    by_source = {s.source: {r["appid"]: r for r in s.records} for s in usable}
+    client = next((s for s in usable if s.authoritative), None)
+    ids = set(by_source["client_library"]) if client else set().union(*(set(rows) for name, rows in by_source.items()
+                    if name in ("web_api", "license_file", "licenses")))
     output = []
-    order = ("web_api", "client_library", "licenses", "license_file")
     for appid in sorted(ids):
         found = {name: rows[appid] for name, rows in by_source.items() if appid in rows}
-        row = {"appid": appid, "sources": [name for name in order if name in found], "provenance": {}}
-        for field_name, preference in (
-            ("name", ("web_api", "client_library", "licenses", "license_file")),
-            ("app_type", ("client_library", "licenses", "license_file", "web_api")),
-        ):
+        row = {"appid": appid, "sources": list(found), "provenance": {},
+               "evidence": {name: {"present": appid in rows} for name, rows in by_source.items()}}
+        for field_name, preference in (("name", ("web_api", "client_library", "licenses", "license_file")),
+                                      ("app_type", ("client_library", "licenses", "license_file", "web_api"))):
             row[field_name] = "unknown" if field_name == "app_type" else f"Unknown App {appid}"
             for name in preference:
-                value = found.get(name, {}).get(field_name)
+                raw = found.get(name, {}).get(field_name)
+                value = app_type(raw) if field_name == "app_type" else raw
                 if value and value != "unknown":
-                    row[field_name] = app_type(value) if field_name == "app_type" else value
-                    row["provenance"][field_name] = name
-                    break
-        for field_name in ("playtime_forever", "playtime_2weeks", "rtime_last_played"):
-            row[field_name] = None
-            for name in ("web_api", "client_library", "licenses"):
-                value = found.get(name, {}).get(field_name)
-                if value is not None:
                     row[field_name] = value
                     row["provenance"][field_name] = name
                     break
-        row["membership_source"] = "client_library" if client else row["sources"][0]
+            if field_name == "app_type":
+                row["raw_app_types"] = {name: r["app_type"] for name, r in found.items() if "app_type" in r}
+        row["playtime_evidence"] = {}
+        for field_name in ("playtime_forever", "playtime_2weeks", "rtime_last_played"):
+            resolved = resolve_playtime(found, providers, field_name)
+            row[field_name] = resolved["value"]
+            row["playtime_evidence"][field_name] = resolved
+            if resolved["source"]:
+                row["provenance"][field_name] = resolved["source"]
+        row["membership_source"] = "client_library" if client else "candidate_union"
         row["membership_status"] = "observed" if client else "unverified_completeness"
+        row["membership"] = {"state": "present" if client else "candidate", "source": row["membership_source"],
+                             "realtime_verified": bool(client), "observed_at": client.fetched_at if client else None}
         shared = found.get("licenses", {}).get("shared_only")
         row["ownership"] = "shared" if shared is True else "account_license" if shared is False else "unknown"
+        row["license_evidence"] = found.get("licenses", {}).get("license_evidence", {})
         output.append(row)
     api_ids = set(by_source.get("web_api", {}))
-    client_ids = set(by_source.get("client_library", {}))
+    client_ids = set(by_source.get("client_library", {})) if client else set()
+    differences = {"client_not_api": sorted(client_ids - api_ids), "api_not_client": sorted(api_ids - client_ids),
+                   "snapshot_not_client": sorted(set(by_source.get("license_file", {})) - client_ids) if client else [],
+                   "license_not_client": sorted(set(by_source.get("licenses", {})) - client_ids) if client else []}
+    types = {r["appid"]: r["app_type"] for r in output}
+    for name in ("licenses", "license_file", "web_api"):
+        for appid, r in by_source.get(name, {}).items():
+            types.setdefault(appid, app_type(r.get("app_type")))
     audit = {
-        "schema_version": 1, "generated_at": utc_now(), "steam_id": next(iter(accounts), None),
-        "membership": membership,
-        "status": "degraded" if not client or any(s.status == "failed" for s in results) else "ok",
+        "schema_version": 2, "generated_at": utc_now(), "steam_id": next(iter(accounts), None),
+        "membership": "client_snapshot" if client else "candidate_union",
+        "membership_semantics": "client_library_membership" if client else "unverified_candidate_union",
+        "status": "ok" if client and all(s.state == "complete" for s in results if s.source != "client_last_played_times") else "degraded",
         "sources": {s.source: s.audit() for s in results},
         "summary": {"records": len(output), "types": dict(Counter(r["app_type"] for r in output)),
-                    "playtime_known": sum(r["playtime_forever"] is not None for r in output)},
-        "difference": {"client_not_api": sorted(client_ids - api_ids),
-                       "api_not_client": sorted(api_ids - client_ids),
-                       "snapshot_not_client": sorted(set(by_source.get("license_file", {})) - client_ids) if client else [],
-                       "license_not_client": sorted(set(by_source.get("licenses", {})) - client_ids) if client else []},
+                    "playtime_known": sum(r["playtime_evidence"]["playtime_forever"]["state"] in ("known_zero", "known_nonzero") for r in output)},
+        "difference": differences,
+        "difference_summary": {name: {"count": len(values), "by_type": dict(Counter(types.get(i, "unknown") for i in values))}
+                               for name, values in differences.items()},
         "warnings": [],
     }
+    if client and ids != {r["appid"] for r in output}:
+        raise RuntimeError("MEMBERSHIP_INVARIANT_FAILED")
     if any(s.scope == "unbound_snapshot" for s in usable):
         audit["warnings"].append("文本清单没有账号与时间信息，无法核验账号或新鲜度")
     if not client:
-        audit["warnings"].append("未取得当前电脑客户端清单，不能确认与客户端库一致")
+        audit["warnings"].append("未取得经过核验的实时客户端清单；本次仅生成候选集合")
     return output, audit
 
 

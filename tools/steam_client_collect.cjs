@@ -4,13 +4,18 @@ const SteamUser = require('steam-user');
 const {LoginSession, EAuthTokenPlatformType} = require('steam-session');
 const qr = require('qrcode-terminal');
 const crypto = require('crypto');
+const {collectWebSources} = require('./steam_web_sources.cjs');
+const {decodePlaytime} = require('./steam_playtime.cjs');
+const {licenseEvidence} = require('./steam_licenses.cjs');
 
 const emit = event => process.stdout.write(JSON.stringify(event) + '\n');
 let user, loginSession, done = false;
 function fail(error) {
   if (done) return;
   done = true;
-  emit({event: 'error', code: Number.isInteger(error?.eresult) ? error.eresult : 'unavailable'});
+  const safeCodes = ['ACCOUNT_MISMATCH', 'CM_CONNECT_TIMEOUT', 'WEB_SESSION_TIMEOUT'];
+  emit({event: 'error', code: safeCodes.includes(error?.code) ? error.code : 'CM_UNAVAILABLE',
+    eresult: Number.isInteger(error?.eresult) ? error.eresult : null});
   user?.logOff();
   loginSession?.cancelLoginAttempt();
   setTimeout(() => process.exit(1), 100);
@@ -24,8 +29,10 @@ process.stdin.on('end', async () => {
   try {
     const request = JSON.parse(input);
     input = '';
+    const connectionOptions = request.https_proxy ? {httpProxy: request.https_proxy} : {};
     if (request.login) {
-      loginSession = new LoginSession(EAuthTokenPlatformType.SteamClient);
+      emit({event: 'progress', stage: 'qr_login'});
+      loginSession = new LoginSession(EAuthTokenPlatformType.SteamClient, connectionOptions);
       loginSession.loginTimeout = 120000;
       const ready = new Promise((resolve, reject) => {
         loginSession.once('authenticated', resolve);
@@ -36,28 +43,46 @@ process.stdin.on('end', async () => {
       qr.generate(result.qrChallengeUrl, {small: true}, text => emit({event: 'qr', qr: text}));
       await ready;
       const identity = loginSession.steamID.getSteamID64();
-      if (request.steam_id && identity !== request.steam_id) throw new Error('account mismatch');
+      if (request.steam_id && identity !== request.steam_id) throw {code: 'ACCOUNT_MISMATCH'};
       request.refresh_token = loginSession.refreshToken;
       request.steam_id = identity;
       emit({event: 'credentials', steam_id: identity, refresh_token: request.refresh_token});
       loginSession.cancelLoginAttempt();
     }
     user = new SteamUser({dataDirectory: null, autoRelogin: false, enablePicsCache: true,
-      picsCacheAll: false, saveAppTickets: false, renewRefreshTokens: false, webCompatibilityMode: true});
-    let access, licenses, playtimes, playtimeStatus = 'pending';
-    const finish = () => {
-      if (done || !access || licenses === undefined || playtimes === undefined) return;
-      done = true;
-      emit({event: 'result', steam_id: user.steamID.getSteamID64(), access_token: access,
-        licenses: licenses || [], license_status: licenses ? 'ok' : 'failed',
-        playtimes, playtime_status: playtimeStatus});
-      user.logOff();
-      setTimeout(() => process.exit(0), 100);
+      picsCacheAll: false, saveAppTickets: false, renewRefreshTokens: false, webCompatibilityMode: true,
+      ...connectionOptions});
+    const connectTimer = setTimeout(() => fail({code: 'CM_CONNECT_TIMEOUT'}), 60000);
+    let access, licenses, playtimes, playtimeStatus = 'pending', licenseStatus = 'failed';
+    let finishing = false;
+    const finish = async () => {
+      if (done || finishing || !access || licenses === undefined || playtimes === undefined) return;
+      finishing = true;
+      try {
+        emit({event: 'progress', stage: 'reading_web_sources'});
+        const web = await collectWebSources(access, request, user.steamID.getSteamID64());
+        if (done) return;
+        done = true;
+        access = null;
+        emit({event: 'result', steam_id: user.steamID.getSteamID64(), ...web,
+          licenses: licenses || [], license_status: licenses ? licenseStatus : 'failed',
+          playtimes, playtime_status: playtimeStatus,
+          overview_probe: {state: 'protocol_incompatible', error_code: 'APP_OVERVIEW_NOT_EXPOSED_BY_CLIENTCOMM'}});
+        user.logOff();
+        setTimeout(() => process.exit(0), 100);
+      } catch (error) { fail(error); }
     };
     user.on('error', fail);
     user.once('loggedOn', () => {
-      if (request.steam_id && user.steamID.getSteamID64() !== request.steam_id) return fail({});
-      emit({event: 'progress', stage: '已认证，正在读取账号许可与游玩记录'});
+      clearTimeout(connectTimer);
+      if (request.steam_id && user.steamID.getSteamID64() !== request.steam_id) return fail({code: 'ACCOUNT_MISMATCH'});
+      emit({event: 'progress', stage: 'authenticated'});
+      setTimeout(() => {
+        if (done) return;
+        licenses ??= null; playtimes ??= [];
+        playtimeStatus = playtimeStatus === 'pending' ? 'failed' : playtimeStatus;
+        if (access) finish(); else fail({code: 'WEB_SESSION_TIMEOUT'});
+      }, 110000).unref();
       const timer = setTimeout(() => {
         playtimes = []; playtimeStatus = 'failed'; finish();
       }, 15000);
@@ -73,11 +98,8 @@ process.stdin.on('end', async () => {
           if (playtimes !== undefined) return;
           try {
             const type = schema.CPlayer_GetLastPlayedTimes_Response;
-            const body = type.toObject(type.decode(Buffer.isBuffer(raw) ? raw : raw.toBuffer()), {longs: String});
             playtimeStatus = header.proto?.eresult === 1 ? 'ok' : 'failed';
-            playtimes = playtimeStatus === 'ok' ? (body.games || []).map(g => ({appid: g.appid,
-              playtime_forever: g.playtime_forever ?? null, playtime_2weeks: g.playtime_2weeks ?? null,
-              rtime_last_played: g.last_playtime ?? null})) : [];
+            playtimes = playtimeStatus === 'ok' ? decodePlaytime(raw, type) : [];
           } catch (_) { playtimes = []; playtimeStatus = 'failed'; }
           finish();
         });
@@ -89,27 +111,34 @@ process.stdin.on('end', async () => {
       const cookie = cookies.find(c => c.startsWith('steamLoginSecure='));
       if (!cookie) return fail({});
       access = decodeURIComponent(cookie.split(';')[0].slice('steamLoginSecure='.length)).split('||')[1];
+      emit({event: 'progress', stage: 'web_session_ready'});
       finish();
     });
     user.once('ownershipCached', async () => {
+      emit({event: 'progress', stage: 'reading_licenses'});
       try {
         const own = new Set(user.getOwnedApps({excludeShared: true}));
+        const nonFree = new Set(user.getOwnedApps({excludeFree: true}));
+        const permanent = new Set(user.getOwnedApps({excludeExpiring: true}));
+        const evidence = licenseEvidence(user);
+        licenseStatus = evidence.complete ? 'ok' : 'partial';
         const ids = user.getOwnedApps({excludeShared: false}).filter(id => id > 0);
         const info = await user.getProductInfo(ids, [], true);
         licenses = ids.map(appid => {
           const common = info.apps[appid]?.appinfo?.common || {};
           return {appid, name: common.name || `Unknown App ${appid}`,
-            app_type: (common.type || 'unknown').toLowerCase(), shared_only: !own.has(appid)};
+            app_type: common.type || 'unknown', shared_only: !own.has(appid),
+            license_evidence: {own: own.has(appid), shared_only: !own.has(appid),
+              free_only: evidence.complete ? !nonFree.has(appid) : null,
+              expiring_only: evidence.complete ? !permanent.has(appid) : null,
+              ...evidence.byApp.get(appid)}};
         });
         finish();
       } catch (_) { licenses = null; finish(); }
     });
     // A distinct session ID avoids replacing the desktop session on the same IP.
+    emit({event: 'progress', stage: 'connecting_cm'});
     user.logOn({refreshToken: request.refresh_token, logonID: crypto.randomBytes(4).readUInt32LE(0),
       machineName: 'Steam Library Toolkit'});
-    setTimeout(() => {
-      licenses ??= null; playtimes ??= []; playtimeStatus = playtimeStatus === 'pending' ? 'failed' : playtimeStatus;
-      if (access) finish(); else fail({});
-    }, 110000).unref();
   } catch (error) { fail(error); }
 });

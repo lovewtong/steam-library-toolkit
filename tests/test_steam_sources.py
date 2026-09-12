@@ -15,7 +15,7 @@ OTHER = "76561198000000002"
 
 
 def source(name, records=(), **kwargs):
-    return SourceResult(name, list(records), steam_id=ACCOUNT, **kwargs)
+    return SourceResult(name, list(records), steam_id=ACCOUNT, completeness={"verified": True}, **kwargs)
 
 
 class ReconciliationTests(unittest.TestCase):
@@ -40,7 +40,8 @@ class ReconciliationTests(unittest.TestCase):
                                       {"appid": 30, "playtime_forever": 5}]),
             source("license_file", [{"appid": 10, "playtime_forever": 80}]),
         ])
-        self.assertEqual([r["playtime_forever"] for r in rows], [None, 0, 5])
+        self.assertEqual([r["playtime_forever"] for r in rows], [80, 0, 5])
+        self.assertEqual(rows[0]["playtime_evidence"]["playtime_forever"]["state"], "historical")
         self.assertEqual(rows[2]["provenance"]["playtime_forever"], "client_library")
 
     def test_api_failure_does_not_erase_client_games(self):
@@ -114,10 +115,10 @@ class FileAndCollectionTests(unittest.TestCase):
 
     @patch("steam_collect.load_config", return_value={"api_key": "", "steam_id": ACCOUNT})
     @patch("steam_collect.collect_client")
-    @patch("steam_collect.client_library", return_value=[{"appid": 10, "name": "Game", "app_type": "game"}])
     @patch("steam_collect.get_owned_games", side_effect=steam_collect.requests.Timeout("secret-url"))
-    def test_source_failure_isolated_and_strict_mode_preserves_files(self, api, client, helper, config):
-        helper.return_value = {"steam_id": ACCOUNT, "access_token": "private-token", "licenses": [],
+    def test_source_failure_isolated_and_strict_mode_preserves_files(self, api, helper, config):
+        helper.return_value = {"steam_id": ACCOUNT, "client": {"state": "complete", "completeness": {"verified": True}, "records": [{"appid": 10, "name": "Game", "app_type": "game"}]},
+                               "api": {"state": "unavailable", "error_code": "WEB_API_FAILED"}, "licenses": [],
                                "license_status": "ok", "playtimes": [{"appid": 10, "playtime_forever": 5}],
                                "playtime_status": "ok"}
         audit = {}
@@ -133,45 +134,52 @@ class FileAndCollectionTests(unittest.TestCase):
         self.assertEqual(output.read_text(), "old")
 
     @patch("steam_collect.time.sleep")
-    @patch("steam_collect.get_store_details")
+    @patch("steam_collect.get_store_result")
     def test_metadata_cache_reuses_and_refreshes_without_losing_delisted_app(self, store, sleep):
         details = {"app_type": "game", "genres": [], "categories": [], "is_multiplayer": False, "is_controller": False}
-        store.return_value = details
+        store.return_value = {"status": "success", "details": details}
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)
         self.assertEqual(store.call_count, 1)
         steam_collect.cached_store_details(10, self.path, refresh=True)
         self.assertEqual(store.call_count, 2)
-        store.return_value = None
+        store.return_value = {"status": "not_found", "details": None}
         rows = steam_collect.collect(apps_file=self.snapshot(), use_api=False, cache_dir=self.path, refresh_metadata=True)
         self.assertEqual(rows[0]["appid"], 10)
         self.assertEqual(rows[0]["genres"], [])
 
     @patch("steam_collect.requests.get")
-    def test_client_rejects_wrong_machine_ambiguous_sessions_and_missing_confirmation(self, get):
-        def reply(body):
-            response = Mock(status_code=200, headers={})
-            response.json.return_value = {"response": body}
-            return response
-        for sessions in ([], [{"machine_name": "other"}], [{"machine_name": None}],
-                         [{"machine_name": "desktop"}, {"machine_name": "desktop"}]):
-            get.return_value = reply({"sessions": sessions})
-            with self.subTest(sessions=sessions), self.assertRaises(RuntimeError):
-                steam_collect.client_library("private-access", "desktop")
-        session = reply({"sessions": [{"machine_name": "desktop", "client_instanceid": "123"}]})
-        get.side_effect = [session, reply({})]
-        with self.assertRaises(ValueError):
-            steam_collect.client_library("private-access", "desktop")
-        get.side_effect = [session, reply({"client_info": {"machine_name": "desktop"},
-                                          "apps": [{"appid": 10, "app": "Game", "app_type": "game"}]})]
-        self.assertEqual(steam_collect.client_library("private-access", "DESKTOP")[0]["appid"], 10)
-
-    @patch("steam_collect.requests.get")
     def test_store_bad_json_shapes_are_optional_failures(self, get):
+        get.return_value.status_code = 200
         for data in ([], {"10": None}, {"10": {"success": True, "data": None}}):
             with self.subTest(data=data):
                 get.return_value.json.return_value = data
                 self.assertIsNone(steam_collect.get_store_details(10))
+
+    @patch("steam_collect.time.sleep")
+    @patch("steam_collect.get_store_result", return_value={"status": "rate_limited", "details": None})
+    def test_rate_limit_cache_expires_quickly_and_does_not_become_not_found(self, store, sleep):
+        with patch("steam_collect.time.time", return_value=1000):
+            self.assertIsNone(steam_collect.cached_store_details(10, self.path))
+        with patch("steam_collect.time.time", return_value=1020):
+            self.assertIsNone(steam_collect.cached_store_details(10, self.path))
+        self.assertEqual(store.call_count, 1)
+        self.assertEqual(json.loads((self.path/"10.json").read_text())["status"], "rate_limited")
+        with patch("steam_collect.time.time", return_value=1061):
+            steam_collect.cached_store_details(10, self.path)
+        self.assertEqual(store.call_count, 2)
+
+    def test_snapshot_integrity_checks_fail_on_modified_members(self):
+        from steam_sources import records_hash
+        path = self.snapshot()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data.update(record_count=1, apps_sha256=records_hash(data["apps"]))
+        atomic_json(path, data)
+        self.assertEqual(len(read_snapshot(path).records), 1)
+        data["apps"][0]["appid"] = 20
+        atomic_json(path, data)
+        with self.assertRaisesRegex(ValueError, "SNAPSHOT_INVALID"):
+            read_snapshot(path)
 
     def test_unknown_playtime_survives_legacy_zero_and_csv_escaping(self):
         rows = classify_games.classify_library([
@@ -181,7 +189,7 @@ class FileAndCollectionTests(unittest.TestCase):
         classify_games.write_csv(rows, out)
         data = list(csv.reader(io.StringIO(out.read_text(encoding="utf-8-sig"))))
         self.assertEqual(data[1][1:3], ['A, "B"', "未知"])
-        self.assertEqual(data[2][2], "0h")
+        self.assertEqual(data[2][2], "0 分钟")
         self.assertNotIn("单人", rows[0]["tags"])
 
 

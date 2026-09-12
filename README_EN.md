@@ -6,14 +6,14 @@ This repo keeps all classification locally and does not modify Steam by default.
 
 | Step | Command | Notes |
 |------|---------|------|
-| 1. Get library data | `python steam_collect.py` or reuse `steam_library.json` | Skip if you already have it |
+| 1. Get library data | `python steam_collect.py --local-session --no-store --strict` | Windows with Steam signed in; see setup for other authorization methods |
 | 2. Classify | `python classify_steam_games.py` | Generates `steam_library_classified.json` |
 | 3. Pick by category | `python steam_picker.py --serve` | Open the local web UI |
 
 **Start the picker UI (after classification):**
 
 ```bash
-cd /path/to/steam-collections
+cd /path/to/steam-library-toolkit
 python steam_picker.py --serve
 ```
 
@@ -46,13 +46,26 @@ QR authorization / explicit local session / optional API config
 Requires Python 3.10+ and Node.js 18+:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 npm ci
 # Keep desktop Steam online; scan with the Steam mobile app
 python steam_collect.py --login --no-store
 ```
 
 QR authorization is stored only in Windows Credential Manager, macOS Keychain or a supported Linux system keyring. Later runs reuse it. Unavailable or plaintext keyrings are rejected.
+
+On Windows, an isolated environment avoids mismatched pip/Python installations:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+npm ci
+.\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict
+```
+
+Use `.\.venv\Scripts\python.exe` instead of `python` in subsequent commands. Missing `vdf` reports `PYTHON_DEPENDENCY_MISSING`, which does not mean Steam is logged out. QR persistence also requires `keyring`.
+
+The collector immediately reports credential loading, network mode and its current stage, with a waiting update every 10 seconds. It establishes its own server connection even when desktop Steam is logged in. A connection taking over 60 seconds reports `CM_CONNECT_TIMEOUT`; missing web authorization after authentication reports `WEB_SESSION_TIMEOUT`. Detected HTTP(S) proxy settings apply to CM, QR authentication and subsequent Web requests without logging proxy addresses or passwords. Ctrl+C cleans up the helper and reports cancellation; an older `KeyboardInterrupt` traceback alone does not indicate a failed Steam login.
 
 On Windows, explicitly reuse the currently logged-in desktop account for this run:
 
@@ -75,62 +88,75 @@ python steam_collect.py --local-session --no-store --strict
 python steam_collect.py --local-session
 ```
 
-The output remains a top-level JSON array, defaulting to `steam_library.json`, with an adjacent `steam_library.audit.json`. Custom `-o` paths get a same-name `.audit.json` sidecar.
+Each collection writes an immutable `.steam_library.runs/<run_id>/` generation containing the library, audit, snapshot, both classifications, CSV/Markdown, summary and probe status. All files are validated and flushed before atomically replacing `steam_library.current.json`, the sole commit pointer. Old runs are retained.
 
-Both Python classification entrypoints now select known `game` types by default. Use `--include-demo`, `--include-non-game` (all known types), or `--include-unknown` as needed. Old JSON/TXT without `app_type` requires `--include-unknown` or recollection. Unselected records remain in the source JSON. Unknown time renders as “未知”, rather than `0h`.
+Flat library/audit files and `--snapshot-out` are compatibility exports. Export failure warns without invalidating the committed generation. Both Python classifiers prefer the adjacent `.current.json` and verify all artifact hashes. External readers of flat files do not get cross-file transactional consistency. `-o custom.json` uses `custom.current.json` and `.custom.runs/`. Do not use a `.current.json` filename as a normal output.
 
-### Sources and limits
+After choosing a custom output name, pass that same input to the classifiers to avoid loading an older default library:
 
-| Source | Role |
-|--------|------|
-| `web_api` | `GetOwnedGames` supplies names/playtime; free-game and free-subscription flags are enabled and unvetted filtering disabled, but omissions remain possible |
-| `client_library` | `IClientCommService` reads the selected online desktop; a successful response determines this run's membership |
-| `licenses` | `steam-user` client licenses and PICS metadata supply types, account/shared entitlement evidence and audit differences; include DLC/tools and are not equivalent to a game library |
-| `license_file` | Account-bound JSON snapshot or legacy TXT; historical evidence, not current ownership |
+```bash
+python classify_games.py -i steam_live_test.json
+python classify_steam_games.py -i steam_live_test.json
+python steam_picker.py --serve
+```
 
-An isolated experimental `Player.ClientGetLastPlayedTimes` protocol adapter also attempts to fill missing playtime. Its failure never aborts membership collection; `client_playtime_status` records the outcome. Web API time wins; unavailable values remain `null`.
+Collection stores classifications inside its generation directory. These separate classification commands export the default CSV/Markdown and `steam_library_classified.json` used by the picker. The picker currently reads that flat classification file and does not follow collection pointers automatically. `--no-store` verifies membership and time collection but omits some store tags, reducing the detail available to classification rules.
 
-With a live client list, extra snapshot/API/license IDs appear only in audit differences, preventing historical records from resurrecting removed members. Without the client, successful sources are unioned as candidates and marked `degraded`. `--strict` requires the live desktop and all enabled membership sources to succeed, preserving existing output otherwise. It does not require store enrichment or experimental time enrichment to succeed. Total source failure, account mismatch and malformed input preserve the library too. Individual JSON files are atomically replaced; multiple output files are not one transaction.
+### Membership verification and candidates
 
-`status=ok` means source calls succeeded, not a universal completeness guarantee. Client filters, shared entitlements, free apps and profile counts have different scopes. The desktop must be online and third-party protocols can change.
+ClientComm `GetClientAppList` is a single RPC without AppOverview's streaming completion flags. The adapter requires valid JSON, an explicit apps array, a unique desktop session, matching machine/account in client_info, two identical AppID sets, and an unchanged session afterward. Audit retains state, stable error codes and completeness evidence.
 
-Store metadata is cached for 7 days in `.steam_cache`; override with `--cache-dir`, refresh with `--refresh-metadata`. Initial requests are spaced by 1.5 seconds. Store failures/delisting never remove membership. `--no-store` skips enrichment entirely.
+Repeated agreement is a guardrail, not proof against persistent server omissions: `protocol_completion_marker=false`, `semantic_completeness_proven=false`. More than 20% removed members versus the previous same-account live generation blocks publication. After verifying a real change, adjust `--max-unexplained-removal-ratio` (0..1). A different account must use a separate output path. Missing legacy identity metadata prevents baseline comparison and emits a warning.
 
-### Other modes and snapshots
+Only a validated client response determines current membership. Extra API/license/snapshot IDs stay in audit differences. Without it, the successful-source union is a **candidate** collection, saved separately as `steam_library.candidates.json` with its own generation pointer. API-only and offline modes have the same candidate semantics. `--allow-candidates` explicitly permits publishing candidates to the requested path. `--strict` rejects source degradation before committing; optional metadata/playtime failure does not invalidate successful membership providers.
+
+### Evidence and classification
+
+Type precedence: client > PICS > store/cache > historical snapshot > unknown. Unrecognized values become `unknown`, preserving `raw_app_types`. Names never establish a known game type. Package-level license evidence includes own/shared/free/expiring/package_ids; `shared_only`, `free_only`, `expiring_only` describe app-set differences, rather than overlapping entitlements. Missing package metadata is partial.
+
+Time precedence: Web API > ClientGetLastPlayedTimes > legacy client fields > legacy license fields > snapshot. Evidence retains values, source timestamps and conflicts rather than taking a maximum. States are unknown, known_zero, known_nonzero and historical. Historical values remain visibly labeled and are excluded from the current `playtime_known` count. Real protobuf decoding preserves absent versus explicit zero.
+
+Both Python entrypoints share loading, generation validation and type selection while retaining their different classification schemes:
+
+```bash
+python classify_games.py
+python classify_steam_games.py
+python classify_games.py --include-type game,demo
+python classify_games.py --include-type all
+python classify_games.py -i steam_library.candidates.json --allow-candidates --include-unknown
+```
+
+Known games are selected by default. Legacy include-demo/include-non-game/include-unknown switches remain supported; include-unknown-type is an alias. Explicit include-type takes precedence over legacy switches. Unselected rows remain in the source library.
+
+### Snapshots, modes and caching
 
 ```bash
 python steam_collect.py --source api --no-store
 python steam_collect.py --owned-only --no-store
 python steam_collect.py --source client --local-session --no-store
 python steam_collect.py --local-session --no-store --snapshot-out library.snapshot.json
-# Fully offline: no credentials/config read and no network
 python steam_collect.py --apps-file library.snapshot.json --no-api --no-store
 ```
 
-JSON snapshot format: `{"schema_version":2,"steam_id":"17-digit ID","generated_at":"ISO timestamp with timezone","apps":[{"appid":10,"name":"Name","app_type":"game"}]}`. Identity must match. Without a live desktop, snapshot output is explicitly degraded. Historical snapshot time is not treated as newly collected time.
+Snapshots retain schema version 2 and add run_id, producer commit/dirty state, identity, capture time, completeness, record count and apps checksum. Imports verify identity/count/hash while supporting old v2 and UTF-8/UTF-16 BOM AppID-name text. TXT identity/age cannot be verified. Freshness includes age, fresh within 24 hours and stale afterward; this does not infer expired ownership.
 
-Legacy TXT accepts `AppID Name` per line, UTF-8, UTF-8 BOM or UTF-16 BOM. It cannot verify account or age and emits a warning. Use only an export from your confirmed account. Login/error text and empty exports are rejected. `--apps-file` conflicts with `--owned-only`. API/TXT with `--no-store` may lack types, requiring `--include-unknown` for classification.
+Store cache TTLs: success 7 days, not_found 6 hours, access_denied 10 minutes, rate_limited/parse_error 60 seconds, transient_error 30 seconds. Refresh or relocate via refresh-metadata/cache-dir; no-store skips enrichment. Metadata failures never remove members.
 
-### Output fields
+Access tokens stay in the Node helper, which performs authenticated HTTP requests and returns whitelisted data. Refresh credentials use private pipes and approved OS keyrings; local-session does not persist them. Python relays configured HTTP(S) system proxy settings through the private pipe. Logs use stable codes rather than raw exceptions.
 
-| Field | Meaning |
-|-------|---------|
-| `appid`, `name`, `app_type` | Identity and type, including `unknown` |
-| `playtime_minutes`, `playtime_2weeks_minutes` | Minutes; unknown is `null`, confirmed zero is `0` |
-| `playtime_available` | Whether total playtime is available |
-| `last_played_at`, `last_played_iso` | Unix/UTC timestamps, nullable |
-| `sources`, `provenance` | Record and field-level sources |
-| `membership_source`, `membership_status` | Current desktop observation or unverified candidate completeness |
-| `ownership` | License evidence: `account_license`, `shared`, or `unknown` |
-| `genres`, `categories`, `is_multiplayer`, `is_controller` | Optional store information, `[]`/`null` if unavailable |
+ClientComm does not expose CAppOverview fields. `playtime_probe.json` lists unresolved IDs and explicitly reports `APP_OVERVIEW_NOT_EXPOSED_BY_CLIENTCOMM`; this is not a completed live AppOverview experiment. Windows QR persistence, macOS/Linux keyrings, family-sharing transitions and refunds still require real environment tests. Do not claim those scenarios from unit tests alone.
 
-Audit contains identity, timestamps, source statuses, type/time counts and AppID differences, but no tokens. Secrets travel through private child pipes, never command arguments or collection output. QR credentials persist only in the system keyring; local-session credentials are not saved.
+Audit includes type-grouped set differences, previous-run additions/removals, field provenance and cache status. Generation JSON artifacts/nonempty rows carry run_id; the manifest binds every file, including empty outputs, by hash.
 
-Offline tests:
+### Verified results (2026-09-12)
+
+A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 42 Python and 15 Node tests.
+
+This is one account's observed result, not an expected count for other accounts or proof that GetOwnedGames returns the full library. Unknown playtime, protocol-level completeness guarantees and the untested platform/account-change scenarios above remain open.
 
 ```bash
 python -m unittest discover -s tests -v
-node --test tests/test_steam_client.cjs
+node --test tests/test_steam_client.cjs tests/test_steam_web_sources.cjs
 ```
 
 ---

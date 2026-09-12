@@ -84,7 +84,7 @@ class CollectionTests(unittest.TestCase):
         self.assertEqual(by_id[10]["playtime_minutes"], 123)
         self.assertEqual(by_id[10]["playtime_2weeks_minutes"], 7)
         self.assertEqual(by_id[10]["last_played_iso"], "2023-11-14T22:13:20Z")
-        self.assertEqual(by_id[10]["sources"], ["web_api", "license_file"])
+        self.assertEqual(set(by_id[10]["sources"]), {"web_api", "license_file"})
         self.assertTrue(by_id[40]["playtime_available"])
         self.assertFalse(by_id[20]["playtime_available"])
         self.assertIsNone(by_id[30]["last_played_at"])
@@ -98,11 +98,11 @@ class CollectionTests(unittest.TestCase):
         self.assertEqual(len(games), 3)
 
     @patch("steam_collect.time.sleep")
-    @patch("steam_collect.get_store_details", return_value=None)
+    @patch("steam_collect.get_store_result", return_value={"status": "not_found", "details": None})
     @patch("steam_collect.load_config", side_effect=AssertionError("must not read credentials"))
     def test_no_api_and_unavailable_store_keep_license_entries(self, config, store, sleep):
         with contextlib.redirect_stdout(io.StringIO()):
-            games = steam_collect.collect(apps_file=self.write_apps(), use_api=False)
+            games = steam_collect.collect(apps_file=self.write_apps(), use_api=False, cache_dir=Path(self.temp.name)/"cache")
         self.assertEqual([g["appid"] for g in games], [10, 20, 30])
         self.assertTrue(all(g["genres"] == [] for g in games))
 
@@ -117,10 +117,10 @@ class CollectionTests(unittest.TestCase):
         library = Path(self.temp.name) / "library.json"
         csv = Path(self.temp.name) / "classified.csv"
         md = Path(self.temp.name) / "classified.md"
-        result = self.run_cli("steam_collect.py", "--apps-file", self.write_apps(), "--no-api", "--no-store", "-o", library)
+        result = self.run_cli("steam_collect.py", "--apps-file", self.write_apps(), "--no-api", "--no-store", "--allow-candidates", "-o", library)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(json.loads(library.read_text(encoding="utf-8"))), 3)
-        result = self.run_cli("classify_games.py", "-i", library, "--csv", csv, "--md", md, "--include-unknown")
+        result = self.run_cli("classify_games.py", "-i", library, "--csv", csv, "--md", md, "--include-unknown", "--allow-candidates")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("下架游戏", csv.read_text(encoding="utf-8-sig"))
         self.assertIn("未游玩免费游戏", md.read_text(encoding="utf-8"))

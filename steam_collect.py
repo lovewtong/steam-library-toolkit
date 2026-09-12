@@ -17,7 +17,7 @@ import socket
 
 from steam_sources import (AccountMismatchError, SourceResult, app_type, atomic_json,
                            read_snapshot, reconcile, utc_now, validate_records)
-from steam_auth import collect_client
+from steam_auth import AuthError, collect_client
 
 try:
     import requests
@@ -85,7 +85,7 @@ def merge_games(api_games: list[dict], licensed_apps: list[dict]) -> list[dict]:
     return reconcile([SourceResult("web_api", api_games), SourceResult("license_file", licensed_apps)])[0]
 
 
-def get_store_details(appid: int):
+def get_store_result(appid: int):
     """
     获取商店详情（可选）：类型、分类（含多人/手柄等）。
     使用公开商店 API，有频率限制，需控制请求间隔。
@@ -94,16 +94,22 @@ def get_store_details(appid: int):
     params = {"appids": appid, "l": "schinese"}
     try:
         resp = requests.get(url, params=params, timeout=10)
-        resp.raise_for_status()
+        if resp.status_code != 200:
+            state = "rate_limited" if resp.status_code == 429 else "access_denied" if resp.status_code in (401, 403) else "not_found" if resp.status_code == 404 else "transient_error"
+            return {"status": state, "details": None}
         data = resp.json()
-    except (requests.RequestException, ValueError):
-        return None
+    except requests.RequestException:
+        return {"status": "transient_error", "details": None}
+    except ValueError:
+        return {"status": "parse_error", "details": None}
     entry = data.get(str(appid)) if isinstance(data, dict) else None
-    if not isinstance(entry, dict) or not entry.get("success"):
-        return None
+    if not isinstance(entry, dict):
+        return {"status": "parse_error", "details": None}
+    if not entry.get("success"):
+        return {"status": "not_found", "details": None}
     g = entry.get("data")
     if not isinstance(g, dict):
-        return None
+        return {"status": "parse_error", "details": None}
     def descriptions(key):
         values = g.get(key, [])
         if not isinstance(values, list):
@@ -119,63 +125,47 @@ def get_store_details(appid: int):
     is_multiplayer = any(k in c for c in categories for k in multi_keywords)
     is_controller = any(k in c for c in categories for k in ctrl_keywords)
 
-    return {
+    return {"status": "success", "details": {
         "app_type": app_type(g.get("type")),
         "genres": genres,
         "categories": categories,
         "is_multiplayer": is_multiplayer,
         "is_controller": is_controller,
-    }
+    }}
 
 
-def client_library(access_token, machine):
-    """Read a specific online desktop, never silently choose another user's device."""
-    def call(method, **params):
-        response = requests.get(
-            f"https://api.steampowered.com/IClientCommService/{method}/v1/",
-            params={"access_token": access_token, **params}, timeout=35, allow_redirects=False)
-        if response.status_code != 200 or response.headers.get("x-eresult", "1") != "1":
-            raise RuntimeError("客户端清单接口返回失败")
-        data = response.json()
-        body = data.get("response") if isinstance(data, dict) else None
-        if not isinstance(body, dict):
-            raise ValueError("客户端清单响应无效")
-        return body
-    sessions = call("GetAllClientLogonInfo").get("sessions", [])
-    if not isinstance(sessions, list) or any(not isinstance(s, dict) for s in sessions):
-        raise ValueError("客户端会话列表无效")
-    matches = [s for s in sessions if isinstance(s.get("machine_name"), str)
-               and s["machine_name"].casefold() == machine.casefold()]
-    if len(matches) != 1:
-        raise RuntimeError("没有唯一匹配的在线 Steam 客户端；请启动 Steam，必要时指定 --machine")
-    data = call("GetClientAppList", client_instanceid=matches[0]["client_instanceid"],
-                fields="games", include_client_info="true", language="schinese")
-    if not isinstance(data.get("client_info"), dict):
-        raise ValueError("客户端没有确认清单响应，不能视为空库")
-    apps = validate_records(data.get("apps", []))
-    records = [{"appid": a["appid"], "name": a.get("app", ""), "app_type": app_type(a.get("app_type"))}
-               for a in apps]
-    return validate_records(records)
+def get_store_details(appid):
+    return get_store_result(appid)["details"]
 
 
-def cached_store_details(appid, cache_dir, refresh=False):
+def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None):
     path = Path(cache_dir) / f"{appid}.json"
+    ttl = {"success": 7 * 86400, "not_found": 21600, "access_denied": 600,
+           "rate_limited": 60, "parse_error": 60, "transient_error": 30}
+    cache = None
     if not refresh and path.exists():
         try:
-            cache = json.loads(path.read_text(encoding="utf-8"))
-            if (0 <= time.time() - cache["fetched_at"] < 7 * 86400
-                    and valid_store_details(cache["details"])):
-                return cache["details"]
-        except (OSError, ValueError, KeyError, TypeError):
+            cached = json.loads(path.read_text(encoding="utf-8"))
+            status = cached.get("status", "success")
+            if (status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
+                    and (status != "success" or valid_store_details(cached["details"]))):
+                cache = cached
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
             pass
-    details = get_store_details(appid)
-    time.sleep(STORE_REQUEST_DELAY)
-    if details:
+    hit = cache is not None
+    if cache is None:
+        cache = {"schema_version": 2, "fetched_at": time.time(), **get_store_result(appid)}
+        time.sleep(STORE_REQUEST_DELAY)
         try:
-            atomic_json(path, {"fetched_at": time.time(), "details": details})
+            atomic_json(path, cache)
         except OSError:
-            pass  # Optional cache persistence must not break collection.
-    return details
+            if audit_meta is not None:
+                audit_meta["cache_write_errors"] = audit_meta.get("cache_write_errors", 0) + 1
+    if audit_meta is not None:
+        key = cache["status"]
+        audit_meta[key] = audit_meta.get(key, 0) + 1
+        audit_meta["cache_hits"] = audit_meta.get("cache_hits", 0) + int(hit)
+    return cache.get("details") if cache["status"] == "success" else None
 
 
 def valid_store_details(details):
@@ -202,80 +192,110 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
     if snapshot and not account:
         account = snapshot.steam_id
     results = []
-    access_token = None
     native = None
     if use_client:
         try:
             native = collect_client(account, login=login, local_session=local_session,
-                                    steam_path=config.get("steam_path"), machine=machine)
-            account = native["steam_id"]
-            access_token = native["access_token"]
-            licenses = validate_records(native.get("licenses", []))
-            playtimes = {r["appid"]: r for r in validate_records(native.get("playtimes", []))}
-            for record in licenses:
-                if record["appid"] in playtimes:
-                    record.update({k: v for k, v in playtimes[record["appid"]].items() if k != "appid"})
-            results.append(SourceResult("licenses", licenses, status=native.get("license_status", "failed"),
-                                        steam_id=account, scope="account_and_shared_entitlements"))
-            try:
-                records = client_library(access_token, machine or socket.gethostname())
-                for record in records:
-                    record.update({k: v for k, v in playtimes.get(record["appid"], {}).items() if k != "appid"})
-                results.append(SourceResult("client_library", records, steam_id=account, scope="current_desktop"))
-            except (requests.RequestException, ValueError, RuntimeError, KeyError):
-                results.append(SourceResult("client_library", status="failed", error="在线客户端清单不可用", steam_id=account))
+                                    steam_path=config.get("steam_path"), machine=machine,
+                                    use_api=use_api, expanded=include_non_inventory)
+            identity = native.get("steam_id")
+            if not isinstance(identity, str) or len(identity) != 17 or not identity.isdigit():
+                raise AccountMismatchError("ACCOUNT_MISMATCH：helper 返回无效账号")
+            if account and identity != account:
+                raise AccountMismatchError("ACCOUNT_MISMATCH：认证账号与采集账号不一致")
+            account = identity
+            def native_source(name, payload, scope):
+                if not isinstance(payload, dict):
+                    payload = {"state": "invalid", "error_code": "HELPER_RESPONSE_INVALID"}
+                state = payload.get("state", "invalid")
+                if state == "account_mismatch" or payload.get("error_code") == "ACCOUNT_MISMATCH":
+                    raise AccountMismatchError("ACCOUNT_MISMATCH：客户端返回账号不一致")
+                try:
+                    records = validate_records(payload.get("records", [])) if state == "complete" else []
+                except ValueError:
+                    state, records = "invalid", []
+                return SourceResult(name, records, status="ok" if state == "complete" else "failed",
+                                    steam_id=account, scope=scope, state=state,
+                                    error_code=payload.get("error_code"), completeness=payload.get("completeness", {}))
+            results.append(native_source("licenses", {"records": native.get("licenses", []),
+                           "state": "complete" if native.get("license_status") == "ok" else "partial" if native.get("license_status") == "partial" else "unavailable",
+                           "error_code": None if native.get("license_status") == "ok" else "PICS_UNAVAILABLE"}, "account_and_shared_entitlements"))
+            results.append(native_source("client_last_played_times", {"records": native.get("playtimes", []),
+                           "state": "complete" if native.get("playtime_status") == "ok" else "unavailable"}, "personal_playtime"))
+            results.append(native_source("client_library", native.get("client"), "current_desktop"))
+            if use_api:
+                results.append(native_source("web_api", native.get("api"), "api_visible"))
         except AccountMismatchError:
             raise
         except (OSError, ValueError, RuntimeError) as exc:
-            results.append(SourceResult("client_library", status="failed", error=str(exc)))
+            # AuthError messages are authored by this project, never raw network exceptions.
+            if isinstance(exc, AuthError):
+                print(f"Steam 客户端来源失败：{exc}", flush=True)
+            results.append(SourceResult("client_library", status="failed", error_code=getattr(exc, "code", "CLIENT_AUTH_UNAVAILABLE"),
+                                        error=str(exc) if isinstance(exc, AuthError) else None, steam_id=account))
     if snapshot:
         if account and snapshot.steam_id and snapshot.steam_id != account:
             raise AccountMismatchError("快照账号与认证账号不一致")
         results.append(snapshot)
-    if use_api:
+    if use_api and not any(r.source == "web_api" for r in results):
         try:
             if not account:
                 raise ValueError("未配置 Steam ID；请填写 config_local.json 或使用 --account / --login")
             records = get_owned_games(config.get("api_key", ""), account,
-                                      include_non_inventory, access_token=access_token)
+                                      include_non_inventory)
             results.append(SourceResult("web_api", records, steam_id=account, scope="api_visible"))
         except (requests.RequestException, ValueError, RuntimeError):
             # Exception URLs can contain credentials. Only fixed diagnostics reach disk/stdout.
-            results.append(SourceResult("web_api", status="failed", error="Web API 不可用或未提供游戏详情", steam_id=account))
+            results.append(SourceResult("web_api", status="failed", error_code="WEB_API_FAILED", error="Web API 不可用或未提供游戏详情", steam_id=account))
     raw, report = reconcile(results, account)
     if strict and report["status"] != "ok":
-        raise RuntimeError("严格模式要求实时客户端与所有启用来源成功；本次未覆盖原输出")
-    # License-only fallback keeps candidates, with explicit degraded status. Classification filters types.
+        codes = ", ".join(r.error_code or r.source + ":" + r.state for r in results if r.state != "complete")
+        raise RuntimeError(f"STRICT_SOURCE_FAILED：严格模式要求实时客户端与所有启用来源成功 [{codes}]；本次未覆盖原输出")
+    from steam_runs import new_run_metadata
+    report.update(new_run_metadata())
+    # License-only fallback remains explicitly separate from current membership.
     library = []
+    report["metadata"] = {"enabled": fetch_store}
     for g in raw:
         if fetch_store and len(library) % 25 == 0:
             print(f"读取商店元数据：{len(library)}/{len(raw)}", flush=True)
         timestamp = g.get("rtime_last_played")
         row = {key: value for key, value in g.items() if key not in ("playtime_forever", "playtime_2weeks", "rtime_last_played")}
-        row.update({"playtime_minutes": g.get("playtime_forever"),
+        row.update({"schema_version": 2, "run_id": report["run_id"],
+                    "playtime": {**g["playtime_evidence"]["playtime_forever"], "minutes": g.get("playtime_forever")},
+                    "playtime_minutes": g.get("playtime_forever"),
                     "playtime_2weeks_minutes": g.get("playtime_2weeks"),
                     "playtime_available": g.get("playtime_forever") is not None,
                     "last_played_at": timestamp,
                     "last_played_iso": datetime.fromtimestamp(timestamp, timezone.utc).isoformat().replace("+00:00", "Z") if timestamp else None,
                     "genres": [], "categories": [], "is_multiplayer": None, "is_controller": None})
         if fetch_store:
-            details = cached_store_details(g["appid"], cache_dir or OUTPUT_FILE.parent / ".steam_cache", refresh_metadata)
+            details = cached_store_details(g["appid"], cache_dir or OUTPUT_FILE.parent / ".steam_cache", refresh_metadata, report["metadata"])
             if details:
                 row.update({k: details[k] for k in ("genres", "categories", "is_multiplayer", "is_controller")})
                 row["provenance"]["store_metadata"] = "store_cache"
-                if row["app_type"] == "unknown" and details.get("app_type"):
-                    row["app_type"] = details["app_type"]
+                if row["provenance"].get("app_type") in (None, "license_file") and app_type(details.get("app_type")) != "unknown":
+                    row["app_type"] = app_type(details["app_type"])
                     row["provenance"]["app_type"] = "store_cache"
         library.append(row)
     report["summary"]["types"] = dict(Counter(r["app_type"] for r in library))
     if native:
         report["client_playtime_status"] = native.get("playtime_status")
-    if snapshot_output:
-        client = next((r for r in results if r.source == "client_library" and r.status == "ok"), None)
-        if not client:
-            raise RuntimeError("只有成功读取实时客户端清单才能导出新的客户端快照")
-        atomic_json(snapshot_output, {"schema_version": 2, "steam_id": account, "generated_at": client.fetched_at,
-                                      "source": "client_library", "apps": client.records})
+    client = next((r for r in results if r.authoritative), None)
+    if snapshot_output and not client:
+        raise RuntimeError("SNAPSHOT_SOURCE_UNAVAILABLE：只有经过核验的客户端清单才能导出快照")
+    if client:
+        apps = [{"appid": r["appid"], "name": r["name"], "app_type": r["app_type"],
+                 **{k: r.get(k) for k in ("playtime_forever", "playtime_2weeks", "rtime_last_played")
+                    if r["playtime_evidence"][k]["state"] != "historical"}} for r in raw]
+        from steam_sources import records_hash
+        report["snapshot"] = {"schema_version": 2, "run_id": report["run_id"], "producer": report["producer"],
+                              "steam_id": account, "generated_at": client.fetched_at, "source": "client_library",
+                              "membership_semantics": "client_library_membership", "complete": True,
+                              "completeness": client.completeness, "record_count": len(apps),
+                              "apps_sha256": records_hash(apps), "apps": apps}
+    report["overview_probe"] = {**(native.get("overview_probe", {}) if native else {"state": "unavailable"}),
+                                "unresolved_appids": [r["appid"] for r in library if r["playtime"]["state"] == "unknown"]}
     if audit is not None:
         audit.update(report)
     return library
@@ -296,12 +316,17 @@ def main():
     parser.add_argument("--account", help="SteamID64；显式覆盖配置账号")
     parser.add_argument("--machine", help="客户端机器名；默认当前电脑")
     parser.add_argument("--strict", action="store_true", help="来源降级时失败，保留原输出")
+    parser.add_argument("--allow-candidates", action="store_true", help="允许将候选集合导出到指定路径；默认另存 .candidates.json")
+    parser.add_argument("--max-unexplained-removal-ratio", type=float, default=.20,
+                        help="与同账号上次实时结果比较，超过此缩减比例不发布；范围 0..1")
     parser.add_argument("--snapshot-out", type=Path, help="导出带账号、时间、类型的客户端快照")
     parser.add_argument("--refresh-metadata", action="store_true")
     parser.add_argument("--cache-dir", type=Path)
     parser.add_argument("-o", "--output", type=Path, default=OUTPUT_FILE)
     parser.add_argument("--audit", type=Path, help="默认 <output>.audit.json")
     args = parser.parse_args()
+    if not 0 <= args.max_unexplained_removal_ratio <= 1:
+        parser.error("缩减比例必须在 0..1 之间")
     if args.account and (not args.account.isdigit() or len(args.account) != 17):
         parser.error("--account 必须为 17 位 SteamID64")
     use_api = args.source != "client" and not args.no_api
@@ -322,6 +347,8 @@ def main():
         paths.append(args.snapshot_out.resolve())
     if len(set(paths)) != len(paths):
         parser.error("库、快照与审计输出路径必须不同")
+    if any(path.name.endswith(".current.json") for path in paths):
+        parser.error(".current.json 是运行指针保留路径，不能用作兼容输出")
     try:
         library = collect(not args.no_store, not args.owned_only, args.apps_file, use_api,
                           use_client=use_client, login=args.login, local_session=args.local_session,
@@ -329,18 +356,28 @@ def main():
                           cache_dir=args.cache_dir, refresh_metadata=args.refresh_metadata, snapshot_output=args.snapshot_out)
         if not library and report["membership"] != "client_snapshot":
             raise RuntimeError("未确认空库，保留原输出")
-        atomic_json(audit_path, report)
-        atomic_json(args.output, library)
+        from steam_runs import check_previous, publish_run
+        check_previous(args.output, library, report, args.max_unexplained_removal_ratio)
+        if report["membership"] != "client_snapshot" and not args.allow_candidates:
+            check_previous(args.output.with_suffix(".candidates.json"), library, report, args.max_unexplained_removal_ratio)
+        if report["status"] == "suspicious_change":
+            raise RuntimeError("SUSPICIOUS_REMOVAL：库成员缩减超过阈值，保留当前运行；核实后可调整 --max-unexplained-removal-ratio")
+        published_output, pointer, export_warnings = publish_run(args.output, library, report,
+            audit_export=audit_path, snapshot_export=args.snapshot_out, allow_candidates=args.allow_candidates)
+    except KeyboardInterrupt:
+        parser.exit(130, "采集已由用户中断。\n")
     except (OSError, ValueError, RuntimeError, requests.RequestException) as exc:
         message = "Steam 网络请求失败" if isinstance(exc, requests.RequestException) else str(exc)
         parser.exit(1, f"采集失败：{message}\n")
     print(f"采集记录：{len(library)}；状态：{report['status']}")
     print("应用类型：" + "，".join(f"{kind}: {count}" for kind, count in report["summary"]["types"].items()))
     for name, result in report["sources"].items():
-        print(f"  {name}: {result['status']} ({result['count']})")
+        print(f"  {name}: {result['state']} ({result['count']})" + (f" [{result['error_code']}]" if result.get('error_code') else ""))
     for warning in report["warnings"]:
         print("提示：" + warning)
-    print(f"输出：{args.output}\n审计：{audit_path}")
+    for warning in export_warnings:
+        print("提示：" + warning)
+    print(f"输出：{published_output}\n运行指针：{pointer}")
 
 
 if __name__ == "__main__":
