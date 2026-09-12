@@ -159,7 +159,7 @@ Audit includes type-grouped set differences, previous-run additions/removals, fi
 
 ### Verified results (2026-09-12)
 
-A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 62 Python and 17 Node tests.
+A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 63 Python and 17 Node tests.
 
 This is one account's observed result, not an expected count for other accounts or proof that GetOwnedGames returns the full library. Unknown playtime, protocol-level completeness guarantees and the untested platform/account-change scenarios above remain open.
 
@@ -225,5 +225,5 @@ Notes:
 - Local JSON Schemas validate v2 arrays, audit and new snapshots before publication. CSV retains the old display column and adds nullable numeric playtime_minutes and playtime_status.
 - Missing/malformed store categories preserve null capabilities; an explicit empty list means false. Old caches are invalidated. Broad Action/Indie classification and whitespace filtering are fixed.
 - The picker binds only 127.0.0.1 and serves only `/`, `/index.html`, `/api/library`, `/api/run`. No project directory listing, config, Git or snapshot downloads. `--port` and `--no-browser` control startup.
-- `npm test` and the existing unittest suite run offline. CI now defines Windows/Linux/macOS jobs, which do not verify real Steam authentication. requirements-tested.txt pins tested direct dependencies, not every transitive dependency. `python tools/check_secrets.py` scans source patterns, not Git history.
+- `npm test` and the existing unittest suite run offline. Windows/Linux/macOS CI jobs have passed; they do not verify real Steam authentication. requirements-tested.txt pins tested direct dependencies, not every transitive dependency. `python tools/check_secrets.py` scans source patterns, not Git history.
 - Families, refunds, cross-platform live QR, AppOverview completeness and the remaining unknown times are still unverified/research tasks. No account entitlement changes are automated. See [RELEASE_NOTES.md](RELEASE_NOTES.md).

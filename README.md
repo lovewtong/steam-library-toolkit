@@ -203,7 +203,7 @@ CLI 从认证/采集开始到检查与发布结束持有操作系统文件锁，
 
 ### 已验证结果（2026-09-12）
 
-Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。报告落地版本 Python 62 项、Node 17 项回归测试通过。
+Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。报告落地版本 Python 63 项、Node 17 项回归测试通过。
 
 这些数字是一个账号的实测样本，不是其他账号的预期数量，也不代表 `GetOwnedGames` 已能返回全集。已验证的是本次客户端补充采集链路；未知时长、协议层全集证明及上面列出的跨平台/账号变化场景仍未解决或未验证。
 
