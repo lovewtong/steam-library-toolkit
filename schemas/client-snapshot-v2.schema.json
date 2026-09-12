@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "required": ["schema_version", "steam_id", "run_id", "generated_at", "complete", "record_count", "apps_sha256", "apps"],
+  "properties": {
+    "schema_version": {"const": 2}, "steam_id": {"type": "string", "pattern": "^[0-9]{17}$"},
+    "run_id": {"type": "string", "minLength": 1}, "generated_at": {"type": "string"},
+    "complete": {"const": true}, "record_count": {"type": "integer", "minimum": 0},
+    "apps_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "apps": {"type": "array", "items": {"type": "object", "required": ["appid", "name", "app_type"], "properties": {
+      "appid": {"type": "integer", "minimum": 1, "maximum": 4294967295}, "name": {"type": "string"}, "app_type": {"type": "string"},
+      "playtime_forever": {"type": ["integer", "null"], "minimum": 0}}}}
+  }
+}

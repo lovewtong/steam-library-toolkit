@@ -10,7 +10,7 @@
 
 | 模块 | 说明 |
 |------|------|
-| **游戏库采集** | `steam_collect.py`：Steam API 拉取拥有游戏 + 可选商店 API 补充类型/标签 → `steam_library.json` |
+| **游戏库采集** | `steam_collect.py`：核验在线客户端清单，结合 Web API、许可与时长证据，可选商店元数据补充；通过运行指针发布并保留来源审计，降级结果独立标记为候选 |
 | **规则+已知列表分类** | `classify_steam_games.py`：基于 **KNOWN 手写字典**（约 200+ 款）+ **关键词/类型规则**，生成五维分类 → `steam_library_classified.json` |
 | **本地按分类使用** | `steam_picker.py`：命令行按维度筛选、`--serve` 网页选游戏、`steam://rungameid/` 启动；`run_steam_picker.bat` 一键打开选游戏页 |
 | **导出清单** | `steam_picker.py --export-collections` → `steam_collections_guide.md`（按分类分组的游戏清单，可手动在 Steam 里建收藏） |
@@ -21,6 +21,8 @@
 1）手写 KNOWN 表（精准匹配游戏名）；  
 2）`steam_library.json` 里的 `genres` 等字段做关键词规则推断。  
 未在 KNOWN 里、且规则覆盖不到的游戏，会得到较泛的默认值（如「多种元素」「风格各异」「中」等）。
+
+2026-09-12 已通过 Windows 本机登录态严格模式实测：客户端 388 条、API 358 条，补回 30 条，默认分类选择 377 个 game。361 条有明确时长，27 条仍未知；这只验证本次账号的采集链路，不能证明任何账号的绝对全集。两个分类入口已统一类型选择与运行校验；picker 已支持通过 `--input 文件名` 核验并读取对应 current 运行，刷新页面可跟随新结果；默认无指针时才兼容旧平铺分类。详见 [README.md](README.md)。
 
 ---
 

@@ -275,7 +275,7 @@ def find_known(name):
     if not candidates:
         return None
     candidates.sort(key=lambda x: -len(x[0]))
-    return candidates[0][1].copy()
+    return {key: value.strip() for key, value in candidates[0][1].items()}
 
 def primary_from_genres(genres):
     g = " ".join(genres).lower()
@@ -374,12 +374,23 @@ def classify_one(game):
     }
 
 def main():
-    with open(INPUT_FILE, "r", encoding="utf-8") as f:
-        games = json.load(f)
-    out = [classify_one(g) for g in games]
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    import argparse
+    from pathlib import Path
+    from steam_classification import add_selection_arguments, load_selected
+    parser = argparse.ArgumentParser(description="按五维规则分类，默认仅选择明确的 game 类型")
+    base = Path(__file__).resolve().parent
+    parser.add_argument("-i", "--input", type=Path, default=base / INPUT_FILE)
+    parser.add_argument("-o", "--output", type=Path, default=base / OUTPUT_FILE)
+    add_selection_arguments(parser)
+    args = parser.parse_args()
+    try:
+        games, selected = load_selected(args)
+    except (OSError, ValueError) as exc:
+        parser.exit(1, f"分类失败：{exc}\n")
+    out = [{**classify_one(g), "run_id": g.get("run_id")} for g in selected]
+    with open(args.output, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    print(f"已分类 {len(out)} 款游戏，结果已写入 {OUTPUT_FILE}")
+    print(f"采集记录 {len(games)} 条，已分类 {len(out)} 条，结果已写入 {args.output}")
 
 if __name__ == "__main__":
     main()

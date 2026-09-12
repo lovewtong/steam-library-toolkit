@@ -12,7 +12,11 @@ try {
   process.exit(1);
 }
 
-const STEAM_ID_32 = '886001714';
+const STEAM_ID_32 = String(process.env.STEAM_ID_32 || '').trim();
+if (!/^[1-9]\d{0,9}$/.test(STEAM_ID_32) || BigInt(STEAM_ID_32) > 4294967295n) {
+  console.error('请显式设置 STEAM_ID_32 环境变量为目标账号的 AccountID（32 位十进制值）；未执行收藏写入。');
+  process.exit(1);
+}
 const SCRIPT_DIR = __dirname;
 const INPUT_JSON = path.join(SCRIPT_DIR, 'steam_collections_result.json');
 

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Steam library v2 (compatible array)",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["appid", "name", "app_type", "run_id", "membership", "playtime_evidence"],
+    "properties": {
+      "appid": {"type": "integer", "minimum": 1, "maximum": 4294967295},
+      "name": {"type": "string"},
+      "app_type": {"type": "string"},
+      "run_id": {"type": "string", "minLength": 1},
+      "membership": {"type": "object", "required": ["state", "source"], "properties": {
+        "state": {"enum": ["present", "candidate"]}, "source": {"type": "string"}}},
+      "playtime_minutes": {"type": ["integer", "null"], "minimum": 0},
+      "playtime_evidence": {"type": "object", "required": ["playtime_forever", "playtime_2weeks", "rtime_last_played"],
+        "properties": {"playtime_forever": {"$ref": "#/$defs/time"}, "playtime_2weeks": {"$ref": "#/$defs/time"}, "rtime_last_played": {"$ref": "#/$defs/time"}}},
+      "is_multiplayer": {"type": ["boolean", "null"]},
+      "is_controller": {"type": ["boolean", "null"]}
+    }
+  },
+  "$defs": {
+    "time": {
+      "type": "object", "required": ["value", "state"],
+      "properties": {"value": {"type": ["integer", "null"], "minimum": 0}, "state": {"enum": ["unknown", "known_zero", "known_nonzero", "historical"]}},
+      "allOf": [
+        {"if": {"properties": {"state": {"const": "unknown"}}}, "then": {"properties": {"value": {"type": "null"}}}},
+        {"if": {"properties": {"state": {"const": "known_zero"}}}, "then": {"properties": {"value": {"const": 0}}}},
+        {"if": {"properties": {"state": {"const": "known_nonzero"}}}, "then": {"properties": {"value": {"type": "integer", "minimum": 1}}}},
+        {"if": {"properties": {"state": {"const": "historical"}}}, "then": {"properties": {"value": {"type": "integer", "minimum": 0}}}}
+      ]
+    }
+  }
+}

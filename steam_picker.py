@@ -13,13 +13,9 @@ import os
 CLASSIFIED_FILE = "steam_library_classified.json"
 STEAM_URL_PREFIX = "steam://rungameid/"
 
-def load_classified():
-    path = os.path.join(os.path.dirname(__file__), CLASSIFIED_FILE)
-    if not os.path.exists(path):
-        print(f"未找到 {CLASSIFIED_FILE}，请先运行 classify_steam_games.py 生成分类结果。")
-        sys.exit(1)
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+def load_classified(source=None, allow_candidates=False):
+    from steam_picker_server import PickerLibrary
+    return PickerLibrary(source, allow_candidates).read()["games"]
 
 def filter_games(games, primary=None, sub=None, vibe=None, intensity=None, name_contains=None):
     """按维度筛选，空表示不限制。"""
@@ -50,11 +46,20 @@ def main():
     parser.add_argument("--name", "-n", type=str, help="游戏名称包含")
     parser.add_argument("--open", "-o", type=int, metavar="INDEX", help="用 Steam 启动筛选结果中的第 N 个（从 0 开始）")
     parser.add_argument("--serve", action="store_true", help="启动本地选游戏页面（浏览器 + 简单 HTTP 服务）")
+    parser.add_argument("--input", help="采集库或 .current.json 指针；默认 steam_library.json")
+    parser.add_argument("--allow-candidates", action="store_true", help="显式允许查看候选库")
+    parser.add_argument("--port", type=int, default=8765, help="仅监听 127.0.0.1")
+    parser.add_argument("--no-browser", action="store_true", help="启动服务时不自动打开浏览器")
     parser.add_argument("--list", "-l", action="store_true", help="只列出筛选结果，不交互")
     parser.add_argument("--export-collections", action="store_true", help="导出「收藏清单」MD，便于在 Steam 里建同名收藏并对照添加")
     args = parser.parse_args()
 
-    games = load_classified()
+    if not 0 <= args.port <= 65535:
+        parser.error("--port 必须在 0..65535 范围内")
+    try:
+        games = load_classified(args.input, args.allow_candidates)
+    except (OSError, ValueError, KeyError, TypeError):
+        parser.exit(1, "无法读取游戏库：请检查采集结果、运行校验和 --input；候选库需 --allow-candidates。\n")
     filtered = filter_games(
         games,
         primary=args.primary,
@@ -109,23 +114,18 @@ def main():
     if args.serve:
         # 启动内置 HTTP 服务 + 打开浏览器
         try:
-            import http.server
-            import threading
-            server_dir = os.path.dirname(os.path.abspath(__file__))
-            os.chdir(server_dir)
-            handler = http.server.SimpleHTTPRequestHandler
-            server = http.server.HTTPServer(("", 8765), handler)
-            url = "http://localhost:8765/steam_picker.html"
-            def run():
+            from steam_picker_server import PickerLibrary, create_server
+            with create_server(PickerLibrary(args.input, args.allow_candidates), args.port) as server:
+                url = f"http://127.0.0.1:{server.server_port}/"
+                if not args.no_browser:
+                    webbrowser.open(url)
+                print("选游戏页面地址:", url, flush=True)
+                print("刷新页面会读取所选采集目标的最新运行；Ctrl+C 可停止服务。", flush=True)
                 server.serve_forever()
-            t = threading.Thread(target=run, daemon=True)
-            t.start()
-            webbrowser.open(url)
-            print("选游戏页面已打开，地址:", url)
-            print("关闭本窗口或 Ctrl+C 可停止服务。")
-            server.serve_forever()
         except KeyboardInterrupt:
             pass
+        except OSError:
+            parser.exit(1, "网页服务启动失败：端口可能被占用，请使用 --port 指定其他端口。\n")
         return
 
     if args.open is not None:
