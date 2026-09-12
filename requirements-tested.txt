@@ -1,0 +1,6 @@
+# Direct dependency versions used for the 2026-09 Windows validation.
+# This is not a platform-independent lock of every transitive dependency.
+requests==2.34.2
+keyring==25.7.0
+vdf==3.4
+jsonschema==4.26.0

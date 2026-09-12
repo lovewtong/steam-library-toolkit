@@ -8,12 +8,14 @@ import os
 from pathlib import Path
 import subprocess
 import uuid
+import platform
 
 from steam_sources import AccountMismatchError, atomic_json, select_for_classification, utc_now
 
 
 def new_run_metadata():
     root = Path(__file__).resolve().parent
+    from steam_diagnostics import environment_report
     try:
         command = ["git", "-c", f"safe.directory={root.as_posix()}"]
         commit_result = subprocess.run(command + ["rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, timeout=5)
@@ -22,7 +24,32 @@ def new_run_metadata():
         dirty = bool(status_result.stdout) if status_result.returncode == 0 else None
     except (OSError, subprocess.TimeoutExpired):
         commit, dirty = None, None
-    return {"run_id": uuid.uuid4().hex, "producer": {"git_commit": commit, "dirty": dirty}}
+    return {"run_id": uuid.uuid4().hex, "started_at": utc_now(),
+            "producer": {"git_commit": commit, "dirty": dirty},
+            "environment": environment_report()}
+
+
+def save_failed_run(output, audit, code):
+    """Persist only allowlisted diagnostics. Never serialize an exception or credentials."""
+    import re
+    if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,63}", code):
+        code = "COLLECTION_FAILED"
+    metadata = new_run_metadata()
+    failed = {"schema_version": 1, **metadata, "status": "failed", "error_code": code,
+              "finished_at": utc_now(), "sources": {}}
+    for name, source in audit.get("sources", {}).items():
+        if name not in {"client_library", "licenses", "web_api", "license_file", "client_last_played_times"}:
+            continue
+        state = source.get("state")
+        error = source.get("error_code")
+        failed["sources"][name] = {
+            "state": state if state in {"complete", "partial", "unavailable", "invalid", "account_mismatch"} else "unavailable",
+            "count": source.get("count") if type(source.get("count")) is int else 0,
+            "error_code": error if isinstance(error, str) and re.fullmatch(r"[A-Z][A-Z0-9_]{1,63}", error) else None}
+    output = Path(output)
+    path = output.parent / ("." + output.stem + ".failed-runs") / metadata["run_id"] / "diagnostic.json"
+    atomic_json(path, failed)
+    return path
 
 
 def manifest_path(output):
@@ -60,6 +87,8 @@ def load_library(output):
     rows = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(rows, list):
         raise ValueError("LIBRARY_INVALID：游戏库必须为数组")
+    if any(not isinstance(r, dict) or type(r.get("appid")) is not int or not 0 < r["appid"] <= 0xffffffff for r in rows):
+        raise ValueError("LIBRARY_INVALID：游戏库包含无效记录")
     runs = {r.get("run_id") for r in rows if isinstance(r, dict) and r.get("run_id")}
     if len(runs) > 1:
         raise ValueError("GENERATION_MISMATCH：条目来自不同运行")
@@ -110,6 +139,8 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     directory = output.parent / ("." + output.stem + ".runs") / run_id
     directory.mkdir(parents=True, exist_ok=False)
     snapshot = audit.pop("snapshot", None)
+    from steam_schema import validate_artifacts
+    validate_artifacts(rows, audit, snapshot)
     if snapshot and (snapshot.get("run_id") != run_id or snapshot.get("steam_id") != audit["steam_id"]):
         raise AccountMismatchError("GENERATION_MISMATCH：快照账号或运行编号不同")
     audit["publication"] = {"kind": "candidates" if candidate else "current_library", "generation": run_id}
@@ -125,6 +156,13 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     atomic_json(directory / "steam_library.audit.json", audit)
     atomic_json(directory / "steam_library_classified.json", five)
     atomic_json(directory / "summary.json", {"run_id": run_id, "producer": audit["producer"], **audit["summary"]})
+    absent = set(audit.get("difference", {}).get("client_not_api", []))
+    atomic_json(directory / "missing_from_web_api.json", {"run_id": run_id, "apps": [
+        {"appid": r["appid"], "name": r["name"], "app_type": r["app_type"],
+         "present_in_client": True, "present_in_web_api": False,
+         "license_evidence": r.get("license_evidence", {}),
+         "classification": {"cause": "web_api_absent", "cause_confirmed": False}}
+        for r in rows if r["appid"] in absent]})
     atomic_json(directory / "playtime_probe.json", {"run_id": run_id, **audit.get("overview_probe", {})})
     if snapshot:
         atomic_json(directory / "client.snapshot.json", snapshot)

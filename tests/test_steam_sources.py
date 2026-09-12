@@ -55,7 +55,8 @@ class ReconciliationTests(unittest.TestCase):
         rows, audit = reconcile([source("client_library", status="failed"),
                                  source("web_api", [{"appid": 1}]),
                                  source("licenses", [{"appid": 2, "app_type": "tool"}])])
-        self.assertEqual([r["appid"] for r in rows], [1, 2])
+        self.assertEqual([r["appid"] for r in rows], [1])
+        self.assertEqual(audit["fallback_source"], "web_api")
         self.assertTrue(audit["warnings"])
         self.assertEqual(audit["status"], "degraded")
         self.assertTrue(all(r["membership_status"] == "unverified_completeness" for r in rows))

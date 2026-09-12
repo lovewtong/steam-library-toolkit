@@ -26,6 +26,7 @@
 </head>
 <body>
   <h1>Steam 游戏库 · 按分类选游戏</h1>
+  <p class="count" id="run">正在读取采集结果…</p>
   <div class="filters">
     <label>核心玩法 <select id="primary"><option value="">全部</option></select></label>
     <label>细分流派 <select id="sub"><option value="">全部</option></select></label>
@@ -69,10 +70,10 @@
       const name = nameEl.value.trim().toLowerCase();
       const filtered = data.filter(g => {
         const a = g.analysis || {};
-        if (primary && a.primary !== primary) return false;
-        if (sub && a.sub !== sub) return false;
-        if (vibe && a.vibe !== vibe) return false;
-        if (intensity && a.intensity !== intensity) return false;
+        if (primary && (a.primary || '').trim() !== primary) return false;
+        if (sub && (a.sub || '').trim() !== sub) return false;
+        if (vibe && (a.vibe || '').trim() !== vibe) return false;
+        if (intensity && (a.intensity || '').trim() !== intensity) return false;
         if (name && !(g.name || "").toLowerCase().includes(name)) return false;
         return true;
       });
@@ -99,15 +100,20 @@
     intensityEl.addEventListener("change", filter);
     nameEl.addEventListener("input", filter);
 
-    fetch("steam_library_classified.json")
-      .then(r => r.json())
+    fetch("/api/library", {cache: "no-store"})
+      .then(r => { if (!r.ok) throw new Error('library unavailable'); return r.json(); })
       .then(json => {
-        data = json;
+        data = json.games;
+        const run = json.run;
+        document.getElementById('run').textContent = run.run_id
+          ? `采集时间：${run.generated_at || '未知'} · 状态：${run.status} · 账号：${run.account || '未知'} · 运行：${run.run_id}`
+          : '旧格式分类：未核验实时来源，请采集后使用 --input 指定运行。';
         fillOptions();
         filter();
       })
       .catch(e => {
-        listEl.innerHTML = "<p style='color:#a34'>无法加载 steam_library_classified.json，请用 <code>python steam_picker.py --serve</code> 从项目目录启动服务后再打开本页。</p>";
+        document.getElementById('run').textContent = '读取失败，未显示未校验的数据。';
+        listEl.textContent = '请检查采集结果和 --input；需由 steam_picker.py --serve 提供本页面。';
       });
   </script>
 </body>

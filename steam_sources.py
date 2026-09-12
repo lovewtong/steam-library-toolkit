@@ -64,6 +64,7 @@ class SourceResult:
     error_code: str | None = None
     completeness: dict = field(default_factory=dict)
     freshness: dict = field(default_factory=dict)
+    attempts: int = 0
 
     def __post_init__(self):
         self.state = self.state or ("complete" if self.status == "ok" else "unavailable")
@@ -76,7 +77,7 @@ class SourceResult:
     def audit(self):
         return {"status": self.status, "count": len(self.records), "fetched_at": self.fetched_at,
                 "error": self.error, "scope": self.scope, "state": self.state, "error_code": self.error_code,
-                "completeness": self.completeness, "freshness": self.freshness}
+                "completeness": self.completeness, "freshness": self.freshness, "attempts": self.attempts}
 
 
 def read_snapshot(path, expected_account=None):
@@ -138,7 +139,7 @@ def resolve_playtime(found, providers, field_name):
             "evidence": evidence, "conflict": len(set(live)) > 1}
 
 
-def reconcile(results, expected_account=None):
+def reconcile(results, expected_account=None, *, allow_candidate_membership=False):
     """Only validated client responses determine current membership; other sets remain candidates."""
     accounts = {s.steam_id for s in results if s.steam_id}
     if expected_account:
@@ -154,8 +155,12 @@ def reconcile(results, expected_account=None):
     providers = {s.source: s for s in usable}
     by_source = {s.source: {r["appid"]: r for r in s.records} for s in usable}
     client = next((s for s in usable if s.authoritative), None)
-    ids = set(by_source["client_library"]) if client else set().union(*(set(rows) for name, rows in by_source.items()
-                    if name in ("web_api", "license_file", "licenses")))
+    fallback = "license_file" if "license_file" in providers else "web_api" if "web_api" in providers else None
+    if not client and not fallback and not allow_candidate_membership:
+        raise RuntimeError("NO_MEMBERSHIP_SOURCE：仅有许可/时长证据；使用 --allow-candidate-membership 才能生成实验性候选")
+    ids = (set(by_source["client_library"]) if client else
+           set().union(*(set(rows) for name, rows in by_source.items() if name in ("web_api", "license_file", "licenses")))
+           if allow_candidate_membership else set(by_source[fallback]))
     output = []
     for appid in sorted(ids):
         found = {name: rows[appid] for name, rows in by_source.items() if appid in rows}
@@ -180,7 +185,7 @@ def reconcile(results, expected_account=None):
             row["playtime_evidence"][field_name] = resolved
             if resolved["source"]:
                 row["provenance"][field_name] = resolved["source"]
-        row["membership_source"] = "client_library" if client else "candidate_union"
+        row["membership_source"] = "client_library" if client else "candidate_union" if allow_candidate_membership else fallback
         row["membership_status"] = "observed" if client else "unverified_completeness"
         row["membership"] = {"state": "present" if client else "candidate", "source": row["membership_source"],
                              "realtime_verified": bool(client), "observed_at": client.fetched_at if client else None}
@@ -200,7 +205,8 @@ def reconcile(results, expected_account=None):
     audit = {
         "schema_version": 2, "generated_at": utc_now(), "steam_id": next(iter(accounts), None),
         "membership": "client_snapshot" if client else "candidate_union",
-        "membership_semantics": "client_library_membership" if client else "unverified_candidate_union",
+        "membership_semantics": "client_library_membership" if client else "unverified_candidate_union" if allow_candidate_membership else "historical_snapshot" if fallback == "license_file" else "web_api_fallback",
+        "fallback_source": None if client else "candidate_union" if allow_candidate_membership else fallback,
         "status": "ok" if client and all(s.state == "complete" for s in results if s.source != "client_last_played_times") else "degraded",
         "sources": {s.source: s.audit() for s in results},
         "summary": {"records": len(output), "types": dict(Counter(r["app_type"] for r in output)),

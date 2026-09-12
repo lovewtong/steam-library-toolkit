@@ -7,7 +7,7 @@ This repo keeps all classification locally and does not modify Steam by default.
 | Step | Command | Notes |
 |------|---------|------|
 | 1. Get library data | `python steam_collect.py --local-session --no-store --strict` | Windows with Steam signed in; see setup for other authorization methods |
-| 2. Classify | `python classify_steam_games.py` | Generates `steam_library_classified.json` |
+| 2. Classify | Collection generates classifications | Stored in the same verified generation |
 | 3. Pick by category | `python steam_picker.py --serve` | Open the local web UI |
 
 **Start the picker UI (after classification):**
@@ -20,7 +20,7 @@ python steam_picker.py --serve
 **If library data changed:**
 
 ```bash
-python classify_steam_games.py && python steam_picker.py --serve
+python steam_picker.py --serve
 ```
 
 ---
@@ -92,15 +92,13 @@ Each collection writes an immutable `.steam_library.runs/<run_id>/` generation c
 
 Flat library/audit files and `--snapshot-out` are compatibility exports. Export failure warns without invalidating the committed generation. Both Python classifiers prefer the adjacent `.current.json` and verify all artifact hashes. External readers of flat files do not get cross-file transactional consistency. `-o custom.json` uses `custom.current.json` and `.custom.runs/`. Do not use a `.current.json` filename as a normal output.
 
-After choosing a custom output name, pass that same input to the classifiers to avoid loading an older default library:
+Choose the matching collection target for the picker; a separate flat classification export is no longer required:
 
 ```bash
-python classify_games.py -i steam_live_test.json
-python classify_steam_games.py -i steam_live_test.json
-python steam_picker.py --serve
+python steam_picker.py --serve --input steam_live_test.json
 ```
 
-Collection stores classifications inside its generation directory. These separate classification commands export the default CSV/Markdown and `steam_library_classified.json` used by the picker. The picker currently reads that flat classification file and does not follow collection pointers automatically. `--no-store` verifies membership and time collection but omits some store tags, reducing the detail available to classification rules.
+Every request verifies the selected pointer and reads classification plus metadata from one immutable generation. Refreshing the page follows a newly published run. The page shows capture time, status, masked account and run ID. Old flat classification is a compatibility fallback only when the default pointer is absent, labeled legacy_unverified. Independent classification CLIs still support `-i` for exports.
 
 ### Membership verification and candidates
 
@@ -108,7 +106,7 @@ ClientComm `GetClientAppList` is a single RPC without AppOverview's streaming co
 
 Repeated agreement is a guardrail, not proof against persistent server omissions: `protocol_completion_marker=false`, `semantic_completeness_proven=false`. More than 20% removed members versus the previous same-account live generation blocks publication. After verifying a real change, adjust `--max-unexplained-removal-ratio` (0..1). A different account must use a separate output path. Missing legacy identity metadata prevents baseline comparison and emits a warning.
 
-Only a validated client response determines current membership. Extra API/license/snapshot IDs stay in audit differences. Without it, the successful-source union is a **candidate** collection, saved separately as `steam_library.candidates.json` with its own generation pointer. API-only and offline modes have the same candidate semantics. `--allow-candidates` explicitly permits publishing candidates to the requested path. `--strict` rejects source degradation before committing; optional metadata/playtime failure does not invalidate successful membership providers.
+Only a validated client response determines current membership. Extra API/license/snapshot IDs stay in audit differences. Without it, a matching historical snapshot takes precedence over Web API as a **candidate** collection, saved separately as `steam_library.candidates.json` with its own generation pointer. API-only and offline modes have the same candidate semantics. License evidence alone cannot establish default membership; `--allow-candidate-membership` explicitly enables the experimental union, independently of the `--allow-candidates` output-path override. `--allow-candidates` explicitly permits publishing candidates to the requested path. `--strict` rejects source degradation before committing; optional metadata/playtime failure does not invalidate successful membership providers.
 
 ### Evidence and classification
 
@@ -150,7 +148,7 @@ Audit includes type-grouped set differences, previous-run additions/removals, fi
 
 ### Verified results (2026-09-12)
 
-A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 42 Python and 15 Node tests.
+A real Windows run using the local Steam session, project virtual environment and HTTP(S) proxy passed `--local-session --no-store --strict`: 388 client records (377 games, 5 applications, 2 demos, 4 betas) versus 358 Web API records. The client restored 30 omitted records (27 games, 2 demos, 1 application). Playtime was known for 361 records and remained unknown for 27. Artifact hashes, classification AppID sets and run IDs were verified. Regression tests passed: 56 Python and 17 Node tests.
 
 This is one account's observed result, not an expected count for other accounts or proof that GetOwnedGames returns the full library. Unknown playtime, protocol-level completeness guarantees and the untested platform/account-change scenarios above remain open.
 
@@ -203,3 +201,16 @@ If you want to import `steam_collections_result.json` into Steam Collections:
 Notes:
 - The script tries LevelDB first; if no namespace is found, it falls back to `cloud-storage-namespace-1.json` and writes a `.bak` backup.
 - After import, reopen Steam and verify in Library → Collections.
+
+## Report implementation and migration
+
+- `--strict-membership` requires a verified live client, while allowing auxiliary API degradation. Existing `--strict` retains the stricter enabled-membership-source policy; optional playtime can still fail. `--require-source web_api` adds a required provider.
+- `--diagnose` prints environment/dependency versions without reading credentials or probing the network.
+- Temporary HTTP failures use at most three attempts and respect Retry-After within the request budget. Authentication and invalid payload failures are not blindly retried. Node audit attempts count actual HTTP attempts across the source's RPCs.
+- The CLI holds an OS lock through collection and publication. Another collector targeting the same output fails with OUTPUT_BUSY. Locks release on process death; lock files remain intentionally. Direct Python publication callers must hold the same lock.
+- Failed diagnostics are stored separately under `.<output>.failed-runs/`, without raw exception text or credentials. They never replace current. Successful runs add detailed `missing_from_web_api.json` evidence without inventing causes.
+- Local JSON Schemas validate v2 arrays, audit and new snapshots before publication. CSV retains the old display column and adds nullable numeric playtime_minutes and playtime_status.
+- Missing/malformed store categories preserve null capabilities; an explicit empty list means false. Old caches are invalidated. Broad Action/Indie classification and whitespace filtering are fixed.
+- The picker binds only 127.0.0.1 and serves only `/`, `/index.html`, `/api/library`, `/api/run`. No project directory listing, config, Git or snapshot downloads. `--port` and `--no-browser` control startup.
+- `npm test` and the existing unittest suite run offline. CI now defines Windows/Linux/macOS jobs, which do not verify real Steam authentication. requirements-tested.txt pins tested direct dependencies, not every transitive dependency. `python tools/check_secrets.py` scans source patterns, not Git history.
+- Families, refunds, cross-platform live QR, AppOverview completeness and the remaining unknown times are still unverified/research tasks. No account entitlement changes are automated. See [RELEASE_NOTES.md](RELEASE_NOTES.md).

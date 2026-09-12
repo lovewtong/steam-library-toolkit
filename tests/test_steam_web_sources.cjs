@@ -71,3 +71,28 @@ test('license evidence distinguishes overlapping own/shared/free packages', () =
   delete user.picsCache.packages[2];
   assert.equal(licenseEvidence(user).complete, false);
 });
+
+test('429 retries honor Retry-After and stop at a bounded count', async () => {
+  let calls = 0;
+  const waits = [];
+  const fetcher = async () => ++calls < 3
+    ? {status: 429, headers: {get: name => name === 'retry-after' ? '2' : null}}
+    : {status: 200, headers: {get: () => null}, json: async () => ({response: {game_count: 0, games: []}})};
+  const result = await ownedGames('canary-private-token', account, true, fetcher, {sleep: async ms => waits.push(ms)});
+  assert.equal(result.state, 'complete');
+  assert.equal(calls, 3);
+  assert.deepEqual(waits, [2000, 2000]);
+});
+
+test('auth failures are not retried and transient failures are exhausted safely', async () => {
+  let calls = 0;
+  await assert.rejects(() => ownedGames('canary-private-token', account, true, async () => {
+    calls++; return {status: 403, headers: {get: () => null}};
+  }), {code: 'HTTP_403'});
+  assert.equal(calls, 1);
+  calls = 0;
+  await assert.rejects(() => ownedGames('canary-private-token', account, true, async () => {
+    calls++; throw Error('canary-private-token');
+  }, {sleep: async () => {}}), e => e.code === 'NETWORK_UNAVAILABLE' && e.attempts === 3 && !e.message.includes('canary'));
+  assert.equal(calls, 3);
+});

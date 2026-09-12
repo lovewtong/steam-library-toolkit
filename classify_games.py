@@ -21,12 +21,12 @@ RULES_FILE = SCRIPT_DIR / "CLASSIFICATION_RULES.md"
 # 主分类：每个游戏选一个（按优先级匹配第一个）
 MAIN_CATEGORY_RULES = [
     # (优先级从高到低：先匹配的为主分类)
-    {"name": "射击", "genres": ["Action", "射击"], "keywords": ["FPS", "Shooter", "射击", "枪"]},
+    {"name": "射击", "genres": ["射击"], "keywords": ["FPS", "Shooter", "射击", "枪"]},
     {"name": "动作/冒险", "genres": ["Action", "Adventure", "动作", "冒险"], "keywords": ["Action", "Adventure", "动作", "冒险", "平台", "Platform"]},
     {"name": "RPG", "genres": ["RPG", "角色扮演"], "keywords": ["RPG", "角色扮演", "JRPG"]},
     {"name": "策略", "genres": ["Strategy", "策略"], "keywords": ["Strategy", "策略", "4X", "RTS", "回合"]},
     {"name": "模拟经营", "genres": ["Simulation", "模拟"], "keywords": ["Simulation", "模拟", "管理", "建造", "经营"]},
-    {"name": "休闲/益智", "genres": ["Casual", "Indie", "休闲", "益智"], "keywords": ["Puzzle", "益智", "休闲", "Casual", "卡牌", "Card"]},
+    {"name": "休闲/益智", "genres": ["Casual", "休闲", "益智"], "keywords": ["Puzzle", "益智", "休闲", "Casual", "卡牌", "Card"]},
     {"name": "体育/竞速", "genres": ["Sports", "Racing", "体育", "竞速"], "keywords": ["Sports", "Racing", "体育", "竞速", "足球", "篮球"]},
     {"name": "独立/其他", "genres": ["Indie"], "keywords": ["Indie", "独立"]},
     {"name": "其他", "genres": [], "keywords": []},  # 兜底
@@ -144,14 +144,17 @@ def playtime_str(minutes: int, available=True, state=None) -> str:
 def write_csv(classified: list[dict], path: Path) -> None:
     """输出 CSV 表格。"""
     rows = []
-    rows.append(["appid", "name", "playtime", "last_played", "main_category", "tags", "multiplayer", "controller", "run_id"])
+    rows.append(["appid", "name", "playtime", "last_played", "main_category", "tags", "multiplayer", "controller", "run_id", "playtime_minutes", "playtime_status"])
     for r in classified:
         tags_str = ";".join(r["tags"]) if r["tags"] else ""
         last = (r.get("last_played_iso") or "")[:10]
         multi = "是" if r.get("is_multiplayer") else ("否" if r.get("is_multiplayer") is False else "")
         ctrl = "是" if r.get("is_controller") else ("否" if r.get("is_controller") is False else "")
-        rows.append([r['appid'], r['name'], playtime_str(r['playtime_minutes'], r.get('playtime_available', True), r.get('playtime_state')),
-                     last, r['main_category'], tags_str, multi, ctrl, r.get('run_id')])
+        known = r.get('playtime_available', True) and r['playtime_minutes'] is not None
+        status = 'historical' if known and r.get('playtime_state') == 'historical' else 'known' if known else 'unknown'
+        rows.append([r['appid'], r['name'], playtime_str(r['playtime_minutes'], known, r.get('playtime_state')),
+                     last, r['main_category'], tags_str, multi, ctrl, r.get('run_id'),
+                     r['playtime_minutes'] if known else None, status])
     with path.open("w", encoding="utf-8-sig", newline="") as stream:
         csv.writer(stream).writerows(rows)
 

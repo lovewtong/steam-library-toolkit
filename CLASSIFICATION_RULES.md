@@ -35,3 +35,5 @@
 
 - **game_library_classified.csv / .md** 包含：游戏名、appid、总时长、最近游玩日期、主分类、标签（多标签用分号/顿号分隔）、是否多人、是否手柄支持；CSV 的 `run_id` 列与 Markdown 中的运行编号标记用于追溯采集版本。
 - 总时长优先使用 Web API，其次为独立客户端时长来源，历史快照仅作历史证据。未知、明确 0 分钟、正时长和历史值分别显示，不把缺失时长当作 0；最近游玩来自 `rtime_last_played`（若有）。多人/手柄由商店数据推断，`--no-store` 采集可能缺少这些元数据。字段来源与冲突详情见采集审计和 `playtime_evidence`。
+
+CSV 新增数值列 `playtime_minutes`（未知为空）及 `playtime_status`（unknown/known/historical），原 `playtime` 继续用于人读。`--include-type game, demo` 与 `game,demo` 等价。Action 不再直接代表射击，Indie 不再直接代表休闲；KNOWN 标签在生成时去除首尾空格。

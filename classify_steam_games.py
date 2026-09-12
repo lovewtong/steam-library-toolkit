@@ -275,7 +275,7 @@ def find_known(name):
     if not candidates:
         return None
     candidates.sort(key=lambda x: -len(x[0]))
-    return candidates[0][1].copy()
+    return {key: value.strip() for key, value in candidates[0][1].items()}
 
 def primary_from_genres(genres):
     g = " ".join(genres).lower()

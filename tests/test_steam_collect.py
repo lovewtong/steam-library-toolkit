@@ -77,7 +77,7 @@ class CollectionTests(unittest.TestCase):
             {"appid": 40, "name": "API only", "playtime_forever": 0},
         ]
         with contextlib.redirect_stdout(io.StringIO()):
-            games = steam_collect.collect(fetch_store=False, apps_file=self.write_apps())
+            games = steam_collect.collect(fetch_store=False, apps_file=self.write_apps(), allow_candidate_membership=True)
         by_id = {game["appid"]: game for game in games}
         self.assertEqual(set(by_id), {10, 20, 30, 40})
         self.assertEqual(by_id[10]["name"], "API Name")

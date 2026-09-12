@@ -16,7 +16,7 @@ def load_selected(args):
     if not args.allow_candidates and any(r.get("membership", {}).get("state") == "candidate" for r in rows):
         raise ValueError("CANDIDATE_LIBRARY：输入仅是候选集合，使用 --allow-candidates 明确选择")
     if args.include_type:
-        wanted = set(args.include_type.lower().split(","))
+        wanted = {value.strip() for value in args.include_type.lower().split(",")}
         if wanted != {"all"} and not wanted <= APP_TYPES:
             raise ValueError("TYPE_FILTER_INVALID：类型无效")
         selected = [r for r in rows if wanted == {"all"} or app_type(r.get("app_type")) in wanted]

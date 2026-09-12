@@ -12,6 +12,9 @@ steam_owned_apps.txt
 .steam_cache/
 .*.runs/
 *.current.json
+*.collect.lock
+.*.failed-runs/
+outputs/
 *.candidates.json
 steam_library_classified.json
 steam_collections_result.json

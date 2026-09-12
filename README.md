@@ -9,20 +9,20 @@ English: [README_EN.md](README_EN.md)
 | 步骤 | 命令 | 说明 |
 |------|------|------|
 | 1. 有游戏库数据 | `python steam_collect.py --local-session --no-store --strict` | Windows 已登录 Steam；其他授权方式见安装说明 |
-| 2. 自动分类 | `python classify_steam_games.py` | 生成 `steam_library_classified.json`（五维分类） |
+| 2. 分类产物 | 采集时自动生成 | 保存到同一运行目录；独立分类命令仍可导出表格 |
 | 3. 按分类用 | `python steam_picker.py --serve` | 浏览器里按 核心玩法/强度/氛围 筛选，点「在 Steam 中打开」启动 |
 
-**一键打开选游戏页（分类已生成时）：**
+**打开选游戏页（采集已发布时）：**
 
 ```bash
 cd /path/to/steam-library-toolkit
 python steam_picker.py --serve
 ```
 
-**若刚更新了游戏库，先重新分类再打开选游戏页：**
+**采集完成后直接打开选游戏页，刷新会读取最新运行：**
 
 ```bash
-python classify_steam_games.py && python steam_picker.py --serve
+python steam_picker.py --serve
 ```
 
 分类结果只存在本地 JSON 里，Steam 客户端不显示这些分组，但通过 **steam_picker 网页** 或 **命令行** 可以按分类筛选并启动游戏，等同于「自动分类可用」。
@@ -98,15 +98,16 @@ python steam_collect.py --local-session
 
 `steam_library.json`、`.audit.json` 及 `--snapshot-out` 是兼容副本。副本导出失败会告警，已提交的完整运行仍可读取。两个 Python 分类入口优先读取对应 `.current.json` 指向的运行，并校验全部文件 SHA-256；未使用运行指针的外部工具不享有整轮一致性保证。`-o custom.json` 对应 `custom.current.json` 和 `.custom.runs/`。不要把 `.current.json` 当普通库输出路径。
 
-使用自定义输出名后，分类时也必须指定同一输入，否则会读取默认的旧库。例如本地测试输出为 `steam_live_test.json`：
+自定义采集输出使用同名 `--input`，不再需要先导出根目录分类文件：
 
 ```bash
+python steam_picker.py --serve --input steam_live_test.json
+# 独立导出表格或五维 JSON 仍可使用：
 python classify_games.py -i steam_live_test.json
 python classify_steam_games.py -i steam_live_test.json
-python steam_picker.py --serve
 ```
 
-采集生成的分类保存在本轮运行目录；上面的分类命令将结果导出到默认 CSV/Markdown 和 `steam_library_classified.json`，供现有 picker 使用。picker 当前读取这个平铺分类文件，不会自动跟随采集运行指针。`--no-store` 可验证库成员与时长，但会缺少部分商店标签，规则分类的细致程度会受影响。
+picker 每次请求都重新核验选定指针并从同一运行目录读取分类与摘要。页面显示时间、状态、脱敏账号与运行编号；刷新页面即可跟随新运行。没有默认运行指针时仍可兼容旧根目录分类，但明确显示 `legacy_unverified`。`--no-store` 缺少部分商店标签，分类质量需另外评估。
 
 ### 实时成员、候选与完整性
 
@@ -114,7 +115,7 @@ python steam_picker.py --serve
 
 **两次一致是工程保护，并不能证明 Steam 服务端没有持续遗漏。** 审计明确保存 `protocol_completion_marker=false` 和 `semantic_completeness_proven=false`。相对同账号上次实时结果，成员移除比例超过 20% 时阻止发布；核实变化后可调整 `--max-unexplained-removal-ratio 0.5`，范围 0..1。账号不同则拒绝覆盖，使用独立 `-o` 路径。没有旧账号审计时会提示无法建立比较基线。
 
-实时清单经过核验时，快照/API/许可中的额外 AppID 只进入差异审计，不扩大当前成员。客户端不可用时，成功来源的并集是 **candidate**，默认另存 `steam_library.candidates.json` 及独立运行指针，保留当前库。即使是 API-only 或纯离线导入，也不冒充实时客户端集合。`--allow-candidates` 可显式把候选导出到指定路径。
+实时清单经过核验时，快照/API/许可中的额外 AppID 只进入差异审计，不扩大当前成员。客户端不可用时，优先使用账号匹配的历史快照，其次为 Web API，生成 **candidate**，默认另存 `steam_library.candidates.json` 及独立运行指针，保留当前库。即使是 API-only 或纯离线导入，也不冒充实时客户端集合。`--allow-candidates` 可显式把候选导出到指定路径。许可/PICS 不再自动扩大降级成员；仅有许可时默认只保存失败诊断，必须加 `--allow-candidate-membership` 才启用实验性候选并集。两项开关分别控制候选成员来源和导出路径。
 
 `--strict` 要求实时客户端与所有启用的成员来源成功；来源降级不切换运行指针。商店元数据和可选时长来源不影响严格模式的成员成功判定。来源失败、解析错误和疑似部分响应分别保留可诊断状态；账号冲突始终终止。
 
@@ -168,9 +169,30 @@ python steam_collect.py --apps-file library.snapshot.json --no-api --no-store
 
 审计包含按类型统计的集合差异、上次运行的增减、字段证据、来源状态与元数据缓存统计；所有 JSON 运行产物及非空记录携带 run_id，manifest 为整套文件提供哈希和版本绑定。
 
+### 报告落地后的运行策略
+
+```bash
+# 日常：成员必须可信，辅助 API 失败也可发布带 degraded 状态的实时库
+python steam_collect.py --local-session --no-store --strict-membership
+# 指定某个辅助来源也必须成功
+python steam_collect.py --local-session --no-store --strict-membership --require-source web_api
+# 仅检查环境和依赖；不读取凭据、不探测网络
+python steam_collect.py --diagnose
+```
+
+`--strict` 保留原语义：所有启用的成员相关来源必须健康；独立时长仍是可选来源。`--strict-membership` 只要求可信实时客户端清单。默认非严格模式下，API 失败不会删除客户端成员。临时 HTTP 错误最多请求 3 次，并在预算内遵守 Retry-After；认证错误和无效数据不盲目重试。Node 来源审计中的 attempts 是实际 HTTP 尝试次数，客户端核验本来就包含多个 RPC。
+
+CLI 从认证/采集开始到检查与发布结束持有操作系统文件锁，第二个同目标进程报 `OUTPUT_BUSY`；进程崩溃后锁由操作系统释放。锁文件保留属于正常现象。该保证针对 CLI，直接调用 Python 发布函数的集成方仍应持有同一锁。
+
+失败诊断写入 `.<output>.failed-runs/<run_id>/diagnostic.json`，不切换 current，且不写原始异常、token、Cookie、API Key。成功运行新增 `missing_from_web_api.json`，保留逐项许可证据，不猜测遗漏原因。`--diagnose` 与运行环境记录包含依赖版本，无法确认的 Steam 客户端版本仍为 null。
+
+发布前按 `schemas/` 校验库、审计和新快照，并检查时长状态与值一致。库继续使用 v2 数组，旧字段保持兼容；CSV 增加 nullable 数值列 `playtime_minutes` 和 `playtime_status`，原 `playtime` 显示列保留。`categories` 缺失或损坏时多人/手柄为 null，明确空数组才为 false；旧缓存失效并按新语义重建。分类已修复 Action/Indie 宽泛类型误判和标签空格。
+
+自动化使用现有 unittest 与 `npm test`，新增跨平台离线 CI 配置；没有把真实 Steam 认证或账号权益操作放入 CI。`requirements-tested.txt` 固定已验直接依赖版本，不声称锁定所有平台的传递依赖。新增 `python tools/check_secrets.py` 源码凭据模式扫描，但它不替代 Git 历史审计。参见 [RELEASE_NOTES.md](RELEASE_NOTES.md) 的迁移和待验证清单。
+
 ### 已验证结果（2026-09-12）
 
-Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。Python 42 项、Node 15 项回归测试通过。
+Windows 本机登录态、项目虚拟环境、HTTP(S) 代理下，`--local-session --no-store --strict` 真实采集通过：客户端 388 条（377 game、5 application、2 demo、4 beta），Web API 358 条，补回 30 条（27 game、2 demo、1 application）。361 条有明确时长，27 条仍未知。运行产物哈希、分类 AppID 集合与 run_id 已核验。报告落地版本 Python 56 项、Node 17 项回归测试通过。
 
 这些数字是一个账号的实测样本，不是其他账号的预期数量，也不代表 `GetOwnedGames` 已能返回全集。已验证的是本次客户端补充采集链路；未知时长、协议层全集证明及上面列出的跨平台/账号变化场景仍未解决或未验证。
 
@@ -202,7 +224,7 @@ python classify_games.py
 
 ## 5. 在本地「应用」分类（选游戏）
 
-Steam 客户端**不支持**把自定义分类写回 Steam 服务器，但你可以用分类数据在本地「选游戏」并用 Steam 启动。
+本工具默认在本地「选游戏」并用 Steam 启动；旧收藏写回脚本属于独立实验路径，尚未完成通用账号与持久性验收。
 
 ### 5.1 使用五维分类结果（steam_library_classified.json）
 
@@ -233,7 +255,7 @@ python steam_picker.py --intensity 低 --open 0
 python steam_picker.py --serve
 ```
 
-会启动本目录的简单 HTTP 服务并自动打开浏览器，在页面里按「核心玩法 / 细分流派 / 氛围 / 强度」筛选，点击「在 Steam 中打开」即可启动对应游戏。关闭终端或 Ctrl+C 可停止服务。
+会启动只监听 `127.0.0.1` 的受限 HTTP 服务并自动打开浏览器，在页面里按「核心玩法 / 细分流派 / 氛围 / 强度」筛选，点击「在 Steam 中打开」即可启动对应游戏。关闭终端或 Ctrl+C 可停止服务。只允许 `/`、`/index.html`、`/api/library`、`/api/run`，不提供目录列表、账号配置、Git 或快照文件。`--port` 可更改端口，`--no-browser` 可禁止自动打开浏览器。
 
 ### 5.4 其他用法
 
