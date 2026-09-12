@@ -301,7 +301,8 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
         classifiable_games=sum(r["app_type"] == "game" for r in library),
         web_api_owned_apps=next((len(r.records) for r in results if r.source == "web_api" and r.state == "complete"), None),
         license_candidates=next((len(r.records) for r in results if r.source == "licenses" and r.state == "complete"), None),
-        unknown_playtime_apps=sum(r["playtime"]["state"] == "unknown" for r in library))
+        unknown_playtime_apps=sum(r["playtime"]["state"] == "unknown" for r in library),
+        playtime_historical=sum(r["playtime"]["state"] == "historical" for r in library))
     if native:
         report["client_playtime_status"] = native.get("playtime_status")
     client = next((r for r in results if r.authoritative), None)
@@ -415,7 +416,7 @@ def main():
     print(f"采集记录：{len(library)}；状态：{report['status']}")
     summary = report["summary"]
     print(f"当前客户端应用数：{summary.get('current_client_apps')}；明确 game：{summary.get('classifiable_games')}")
-    print(f"时长已知：{summary.get('playtime_known')}；时长未知：{summary.get('unknown_playtime_apps')}；全集完整性：未证明")
+    print(f"时长已知：{summary.get('playtime_known')}；历史时长：{summary.get('playtime_historical', 0)}；时长未知：{summary.get('unknown_playtime_apps')}；全集完整性：未证明")
     print("应用类型：" + "，".join(f"{kind}: {count}" for kind, count in report["summary"]["types"].items()))
     for name, result in report["sources"].items():
         print(f"  {name}: {result['state']} ({result['count']})" + (f" [{result['error_code']}]" if result.get('error_code') else ""))

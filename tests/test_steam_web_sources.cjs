@@ -96,3 +96,45 @@ test('auth failures are not retried and transient failures are exhausted safely'
   }, {sleep: async () => {}}), e => e.code === 'NETWORK_UNAVAILABLE' && e.attempts === 3 && !e.message.includes('canary'));
   assert.equal(calls, 3);
 });
+
+test('protocol shape recorder discards all response values and unknown keys', () => {
+  const {shape} = require('../tools/steam_protocol_shapes.cjs');
+  const value = shape({apps: [{appid: 123456789, app: 'private-name-canary', app_type: 1,
+    access_token: 'private-token-canary', 'private-key-canary': 'private-value-canary'}]});
+  const encoded = JSON.stringify(value);
+  assert.equal(encoded.includes('canary'), false);
+  assert.equal(encoded.includes('123456789'), false);
+  assert.equal(value.properties.apps.item_shapes[0].properties.appid.type, 'integer');
+  assert.equal(value.properties.apps.item_shapes[0].omitted_fields, 2);
+});
+
+test('live field-shape fixture records actual client and API presence without scalar values', () => {
+  const fixture = require('./fixtures/protocol-shapes.windows.json');
+  assert.equal(fixture.origin, 'live_windows_local_session');
+  assert.equal(fixture.scope, 'allowlisted_field_types_only');
+  const lists = fixture.observations.filter(o => o.method === 'GetClientAppList');
+  assert.equal(lists.length, 2);
+  assert.deepEqual(lists[0].response, lists[1].response);
+  for (const observation of lists) {
+    assert.equal(observation.response.properties.apps.type, 'array');
+    assert.equal(observation.response.properties.client_info.properties.local_users.type, 'array');
+  }
+  const api = fixture.observations.find(o => o.method === 'GetOwnedGames');
+  assert.equal(api.response.properties.game_count.type, 'integer');
+  assert.equal(api.response.properties.games.type, 'array');
+});
+
+test('shape collection is explicit and does not change source reconciliation', async () => {
+  const fetcher = async url => {
+    const response = url.includes('GetAllClientLogonInfo') ? session :
+      url.includes('GetClientAppList') ? list([10]) : {game_count: 0, games: []};
+    return {status: 200, headers: {get: () => null}, json: async () => ({response})};
+  };
+  const regular = await collectWebSources('private-token-canary', {machine: 'desktop'}, account, fetcher);
+  assert.equal(Object.hasOwn(regular, 'protocol_shapes'), false);
+  const captured = await collectWebSources('private-token-canary', {machine: 'desktop', capture_protocol_shapes: true}, account, fetcher);
+  assert.deepEqual(captured.client, regular.client);
+  assert.deepEqual(captured.api, regular.api);
+  assert.equal(captured.protocol_shapes.observations.length, 5);
+  assert.equal(JSON.stringify(captured.protocol_shapes).includes('private-token-canary'), false);
+});

@@ -103,7 +103,9 @@ class AuthenticationTests(unittest.TestCase):
         with self.assertRaises(AccountMismatchError):
             steam_auth.validate_token(good, "76561198000000002")
         for bad in (None, "secret", token([]), token({"sub": ACCOUNT, "exp": 0}),
-                    token({"sub": ACCOUNT, "exp": "later"})):
+                    token({"sub": ACCOUNT, "exp": "later"}),
+                    *(token({"sub": ACCOUNT, "exp": value}) for value in (float('nan'), float('inf'), -float('inf'))),
+                    token({"sub": '７' * 17, "exp": time.time() + 600})):
             with self.subTest(bad=type(bad).__name__), self.assertRaises(ValueError):
                 steam_auth.validate_token(bad)
 

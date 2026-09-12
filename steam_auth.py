@@ -4,6 +4,7 @@ from __future__ import annotations
 import base64
 import ctypes
 import json
+import math
 import os
 from pathlib import Path
 import queue
@@ -51,11 +52,13 @@ def token_claims(token):
 def validate_token(token, account=None):
     data = token_claims(token)
     identity = data.get("sub")
-    if not isinstance(identity, str) or not identity.isdigit() or len(identity) != 17:
+    if not isinstance(identity, str) or not identity.isascii() or not identity.isdigit() or len(identity) != 17:
         raise ValueError("Steam 凭据账号无效")
     if account and identity != account:
         raise AccountMismatchError("认证账号与指定 Steam ID 不一致")
-    if type(data.get("exp")) not in (int, float) or data["exp"] <= time.time():
+    if (type(data.get("exp")) not in (int, float)
+            or (type(data["exp"]) is float and not math.isfinite(data["exp"]))
+            or data["exp"] <= time.time()):
         raise ValueError("Steam 凭据已过期，请重新 --login")
     return identity
 
@@ -177,7 +180,8 @@ def local_credentials(steam_path=None, account=None):
 
 
 def collect_client(account=None, *, login=False, local_session=False, steam_path=None,
-                   machine=None, timeout=300, on_progress=print, use_api=True, expanded=True):
+                   machine=None, timeout=300, on_progress=print, use_api=True, expanded=True,
+                   capture_protocol_shapes=False):
     credentials = local_credentials(steam_path, account) if local_session else (None if login else saved_credentials(account))
     if login:
         secret_store()  # Fail before asking the user to scan if secure persistence is unavailable.
@@ -212,6 +216,7 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
         on_progress("Steam 网络：使用已配置的 HTTP(S) 代理" if proxy else "Steam 网络：直连（未检测到适用的 HTTP(S) 代理）")
         process.stdin.write(json.dumps({"refresh_token": token, "steam_id": account, "login": login,
                                        "use_api": use_api, "expanded": expanded,
+                                       "capture_protocol_shapes": capture_protocol_shapes,
                                        "https_proxy": proxy,
                                        "machine": machine or os.environ.get("COMPUTERNAME") or __import__("socket").gethostname()}))
         process.stdin.close()

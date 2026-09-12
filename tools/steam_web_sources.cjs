@@ -35,6 +35,7 @@ async function call(service, method, token, params, fetcher = fetch, policy = {}
   let body;
   try { body = (await response.json()).response; } catch (_) { throw new SourceError('RESPONSE_INVALID', 'invalid'); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new SourceError('RESPONSE_INVALID', 'invalid');
+  if (policy.shapes) policy.shapes.push({method, response: require('./steam_protocol_shapes.cjs').shape(body)});
   return body;
 }
 function records(raw, client = false) {
@@ -109,13 +110,15 @@ async function collectWebSources(token, request, account, fetcher) {
     fetcher = (url, options) => proxyFetch(url, {...options, dispatcher: proxy});
   }
   try {
-    const safe = async fn => { const policy = {stats: {attempts: 0}}; let result; try { result = await fn(policy); } catch (e) { result = failed(e); } return {...result, attempts: policy.stats.attempts}; };
+    const shapes = request.capture_protocol_shapes ? [] : null;
+    const safe = async fn => { const policy = {stats: {attempts: 0}, shapes}; let result; try { result = await fn(policy); } catch (e) { result = failed(e); } return {...result, attempts: policy.stats.attempts}; };
     const [client, api] = await Promise.all([
       safe(policy => clientLibrary(token, account, request.machine, fetcher, policy)),
       request.use_api === false ? Promise.resolve(null) : safe(policy => ownedGames(token, account, request.expanded !== false, fetcher, policy)),
     ]);
     if (client.error_code === 'ACCOUNT_MISMATCH') throw new SourceError('ACCOUNT_MISMATCH', 'account_mismatch');
-    return {client, api};
+    return {client, api, ...(shapes ? {protocol_shapes: {schema_version: 1,
+      scope: 'allowlisted_field_types_only', observations: shapes}} : {})};
   } finally { if (proxy) await proxy.close(); }
 }
 module.exports = {SourceError, clientLibrary, ownedGames, collectWebSources};
