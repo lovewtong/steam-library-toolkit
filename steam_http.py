@@ -21,7 +21,7 @@ def get_response(url, *, params, timeout, stats=None):
                     retry_after = float(header) if header.isdigit() else parsedate_to_datetime(header).timestamp() - time.time()
                 except (ValueError, TypeError, OverflowError):
                     pass
-        except (requests.Timeout, requests.ConnectionError) as exc:
+        except (requests.Timeout, requests.ConnectionError, requests.exceptions.ChunkedEncodingError) as exc:
             error = exc
         delay = max(retry_after, .25 * 2 ** (attempt - 1) * random.uniform(.75, 1.25))
         if attempt == 3 or delay >= deadline - time.monotonic():

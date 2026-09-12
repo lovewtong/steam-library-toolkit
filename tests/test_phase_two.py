@@ -26,6 +26,41 @@ def run_bundle(run, ids=(1, 2)):
 
 
 class FailureAndScaleTests(unittest.TestCase):
+    def test_interrupted_http_body_retries_without_losing_successful_response(self):
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import socket
+        import threading
+        from steam_http import get_response
+        requests_seen = []
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+            def do_GET(self):
+                requests_seen.append(1)
+                body = b'{"response":{"game_count":0,"games":[]}}'
+                self.send_response(200)
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                if len(requests_seen) == 1:
+                    self.wfile.write(body[:4])
+                    self.wfile.flush()
+                    self.connection.shutdown(socket.SHUT_RDWR)
+                    self.connection.close()
+                else:
+                    self.wfile.write(body)
+        with ThreadingHTTPServer(('127.0.0.1', 0), Handler) as server:
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                stats = {}
+                response = get_response(f'http://127.0.0.1:{server.server_port}', params={}, timeout=1, stats=stats)
+                self.assertEqual(response.json()['response']['game_count'], 0)
+                self.assertEqual(stats['attempts'], 2)
+                response.close()
+            finally:
+                server.shutdown()
+                thread.join(timeout=2)
+
     def test_fsync_disk_full_or_permission_denied_preserves_previous_generation(self):
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / 'library.json'
