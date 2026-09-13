@@ -105,7 +105,9 @@ python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.jso
 
 可用 `classification_overrides.local.json` 按 AppID 人工校正，并通过 `python steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json` 离线重建。两种分类输出共享校正，旧运行保持不变。格式与映射见 [CLASSIFICATION_OVERRIDES.md](CLASSIFICATION_OVERRIDES.md)。
 
-当前内置 10 条有来源的规则；本轮将缺少类型标签的 14 个项目中的 7 个补上分类，其余保留待核对。逐项依据、名称匹配修复与验证范围见 [分类核对记录](CLASSIFICATION_REVIEW.md)，这不代表全库准确率。
+当前内置 14 条有来源的规则；缺少类型标签的 14 个项目中已校正 11 个，其余 3 个保留待核对。逐项依据、名称匹配修复与验证范围见 [分类核对记录](CLASSIFICATION_REVIEW.md)，这不代表全库准确率。
+
+独立元数据补全支持 `--workers 1–4`（默认 2），共享请求间隔并复用缓存。类别 ID 判断修复了中文“控制器”被误判为不支持的问题；缺失字段保留旧值，并报告前后字段覆盖率。用法、缓存 v4 迁移及实测见 [元数据补全说明](METADATA_ENRICHMENT.md)。
 
 输入必须带有有效的运行指针，并来自可信客户端成员采集；输出必须与输入分开。补全会重新生成分类，但保留成员、应用类型、时长证据和原始采集时间，不代表重新核验当前所有权。审计记录 `operation=metadata_enrichment`、`parent_run` 和逐应用商店状态；`metadata.state=partial` 表示有应用未补全，旧元数据保留。`--appid` 只限制请求范围，输出仍包含整个原库。支持 `--cache-dir`、`--refresh-metadata`，沿用串行限速、缓存与有限重试。补全期间会锁定输入和输出，避免与采集同时更新同一目标；大库首次补全可能耗时较长。
 

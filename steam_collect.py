@@ -19,6 +19,7 @@ from steam_sources import (AccountMismatchError, SourceResult, app_type, atomic_
                            read_snapshot, reconcile, utc_now, validate_records)
 from steam_auth import AuthError, collect_client
 from steam_http import get_response
+from steam_metadata import STORE_GATE, parse_fields, merge_fields, coverage
 
 try:
     import requests
@@ -29,7 +30,6 @@ except ImportError:
 # --- 路径与默认输出 ---
 CONFIG_PATH = Path(__file__).resolve().parent / "config_local.json"
 OUTPUT_FILE = Path(__file__).resolve().parent / "steam_library.json"
-STORE_REQUEST_DELAY = 1.5  # 商店 API 请求间隔（秒）
 
 
 def load_config():
@@ -94,7 +94,7 @@ def get_store_result(appid: int):
     url = "https://store.steampowered.com/api/appdetails"
     params = {"appids": appid, "l": "schinese"}
     try:
-        resp = get_response(url, params=params, timeout=10)
+        resp = get_response(url, params=params, timeout=10, before_attempt=STORE_GATE.wait)
         if resp.status_code != 200:
             state = "rate_limited" if resp.status_code == 429 else "access_denied" if resp.status_code in (401, 403) else "not_found" if resp.status_code == 404 else "transient_error"
             return {"status": state, "details": None}
@@ -111,30 +111,8 @@ def get_store_result(appid: int):
     g = entry.get("data")
     if not isinstance(g, dict):
         return {"status": "parse_error", "details": None}
-    def descriptions(key):
-        values = g.get(key, [])
-        if not isinstance(values, list):
-            return []
-        return [x["description"] for x in values if isinstance(x, dict)
-                and isinstance(x.get("description"), str) and x["description"]]
-    genres = descriptions("genres")
-    categories = descriptions("categories")
-
-    # 从 categories 推断是否多人、是否手柄（常见英文/简中描述）
-    multi_keywords = ("多人", "Multi-player", "Online Multi", "Co-op", "Online Co-op", "LAN", "Shared/Split")
-    ctrl_keywords = ("手柄", "Controller", "Full controller", "Partial controller")
-    raw_categories = g.get("categories")
-    complete_categories = (isinstance(raw_categories, list) and all(
-        isinstance(c, dict) and isinstance(c.get("description"), str) for c in raw_categories))
-    is_multiplayer = any(k in c for c in categories for k in multi_keywords) if complete_categories else None
-    is_controller = any(k in c for c in categories for k in ctrl_keywords) if complete_categories else None
-
     return {"status": "success", "details": {
-        "app_type": app_type(g.get("type")),
-        "genres": genres,
-        "categories": categories,
-        "is_multiplayer": is_multiplayer,
-        "is_controller": is_controller,
+        "app_type": app_type(g.get("type")), **parse_fields(g),
     }}
 
 
@@ -151,15 +129,14 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None):
         try:
             cached = json.loads(path.read_text(encoding="utf-8"))
             status = cached.get("status", "success")
-            if (cached.get("schema_version") == 3 and status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
+            if (cached.get("schema_version") == 4 and status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
                     and (status != "success" or valid_store_details(cached["details"]))):
                 cache = cached
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
             pass
     hit = cache is not None
     if cache is None:
-        cache = {"schema_version": 3, "fetched_at": time.time(), **get_store_result(appid)}
-        time.sleep(STORE_REQUEST_DELAY)
+        cache = {"schema_version": 4, "fetched_at": time.time(), **get_store_result(appid)}
         try:
             atomic_json(path, cache)
         except OSError:
@@ -169,6 +146,7 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None):
         key = cache["status"]
         audit_meta[key] = audit_meta.get(key, 0) + 1
         audit_meta["cache_hits"] = audit_meta.get("cache_hits", 0) + int(hit)
+        audit_meta["cache_misses"] = audit_meta.get("cache_misses", 0) + int(not hit)
     return cache.get("details") if cache["status"] == "success" else None
 
 
@@ -176,7 +154,12 @@ def valid_store_details(details):
     return (isinstance(details, dict)
             and all(isinstance(details.get(key), list)
                     and all(isinstance(x, str) for x in details[key]) for key in ("genres", "categories"))
-            and all(details.get(key) is None or type(details.get(key)) is bool for key in ("is_multiplayer", "is_controller")))
+            and all(details.get(key) is None or type(details.get(key)) is bool for key in ("is_multiplayer", "is_controller"))
+            and isinstance(details.get('field_states'), dict)
+            and all(details['field_states'].get(key) in ('present', 'empty', 'missing', 'invalid')
+                    for key in ('genres', 'categories'))
+            and all(details['field_states'].get(key) in ('known', 'missing')
+                    for key in ('is_multiplayer', 'is_controller')))
 
 
 def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_api=True,
@@ -289,12 +272,13 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
         if fetch_store:
             details = cached_store_details(g["appid"], cache_dir or OUTPUT_FILE.parent / ".steam_cache", refresh_metadata, report["metadata"])
             if details:
-                row.update({k: details[k] for k in ("genres", "categories", "is_multiplayer", "is_controller")})
+                merge_fields(row, details)
                 row["provenance"]["store_metadata"] = "store_cache"
                 if row["provenance"].get("app_type") in (None, "license_file") and app_type(details.get("app_type")) != "unknown":
                     row["app_type"] = app_type(details["app_type"])
                     row["provenance"]["app_type"] = "store_cache"
         library.append(row)
+    report["metadata"]["coverage_after"] = coverage(library)
     report["summary"]["types"] = dict(Counter(r["app_type"] for r in library))
     report["summary"].update(
         current_client_apps=len(library) if report["membership"] == "client_snapshot" else None,

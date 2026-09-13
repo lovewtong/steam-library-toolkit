@@ -137,7 +137,8 @@ class FileAndCollectionTests(unittest.TestCase):
     @patch("steam_collect.time.sleep")
     @patch("steam_collect.get_store_result")
     def test_metadata_cache_reuses_and_refreshes_without_losing_delisted_app(self, store, sleep):
-        details = {"app_type": "game", "genres": [], "categories": [], "is_multiplayer": False, "is_controller": False}
+        from steam_metadata import parse_fields
+        details = {"app_type": "game", **parse_fields({'genres': [], 'categories': []})}
         store.return_value = {"status": "success", "details": details}
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)

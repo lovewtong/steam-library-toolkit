@@ -5,13 +5,15 @@ from email.utils import parsedate_to_datetime
 import requests
 
 
-def get_response(url, *, params, timeout, stats=None):
+def get_response(url, *, params, timeout, stats=None, before_attempt=None):
     deadline = time.monotonic() + 35
     for attempt in range(1, 4):
         if stats is not None:
             stats["attempts"] = attempt
         response, error, retry_after = None, None, 0
         try:
+            if before_attempt is not None:
+                before_attempt()
             response = requests.get(url, params=params, timeout=min(timeout, max(.01, deadline - time.monotonic())), allow_redirects=False)
             if response.status_code not in (408, 429, 500, 502, 503, 504):
                 return response
