@@ -103,11 +103,14 @@ def match_tags(game: dict) -> list[str]:
     return list(dict.fromkeys(tags))  # 去重保序
 
 
-def classify_library(library: list) -> list[dict]:
+def classify_library(library: list, overrides=None) -> list[dict]:
     """对每款游戏赋予主分类与标签。"""
+    from classification_overrides import load_overrides, correction, evidence
+    overrides = load_overrides() if overrides is None else overrides
     result = []
     for g in library:
-        main = match_main_category(g)
+        rule = correction(g, overrides)
+        main = rule['main_category'] if rule else match_main_category(g)
         tags = match_tags(g)
         result.append({
             "run_id": g.get("run_id"),
@@ -119,6 +122,7 @@ def classify_library(library: list) -> list[dict]:
             "playtime_state": g.get("playtime", {}).get("state"),
             "last_played_iso": g.get("last_played_iso"),
             "main_category": main,
+            "classification_evidence": evidence(rule) if rule else {"source": "table_rules"},
             "tags": tags,
             "is_multiplayer": g.get("is_multiplayer"),
             "is_controller": g.get("is_controller"),
@@ -204,7 +208,10 @@ def main():
         library, selected = load_selected(args)
     except (OSError, ValueError) as exc:
         parser.exit(1, f"分类失败：{exc}\n")
-    classified = classify_library(selected)
+    try:
+        classified = classify_library(selected)
+    except (OSError, ValueError):
+        parser.exit(1, '分类失败：请检查 AppID 校正规则文件\n')
 
     write_csv(classified, Path(args.csv))
     write_md_table(classified, Path(args.md))

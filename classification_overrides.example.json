@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "apps": {
+    "730": {
+      "main_category": "射击",
+      "sub": "竞技战术射击",
+      "reason": "我的人工分类偏好；请填写实际校正依据。",
+      "reference": "https://store.steampowered.com/app/730/"
+    }
+  }
+}

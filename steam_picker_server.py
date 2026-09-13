@@ -64,7 +64,9 @@ class PickerLibrary:
             rows = load_library(self.source)
             if not self.allow_candidates and any(r.get("membership", {}).get("state") == "candidate" for r in rows):
                 raise ValueError("CANDIDATE_LIBRARY")
-            games = normalized_games([{**classify_one(r), "run_id": r.get("run_id")} for r in select_for_classification(rows)])
+            from classification_overrides import load_overrides
+            overrides = load_overrides()
+            games = normalized_games([{**classify_one(r, overrides), "run_id": r.get("run_id")} for r in select_for_classification(rows)])
             run = {"run_id": None, "status": "legacy_unverified", "count": len(games)}
         return {"games": games, "run": run}
 

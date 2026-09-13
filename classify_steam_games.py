@@ -6,7 +6,7 @@ import re
 INPUT_FILE = 'steam_library.json'
 OUTPUT_FILE = 'steam_library_classified.json'
 
-# 已知游戏的精准分类（名称小写匹配或包含）
+# 名称启发式分类；AppID 校正优先，系列名匹配不代表精确身份确认。
 KNOWN = {
     "left 4 dead": {"primary": "射击 (FPS/TPS)", "sub": "合作生存射击", "vibe": "紧张爽快", "intensity": "高", "slogan": "四人一狗，僵尸不够杀。"},
     "left 4 dead 2": {"primary": "射击 (FPS/TPS)", "sub": "合作生存射击", "vibe": "紧张爽快", "intensity": "高", "slogan": "打僵尸的尽头是打队友。"},
@@ -267,11 +267,12 @@ KNOWN = {
 }
 
 def normalize_name(name):
-    return name.lower().strip()
+    return ' '.join(re.sub('[™®©]', '', name).casefold().split())
 
 def find_known(name):
     n = normalize_name(name)
-    candidates = [(k, v) for k, v in KNOWN.items() if k in n]
+    candidates = [(normalize_name(k), v) for k, v in KNOWN.items()
+                  if re.search(r'(?<!\w)' + re.escape(normalize_name(k)) + r'(?!\w)', n)]
     if not candidates:
         return None
     candidates.sort(key=lambda x: -len(x[0]))
@@ -339,7 +340,7 @@ def intensity_from_genres(genres):
 def slogan_fallback(name, primary):
     return f"《{name}》——{primary}，值得一试。"
 
-def classify_one(game):
+def _classify_one(game):
     appid = game.get("appid")
     name = game.get("name", "")
     genres = game.get("genres") or []
@@ -373,6 +374,22 @@ def classify_one(game):
         }
     }
 
+def classify_one(game, overrides=None):
+    from classification_overrides import load_overrides, correction, evidence, MAIN_TO_PRIMARY
+    overrides = load_overrides() if overrides is None else overrides
+    result = _classify_one(game)
+    rule = correction(game, overrides)
+    if rule:
+        result['analysis']['primary'] = MAIN_TO_PRIMARY[rule['main_category']]
+        result['analysis'].update({k: rule[k] for k in ('sub', 'vibe', 'intensity', 'slogan') if k in rule})
+        if 'slogan' not in rule and not find_known(game.get('name', '')):
+            result['analysis']['slogan'] = slogan_fallback(game.get('name', ''), result['analysis']['primary'])
+        result['classification_evidence'] = evidence(rule)
+    else:
+        result['classification_evidence'] = {'source': 'known_name' if find_known(game.get('name', '')) else 'genre_rules'}
+    return result
+
+
 def main():
     import argparse
     from pathlib import Path
@@ -387,7 +404,12 @@ def main():
         games, selected = load_selected(args)
     except (OSError, ValueError) as exc:
         parser.exit(1, f"分类失败：{exc}\n")
-    out = [{**classify_one(g), "run_id": g.get("run_id")} for g in selected]
+    from classification_overrides import load_overrides
+    try:
+        overrides = load_overrides()
+    except (OSError, ValueError):
+        parser.exit(1, '分类失败：请检查 AppID 校正规则文件\n')
+    out = [{**classify_one(g, overrides), "run_id": g.get("run_id")} for g in selected]
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     print(f"采集记录 {len(games)} 条，已分类 {len(out)} 条，结果已写入 {args.output}")

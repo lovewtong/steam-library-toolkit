@@ -35,3 +35,4 @@ venv/
 node_modules/
 npm-debug.log*
 pnpm-debug.log*
+classification_overrides.local.json
