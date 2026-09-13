@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "apps": {
+    "500": {"main_category": "射击", "sub": "合作生存射击", "reason": "按 Steam 商店介绍及 FPS 标签人工核对，2026-09-13。", "reference": "https://store.steampowered.com/app/500/"},
+    "550": {"main_category": "射击", "sub": "合作生存射击", "reason": "Steam 商店介绍明确为合作动作恐怖 FPS，2026-09-13 核对。", "reference": "https://store.steampowered.com/app/550/"},
+    "730": {"main_category": "射击", "sub": "竞技战术射击", "reason": "按 Steam 商店 FPS、Shooter、Competitive 标签人工核对，2026-09-13。", "reference": "https://store.steampowered.com/app/730/"}
+  }
+}

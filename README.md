@@ -103,6 +103,8 @@ python steam_picker.py --serve --input steam_enriched.json
 python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.json --appid 550
 ```
 
+可用 `classification_overrides.local.json` 按 AppID 人工校正，并通过 `python steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json` 离线重建。两种分类输出共享校正，旧运行保持不变。格式与映射见 [CLASSIFICATION_OVERRIDES.md](CLASSIFICATION_OVERRIDES.md)。
+
 输入必须带有有效的运行指针，并来自可信客户端成员采集；输出必须与输入分开。补全会重新生成分类，但保留成员、应用类型、时长证据和原始采集时间，不代表重新核验当前所有权。审计记录 `operation=metadata_enrichment`、`parent_run` 和逐应用商店状态；`metadata.state=partial` 表示有应用未补全，旧元数据保留。`--appid` 只限制请求范围，输出仍包含整个原库。支持 `--cache-dir`、`--refresh-metadata`，沿用串行限速、缓存与有限重试。补全期间会锁定输入和输出，避免与采集同时更新同一目标；大库首次补全可能耗时较长。
 
 每次采集先在 `.steam_library.runs/<run_id>/` 写入库、审计、快照、两个分类结果、CSV/Markdown、摘要与探测状态。全部校验并刷盘后，最后原子替换 `steam_library.current.json`。这个指针是整轮运行的提交点；写入中断不会让读取者混用新旧产物。旧运行保留，不自动清理。

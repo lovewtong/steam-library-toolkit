@@ -339,7 +339,7 @@ def intensity_from_genres(genres):
 def slogan_fallback(name, primary):
     return f"《{name}》——{primary}，值得一试。"
 
-def classify_one(game):
+def _classify_one(game):
     appid = game.get("appid")
     name = game.get("name", "")
     genres = game.get("genres") or []
@@ -373,6 +373,22 @@ def classify_one(game):
         }
     }
 
+def classify_one(game, overrides=None):
+    from classification_overrides import load_overrides, correction, evidence, MAIN_TO_PRIMARY
+    overrides = load_overrides() if overrides is None else overrides
+    result = _classify_one(game)
+    rule = correction(game, overrides)
+    if rule:
+        result['analysis']['primary'] = MAIN_TO_PRIMARY[rule['main_category']]
+        result['analysis'].update({k: rule[k] for k in ('sub', 'vibe', 'intensity', 'slogan') if k in rule})
+        if 'slogan' not in rule and not find_known(game.get('name', '')):
+            result['analysis']['slogan'] = slogan_fallback(game.get('name', ''), result['analysis']['primary'])
+        result['classification_evidence'] = evidence(rule)
+    else:
+        result['classification_evidence'] = {'source': 'known_name' if find_known(game.get('name', '')) else 'genre_rules'}
+    return result
+
+
 def main():
     import argparse
     from pathlib import Path
@@ -387,7 +403,12 @@ def main():
         games, selected = load_selected(args)
     except (OSError, ValueError) as exc:
         parser.exit(1, f"分类失败：{exc}\n")
-    out = [{**classify_one(g), "run_id": g.get("run_id")} for g in selected]
+    from classification_overrides import load_overrides
+    try:
+        overrides = load_overrides()
+    except (OSError, ValueError):
+        parser.exit(1, '分类失败：请检查 AppID 校正规则文件\n')
+    out = [{**classify_one(g, overrides), "run_id": g.get("run_id")} for g in selected]
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     print(f"采集记录 {len(games)} 条，已分类 {len(out)} 条，结果已写入 {args.output}")

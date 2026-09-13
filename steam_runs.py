@@ -147,14 +147,19 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     if any(r.get("run_id") != run_id for r in rows):
         raise ValueError("GENERATION_MISMATCH：条目运行编号不一致")
     selected = select_for_classification(rows)
-    table = classify_library(selected)
-    five = [{**classify_one(g), "run_id": run_id} for g in selected]
+    from classification_overrides import load_overrides
+    overrides = load_overrides()
+    applied = {str(g['appid']): overrides[str(g['appid'])] for g in selected if str(g['appid']) in overrides}
+    audit['classification'] = {'override_count': len(applied), 'rules_artifact': 'classification_overrides.json'}
+    table = classify_library(selected, overrides)
+    five = [{**classify_one(g, overrides), "run_id": run_id} for g in selected]
     expected = {g["appid"] for g in selected}
     if {g["appid"] for g in table} != expected or {int(g["appid"]) for g in five} != expected:
         raise RuntimeError("CLASSIFICATION_INVARIANT_FAILED")
     atomic_json(directory / "steam_library.json", rows)
     atomic_json(directory / "steam_library.audit.json", audit)
     atomic_json(directory / "steam_library_classified.json", five)
+    atomic_json(directory / "classification_overrides.json", {'schema_version': 1, 'apps': applied})
     atomic_json(directory / "summary.json", {"run_id": run_id, "producer": audit["producer"], **audit["summary"]})
     absent = set(audit.get("difference", {}).get("client_not_api", []))
     atomic_json(directory / "missing_from_web_api.json", {"run_id": run_id, "apps": [
