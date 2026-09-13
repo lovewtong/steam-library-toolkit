@@ -1,0 +1,335 @@
+{
+  "schema_version": 1,
+  "scope": "allowlisted_field_types_only",
+  "observations": [
+    {
+      "method": "GetAllClientLogonInfo",
+      "response": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "length": 2,
+            "item_shapes": [
+              {
+                "type": "object",
+                "properties": {
+                  "client_instanceid": {
+                    "type": "string"
+                  },
+                  "machine_name": {
+                    "type": "string"
+                  }
+                },
+                "omitted_fields": 5
+              }
+            ],
+            "variants_may_be_truncated": false
+          }
+        },
+        "omitted_fields": 1
+      }
+    },
+    {
+      "method": "GetOwnedGames",
+      "response": {
+        "type": "object",
+        "properties": {
+          "game_count": {
+            "type": "integer"
+          },
+          "games": {
+            "type": "array",
+            "length": 358,
+            "item_shapes": [
+              {
+                "type": "object",
+                "properties": {
+                  "appid": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "playtime_deck_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_linux_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_mac_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_windows_forever": {
+                    "type": "integer"
+                  },
+                  "rtime_last_played": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 4
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "appid": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "playtime_deck_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_linux_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_mac_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_windows_forever": {
+                    "type": "integer"
+                  },
+                  "rtime_last_played": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 3
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "appid": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "playtime_deck_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_linux_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_mac_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_windows_forever": {
+                    "type": "integer"
+                  },
+                  "rtime_last_played": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 2
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "appid": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "playtime_deck_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_linux_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_mac_forever": {
+                    "type": "integer"
+                  },
+                  "playtime_windows_forever": {
+                    "type": "integer"
+                  },
+                  "rtime_last_played": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 5
+              }
+            ],
+            "variants_may_be_truncated": false
+          }
+        },
+        "omitted_fields": 0
+      }
+    },
+    {
+      "method": "GetClientAppList",
+      "response": {
+        "type": "object",
+        "properties": {
+          "apps": {
+            "type": "array",
+            "length": 388,
+            "item_shapes": [
+              {
+                "type": "object",
+                "properties": {
+                  "app": {
+                    "type": "string"
+                  },
+                  "app_type": {
+                    "type": "string"
+                  },
+                  "appid": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 5
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "app": {
+                    "type": "string"
+                  },
+                  "app_type": {
+                    "type": "string"
+                  },
+                  "appid": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 13
+              }
+            ],
+            "variants_may_be_truncated": false
+          },
+          "client_info": {
+            "type": "object",
+            "properties": {
+              "local_users": {
+                "type": "array",
+                "length": 1,
+                "item_shapes": [
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "variants_may_be_truncated": false
+              },
+              "machine_name": {
+                "type": "string"
+              }
+            },
+            "omitted_fields": 7
+          }
+        },
+        "omitted_fields": 4
+      }
+    },
+    {
+      "method": "GetClientAppList",
+      "response": {
+        "type": "object",
+        "properties": {
+          "apps": {
+            "type": "array",
+            "length": 388,
+            "item_shapes": [
+              {
+                "type": "object",
+                "properties": {
+                  "app": {
+                    "type": "string"
+                  },
+                  "app_type": {
+                    "type": "string"
+                  },
+                  "appid": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 5
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "app": {
+                    "type": "string"
+                  },
+                  "app_type": {
+                    "type": "string"
+                  },
+                  "appid": {
+                    "type": "integer"
+                  }
+                },
+                "omitted_fields": 13
+              }
+            ],
+            "variants_may_be_truncated": false
+          },
+          "client_info": {
+            "type": "object",
+            "properties": {
+              "local_users": {
+                "type": "array",
+                "length": 1,
+                "item_shapes": [
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "variants_may_be_truncated": false
+              },
+              "machine_name": {
+                "type": "string"
+              }
+            },
+            "omitted_fields": 7
+          }
+        },
+        "omitted_fields": 4
+      }
+    },
+    {
+      "method": "GetAllClientLogonInfo",
+      "response": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "length": 2,
+            "item_shapes": [
+              {
+                "type": "object",
+                "properties": {
+                  "client_instanceid": {
+                    "type": "string"
+                  },
+                  "machine_name": {
+                    "type": "string"
+                  }
+                },
+                "omitted_fields": 5
+              }
+            ],
+            "variants_may_be_truncated": false
+          }
+        },
+        "omitted_fields": 1
+      }
+    }
+  ],
+  "captured_at": "2026-09-12T14:00:24.951600+00:00",
+  "origin": "live_windows_local_session",
+  "client_state": "complete",
+  "api_state": "complete"
+}

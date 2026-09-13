@@ -54,6 +54,8 @@ Windows/Linux/macOS 离线 CI 已运行通过，不访问真实 Steam 账号。`
 
 ## 后续真人验收清单
 
+第二阶段已增加协议字段类型采样、真实进程中断/刷盘失败/万级库测试，并修复非有限令牌时间校验及历史时长摘要。当前本地回归为 69 项 Python、20 项 Node；真人场景的完成范围见 [PHASE_TWO_VALIDATION.md](PHASE_TWO_VALIDATION.md)，不能将模拟测试视为跨环境真人验收。
+
 - [ ] 现有合法家庭环境的 self/shared 对照与 owner evidence。
 - [ ] 自然发生的退款/撤销前后快照，旧快照不复活移除成员。
 - [ ] 免费周末到期前后客户端、许可、API 对照。
