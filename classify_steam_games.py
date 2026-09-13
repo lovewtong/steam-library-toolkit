@@ -6,7 +6,7 @@ import re
 INPUT_FILE = 'steam_library.json'
 OUTPUT_FILE = 'steam_library_classified.json'
 
-# 已知游戏的精准分类（名称小写匹配或包含）
+# 名称启发式分类；AppID 校正优先，系列名匹配不代表精确身份确认。
 KNOWN = {
     "left 4 dead": {"primary": "射击 (FPS/TPS)", "sub": "合作生存射击", "vibe": "紧张爽快", "intensity": "高", "slogan": "四人一狗，僵尸不够杀。"},
     "left 4 dead 2": {"primary": "射击 (FPS/TPS)", "sub": "合作生存射击", "vibe": "紧张爽快", "intensity": "高", "slogan": "打僵尸的尽头是打队友。"},
@@ -267,11 +267,12 @@ KNOWN = {
 }
 
 def normalize_name(name):
-    return name.lower().strip()
+    return ' '.join(re.sub('[™®©]', '', name).casefold().split())
 
 def find_known(name):
     n = normalize_name(name)
-    candidates = [(k, v) for k, v in KNOWN.items() if k in n]
+    candidates = [(normalize_name(k), v) for k, v in KNOWN.items()
+                  if re.search(r'(?<!\w)' + re.escape(normalize_name(k)) + r'(?!\w)', n)]
     if not candidates:
         return None
     candidates.sort(key=lambda x: -len(x[0]))

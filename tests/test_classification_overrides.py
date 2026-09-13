@@ -7,12 +7,48 @@ from unittest.mock import patch
 
 from classification_overrides import load_overrides, read_rules
 from classify_games import classify_library
-from classify_steam_games import classify_one
+from classify_steam_games import classify_one, find_known
 from steam_runs import publish_run, load_library, resolve_artifact, manifest_path
 from test_phase_two import run_bundle
 
 
 class ClassificationOverridesTests(unittest.TestCase):
+    def test_reviewed_missing_genre_examples_use_agreed_categories(self):
+        # Editorial expectations from CLASSIFICATION_REVIEW.md, not generated from rules.
+        cases = [
+            (241930, '动作/冒险', '动作/冒险', '开放世界动作'),
+            (326480, '独立/其他', '独立/叙事', '视觉小说'),
+            (627270, '动作/冒险', '动作/冒险', '格斗'),
+            (745960, '独立/其他', '独立/叙事', '视觉小说'),
+            (923810, '独立/其他', '独立/叙事', '视觉小说'),
+            (976310, '动作/冒险', '动作/冒险', '格斗'),
+            (1971870, '动作/冒险', '动作/冒险', '格斗'),
+        ]
+        rules = load_overrides(Path('nonexistent-local-rules.json'))
+        for appid, main, primary, sub in cases:
+            with self.subTest(appid=appid):
+                game = {'appid': appid, 'name': '名称不可用', 'genres': [], 'playtime_minutes': None}
+                self.assertEqual(classify_library([game], rules)[0]['main_category'], main)
+                result = classify_one(game, rules)
+                self.assertEqual(result['analysis']['primary'], primary)
+                self.assertEqual(result['analysis']['sub'], sub)
+                self.assertIn('reference', result['classification_evidence'])
+
+    def test_name_matching_rejects_word_fragments(self):
+        for name in ('Konami', 'Shanked', 'xBioshock', 'BioshockInfinite'):
+            with self.subTest(name=name):
+                self.assertIsNone(find_known(name))
+
+    def test_name_matching_keeps_series_specificity_and_trademarks(self):
+        for name, sub in [('  BIOSHOCK™   INFINITE  ', '叙事FPS'),
+                          ('Batman: Arkham Knight', '开放世界动作'),
+                          ('Hitman: Sniper Challenge', '狙击'),
+                          ('Shank 2', '横版清版')]:
+            with self.subTest(name=name):
+                self.assertEqual(find_known(name)['sub'], sub)
+        self.assertEqual(find_known('BioShock Infinite: Complete Edition'), find_known('BioShock Infinite'))
+        self.assertEqual(find_known('Batman™: Arkham Knight'), find_known('Batman: Arkham Knight'))
+
     def test_appid_survives_renaming_and_does_not_match_unrelated_same_name(self):
         rules = load_overrides(Path('nonexistent-local-rules.json'))
         for appid in (500, 550, 730):

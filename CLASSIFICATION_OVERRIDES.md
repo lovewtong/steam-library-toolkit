@@ -32,6 +32,6 @@
 
 ## 当前覆盖与限制
 
-首批只核对了 [Left 4 Dead](https://store.steampowered.com/app/500/)、[Left 4 Dead 2](https://store.steampowered.com/app/550/) 和 [Counter-Strike 2](https://store.steampowered.com/app/730/) 的商店介绍/标签，归入射击。它们是明确的校正样本，不代表全库准确率。
+内置规则现有 10 条：首批三款射击游戏，以及本轮七款动作、格斗和视觉小说。完整逐项来源、分类取舍与待核对清单见 [CLASSIFICATION_REVIEW.md](CLASSIFICATION_REVIEW.md)。这些是明确的校正样本，不代表全库准确率。
 
-原有 KNOWN 名称规则尚未全部迁移到 AppID，14 个缺少类型标签的项目也未全部人工标注。元数据字段覆盖、性能优化、认证体验、未知时长研究及收藏写回仍是第三阶段后续任务。
+原有 KNOWN 名称规则尚未全部迁移到 AppID，14 个缺少类型标签的项目中仍有 7 个待核对。名称匹配已增加词边界及商标/空白规范化，但仍是启发式。元数据字段覆盖、性能优化、认证体验、未知时长研究及收藏写回仍是第三阶段后续任务。
