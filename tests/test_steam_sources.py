@@ -137,7 +137,8 @@ class FileAndCollectionTests(unittest.TestCase):
     @patch("steam_collect.time.sleep")
     @patch("steam_collect.get_store_result")
     def test_metadata_cache_reuses_and_refreshes_without_losing_delisted_app(self, store, sleep):
-        details = {"app_type": "game", "genres": [], "categories": [], "is_multiplayer": False, "is_controller": False}
+        from steam_metadata import parse_fields
+        details = {"app_type": "game", **parse_fields({'genres': [], 'categories': []})}
         store.return_value = {"status": "success", "details": details}
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)
@@ -149,7 +150,7 @@ class FileAndCollectionTests(unittest.TestCase):
         self.assertEqual(rows[0]["appid"], 10)
         self.assertEqual(rows[0]["genres"], [])
 
-    @patch("steam_collect.requests.get")
+    @patch("steam_http.request_once")
     def test_store_bad_json_shapes_are_optional_failures(self, get):
         get.return_value.status_code = 200
         for data in ([], {"10": None}, {"10": {"success": True, "data": None}}):
