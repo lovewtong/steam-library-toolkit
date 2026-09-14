@@ -31,10 +31,14 @@ class HTTPDeadlineTests(unittest.TestCase):
                 self.end_headers()
                 received.set()
                 try:
+                    if self.path == '/large':
+                        self.wfile.write(b'x' * 8192)
+                        self.wfile.flush()
+                        return
                     for _ in range(150):
                         if stopped.wait(.04):
                             break
-                        self.wfile.write(b'x' * (1024 if self.path == '/large' else 1))
+                        self.wfile.write(b'x')
                         self.wfile.flush()
                 except (ConnectionError, OSError):
                     pass

@@ -19,7 +19,7 @@ def main():
                                                         allow_redirects=False, stream=True) as response:
             body = bytearray()
             if response.status_code == 200:
-                for chunk in response.iter_content(65536):
+                for chunk in response.iter_content(min(65536, job['max_bytes'] + 1)):
                     body.extend(chunk)
                     if len(body) > job['max_bytes']:
                         print(json.dumps({'error': 'HTTP_RESPONSE_TOO_LARGE'}))
