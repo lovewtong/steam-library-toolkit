@@ -118,6 +118,29 @@ class HTTPDeadlineTests(unittest.TestCase):
 
 
 class AuditFixTests(unittest.TestCase):
+    def test_type_fill_records_direct_and_cached_observation_sources(self):
+        from steam_collect import collect
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'apps.txt'
+            source.write_text('1 Example\n', encoding='utf-8')
+            result = {'status': 'success', 'details': {'app_type': 'game', **parse_fields({})}}
+            with patch('steam_collect.get_store_result', return_value=result) as fetch:
+                for expected in ('store_api', 'store_cache'):
+                    audit = {}
+                    rows = collect(apps_file=source, use_api=False, use_client=False, audit=audit,
+                                   cache_dir=Path(directory) / 'cache')
+                    self.assertEqual(rows[0]['app_type'], 'game')
+                    self.assertEqual(rows[0]['provenance']['app_type'], expected)
+                    actual, _, _ = publish_run(Path(directory) / f'{expected}.json', rows, audit)
+                    saved = json.loads(resolve_artifact(actual, 'steam_library.audit.json').read_text(encoding='utf-8'))
+                    evidence = saved['metadata']['apps']['1']
+                    self.assertEqual(evidence['source'], expected)
+                    self.assertEqual(evidence['fields']['app_type'], 'known')
+                    self.assertIn('app_type', evidence['applied_fields'])
+                    self.assertEqual(evidence['field_actions']['app_type'],
+                                     {'action': 'updated', 'reason': 'observed', 'value': 'game'})
+                self.assertEqual(fetch.call_count, 1)
+
     def test_direct_collection_publishes_missing_versus_empty_evidence(self):
         from steam_collect import collect
         with tempfile.TemporaryDirectory() as directory:

@@ -286,7 +286,12 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
             if details:
                 if row["provenance"].get("app_type") in (None, "license_file") and app_type(details.get("app_type")) != "unknown":
                     row["app_type"] = app_type(details["app_type"])
-                    row["provenance"]["app_type"] = "store_cache"
+                    row["provenance"]["app_type"] = observation['source']
+                    evidence = report['metadata']['apps'][str(g['appid'])]
+                    evidence['fields']['app_type'] = 'known'
+                    evidence['applied_fields'].append('app_type')
+                    evidence['field_actions']['app_type'] = {
+                        'action': 'updated', 'reason': 'observed', 'value': row['app_type']}
         library.append(row)
     report["metadata"]["coverage_after"] = coverage(library)
     report["summary"]["types"] = dict(Counter(r["app_type"] for r in library))

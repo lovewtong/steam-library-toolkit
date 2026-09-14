@@ -66,6 +66,8 @@ def request_once(url, *, params, timeout, deadline, cancel_event=None, max_bytes
         response.status_code = result['status']
         response.headers.update(result['headers'])
         response._content = base64.b64decode(result['body'])
+        # The worker has consumed and closed the stream; only buffered bytes remain.
+        response._content_consumed = True
         return response
     except (ValueError, KeyError, TypeError):
         raise requests.ConnectionError('HTTP_WORKER_INVALID') from None
