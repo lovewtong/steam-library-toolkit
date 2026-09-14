@@ -150,7 +150,7 @@ class FileAndCollectionTests(unittest.TestCase):
         self.assertEqual(rows[0]["appid"], 10)
         self.assertEqual(rows[0]["genres"], [])
 
-    @patch("steam_collect.requests.get")
+    @patch("steam_http.request_once")
     def test_store_bad_json_shapes_are_optional_failures(self, get):
         get.return_value.status_code = 200
         for data in ([], {"10": None}, {"10": {"success": True, "data": None}}):

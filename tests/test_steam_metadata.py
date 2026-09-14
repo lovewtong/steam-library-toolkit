@@ -55,15 +55,15 @@ class MetadataFieldsTests(unittest.TestCase):
         limited = Mock(status_code=429, headers={'Retry-After': '0'})
         success = Mock(status_code=200)
         gate = Mock()
-        with patch('steam_http.requests.get', side_effect=[limited, success]), patch('steam_http.time.sleep'):
-            self.assertIs(get_response('https://example.invalid', params={}, timeout=1, before_attempt=gate), success)
-        self.assertEqual(gate.call_count, 2)
+        with patch('steam_http.request_once', side_effect=[limited, success]), patch('steam_http.wait_delay'):
+            self.assertIs(get_response('https://example.invalid', params={}, timeout=1, gate=gate), success)
+        self.assertEqual(gate.wait.call_count, 2)
 
     def test_old_cache_cannot_keep_incorrect_controller_result(self):
         from steam_collect import cached_store_details
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / '1.json'
-            old = {'schema_version': 3, 'fetched_at': 1000, 'status': 'success',
+            old = {'schema_version': 4, 'fetched_at': 1000, 'status': 'success',
                    'details': {'genres': [], 'categories': ['完全支持控制器'],
                                'is_controller': False, 'is_multiplayer': False}}
             path.write_text(json.dumps(old), encoding='utf-8')

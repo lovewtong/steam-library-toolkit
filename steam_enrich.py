@@ -3,6 +3,7 @@ from copy import deepcopy
 from concurrent.futures import ThreadPoolExecutor
 import json
 import time
+import threading
 from pathlib import Path
 
 from steam_collect import cached_store_details, OUTPUT_FILE
@@ -11,7 +12,7 @@ from steam_runs import (check_previous, manifest_path, new_run_metadata, publish
                         resolve_artifact)
 from steam_schema import validate_artifacts
 from steam_sources import utc_now
-from steam_metadata import merge_fields, coverage
+from steam_metadata import apply_observation, coverage
 
 
 def library_target(path):
@@ -68,20 +69,23 @@ def enrich(source, output, *, cache_dir=None, refresh=False, appids=(), workers=
         for row in rows:
             row['run_id'] = audit['run_id']
 
+        cancel = threading.Event()
+
         def fetch(row):
-            stats = {}
+            stats, observation = {}, {}
             details = cached_store_details(row['appid'], cache_dir or OUTPUT_FILE.parent / '.steam_cache',
-                                           refresh, stats)
-            return details, stats
+                                           refresh, stats, cancel_event=cancel, observation=observation)
+            return details, stats, observation
         selected_rows = [row for row in rows if row['appid'] in selected]
         pool = ThreadPoolExecutor(max_workers=workers)
         try:
             results = pool.map(fetch, selected_rows)
-            for completed, (row, (details, stats)) in enumerate(zip(selected_rows, results), 1):
-                apply_result(row, details, stats, metadata)
+            for completed, (row, (details, stats, observation)) in enumerate(zip(selected_rows, results), 1):
+                apply_observation(row, details, stats, observation, metadata)
                 if completed % 25 == 0 or completed == len(selected):
                     print(f'补全商店元数据：{completed}/{len(selected)}', flush=True)
         finally:
+            cancel.set()
             pool.shutdown(wait=True, cancel_futures=True)
         metadata['finished_at'] = utc_now()
         metadata['elapsed_seconds'] = round(time.monotonic() - started, 3)
@@ -90,20 +94,6 @@ def enrich(source, output, *, cache_dir=None, refresh=False, appids=(), workers=
         # Request success and field coverage are independent; prior evidence may be retained.
         result = publish_run(output, rows, audit)
         return result, metadata
-
-
-def apply_result(row, details, stats, metadata):
-    state = next((s for s in ('success', 'not_found', 'access_denied', 'rate_limited',
-                              'parse_error', 'transient_error') if stats.get(s)), 'unavailable')
-    metadata['apps'][str(row['appid'])] = {'state': state, 'cache_hit': bool(stats.get('cache_hits'))}
-    for key, value in stats.items():
-        metadata[key] = metadata.get(key, 0) + value
-    if details is not None:
-        applied = merge_fields(row, details)
-        metadata['apps'][str(row['appid'])].update(
-            fields=details.get('field_states', {}), applied_fields=applied)
-        if applied:
-            row.setdefault('provenance', {})['store_metadata'] = 'store_cache'
 
 
 def main(argv=None):

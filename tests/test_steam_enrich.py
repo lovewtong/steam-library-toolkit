@@ -15,7 +15,7 @@ from steam_sources import SourceResult, reconcile, records_hash
 class EnrichmentTests(unittest.TestCase):
     def test_workers_overlap_and_results_keep_source_order(self):
         barrier = threading.Barrier(2)
-        def store(appid, cache_dir, refresh, stats):
+        def store(appid, cache_dir, refresh, stats, **kwargs):
             barrier.wait(timeout=5)  # A serial implementation cannot pass this barrier.
             stats.update(success=1, cache_hits=0)
             from steam_metadata import parse_fields
@@ -57,7 +57,7 @@ class EnrichmentTests(unittest.TestCase):
         self.pointer = manifest_path(self.source).read_bytes()
 
     @staticmethod
-    def store(appid, cache_dir, refresh, stats):
+    def store(appid, cache_dir, refresh, stats, **kwargs):
         stats.update(success=1, cache_hits=1)
         return {'genres': ['Adventure'], 'categories': ['Co-op'], 'is_multiplayer': True,
                 'is_controller': None, 'app_type': 'dlc'}
@@ -87,14 +87,16 @@ class EnrichmentTests(unittest.TestCase):
         self.assertEqual(snapshot['generated_at'], audit['parent_run']['generated_at'])
 
     def test_partial_failure_retains_previous_metadata(self):
-        def failure(appid, cache_dir, refresh, stats):
+        def failure(appid, cache_dir, refresh, stats, **kwargs):
             stats.update(not_found=1, cache_hits=0)
         with patch('steam_enrich.cached_store_details', side_effect=failure):
             _, meta = enrich(self.source, self.output, appids=[1])
         rows = load_library(self.output)
         self.assertEqual([r['genres'] for r in rows], [['Original'], ['Original']])
         self.assertEqual(meta['state'], 'partial')
-        self.assertEqual(meta['apps'], {'1': {'state': 'not_found', 'cache_hit': False}})
+        self.assertEqual(meta['apps']['1']['state'], 'not_found')
+        self.assertFalse(meta['apps']['1']['cache_hit'])
+        self.assertTrue(all(a['action'] == 'retained' for a in meta['apps']['1']['field_actions'].values()))
 
     def test_rejects_bad_source_selection_and_conflicting_output_before_network(self):
         with patch('steam_enrich.cached_store_details') as store:

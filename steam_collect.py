@@ -18,8 +18,8 @@ import socket
 from steam_sources import (AccountMismatchError, SourceResult, app_type, atomic_json,
                            read_snapshot, reconcile, utc_now, validate_records)
 from steam_auth import AuthError, collect_client
-from steam_http import get_response
-from steam_metadata import STORE_GATE, parse_fields, merge_fields, coverage
+from steam_http import get_response, SourceCoolingDown, check_cancel
+from steam_metadata import STORE_GATE, parse_fields, apply_observation, coverage
 
 try:
     import requests
@@ -86,7 +86,7 @@ def merge_games(api_games: list[dict], licensed_apps: list[dict]) -> list[dict]:
     return reconcile([SourceResult("web_api", api_games), SourceResult("license_file", licensed_apps)])[0]
 
 
-def get_store_result(appid: int):
+def get_store_result(appid: int, *, cancel_event=None):
     """
     获取商店详情（可选）：类型、分类（含多人/手柄等）。
     使用公开商店 API，有频率限制，需控制请求间隔。
@@ -94,11 +94,13 @@ def get_store_result(appid: int):
     url = "https://store.steampowered.com/api/appdetails"
     params = {"appids": appid, "l": "schinese"}
     try:
-        resp = get_response(url, params=params, timeout=10, before_attempt=STORE_GATE.wait)
+        resp = get_response(url, params=params, timeout=10, gate=STORE_GATE, cancel_event=cancel_event)
         if resp.status_code != 200:
             state = "rate_limited" if resp.status_code == 429 else "access_denied" if resp.status_code in (401, 403) else "not_found" if resp.status_code == 404 else "transient_error"
             return {"status": state, "details": None}
         data = resp.json()
+    except SourceCoolingDown:
+        return {"status": "deferred", "details": None}
     except requests.RequestException:
         return {"status": "transient_error", "details": None}
     except ValueError:
@@ -120,7 +122,8 @@ def get_store_details(appid):
     return get_store_result(appid)["details"]
 
 
-def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None):
+def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None, *, cancel_event=None, observation=None):
+    check_cancel(cancel_event)
     path = Path(cache_dir) / f"{appid}.json"
     ttl = {"success": 7 * 86400, "not_found": 21600, "access_denied": 600,
            "rate_limited": 60, "parse_error": 60, "transient_error": 30}
@@ -129,19 +132,25 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None):
         try:
             cached = json.loads(path.read_text(encoding="utf-8"))
             status = cached.get("status", "success")
-            if (cached.get("schema_version") == 4 and status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
+            if (cached.get("schema_version") == 5 and status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
                     and (status != "success" or valid_store_details(cached["details"]))):
                 cache = cached
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
             pass
     hit = cache is not None
     if cache is None:
-        cache = {"schema_version": 4, "fetched_at": time.time(), **get_store_result(appid)}
-        try:
-            atomic_json(path, cache)
-        except OSError:
-            if audit_meta is not None:
-                audit_meta["cache_write_errors"] = audit_meta.get("cache_write_errors", 0) + 1
+        result = get_store_result(appid, cancel_event=cancel_event)
+        check_cancel(cancel_event)
+        cache = {"schema_version": 5, "fetched_at": time.time(), **result}
+        if result['status'] != 'deferred':
+            try:
+                atomic_json(path, cache)
+            except OSError:
+                if audit_meta is not None:
+                    audit_meta["cache_write_errors"] = audit_meta.get("cache_write_errors", 0) + 1
+    if observation is not None:
+        observation.update(source='store_cache' if hit else 'store_api' if cache['status'] != 'deferred' else 'none',
+                           fetched_at=cache['fetched_at'] if cache['status'] != 'deferred' else None, read_at=time.time())
     if audit_meta is not None:
         key = cache["status"]
         audit_meta[key] = audit_meta.get(key, 0) + 1
@@ -270,10 +279,11 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
                     "last_played_iso": datetime.fromtimestamp(timestamp, timezone.utc).isoformat().replace("+00:00", "Z") if timestamp else None,
                     "genres": [], "categories": [], "is_multiplayer": None, "is_controller": None})
         if fetch_store:
-            details = cached_store_details(g["appid"], cache_dir or OUTPUT_FILE.parent / ".steam_cache", refresh_metadata, report["metadata"])
+            stats, observation = {}, {}
+            details = cached_store_details(g["appid"], cache_dir or OUTPUT_FILE.parent / ".steam_cache",
+                                           refresh_metadata, stats, observation=observation)
+            apply_observation(row, details, stats, observation, report['metadata'])
             if details:
-                merge_fields(row, details)
-                row["provenance"]["store_metadata"] = "store_cache"
                 if row["provenance"].get("app_type") in (None, "license_file") and app_type(details.get("app_type")) != "unknown":
                     row["app_type"] = app_type(details["app_type"])
                     row["provenance"]["app_type"] = "store_cache"
