@@ -1,5 +1,7 @@
 # 游戏库分类维护规则
 
+最近游玩在 CSV/Markdown 中独立显示历史/未知/未核验状态，并保留来源和观察时间；不使用总时长状态代替日期状态。字段定义、零时间戳含义和 API null 契约见 [TIME_FIELD_CONTRACT.md](TIME_FIELD_CONTRACT.md)。
+
 ## 数据来源与流程
 
 1. **采集**：Windows 已登录 Steam 时运行 `python steam_collect.py --local-session --no-store --strict`，核验客户端清单，并结合 Web API、许可与游玩记录生成库和来源审计。其他授权方式见 [README.md](README.md)。

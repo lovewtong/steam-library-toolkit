@@ -1,5 +1,7 @@
 # Steam Library Local Collection & Auto Classification
 
+Last-played exports now carry their own historical/unknown status, source and observation time. Both API adapters accept explicit null for the three time fields without converting it to zero; see [time-field contracts](TIME_FIELD_CONTRACT.md).
+
 ## Recommended workflow
 
 This repo keeps all classification locally and does not modify Steam by default.

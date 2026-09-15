@@ -1,0 +1,5 @@
+{
+  "fields": ["playtime_forever", "playtime_2weeks", "rtime_last_played"],
+  "valid": [{"present": false}, {"present": true, "value": null}, {"present": true, "value": 0}, {"present": true, "value": 5}, {"present": true, "value": 4294967295}],
+  "invalid": [true, false, -1, 1.5, "0", "5", [], {}, 4294967296]
+}

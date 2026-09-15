@@ -2,6 +2,8 @@
 
 English: [README_EN.md](README_EN.md)
 
+时间字段说明：表格中的最近游玩现在独立保留历史状态、来源与观察时间；Node/Python 的三个 API 时间字段均支持 null 表示未知，见 [时间字段契约](TIME_FIELD_CONTRACT.md)。
+
 ## 如何实现自动分类（推荐流程）
 
 不写 Steam 内部文件、不依赖写回收藏，用本地脚本完成「自动分类 + 按分类选游戏」：
