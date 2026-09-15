@@ -99,7 +99,7 @@ python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.jso
 
 AppID corrections in `classification_overrides.local.json` are shared by both classifiers. Run `python steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json` to rebuild offline without changing membership, playtime or the original generation. See [CLASSIFICATION_OVERRIDES.md](CLASSIFICATION_OVERRIDES.md) for the format and category mapping.
 
-There are now 14 sourced built-in corrections. Review has classified 11 of 14 entries without genre metadata; 3 await further evidence. See the [review log](CLASSIFICATION_REVIEW.md) for sources, name-matching fixes and validation limits. This is not a whole-library accuracy measurement.
+There are now 16 sourced built-in corrections, including the reviewed Ingression and 63 Days entries. Review has classified 11 of 14 entries without genre metadata; 3 await further evidence. See the [review log](CLASSIFICATION_REVIEW.md) for sources, name-matching fixes and validation limits. Both classifiers share explicit English/Chinese genre mapping; missing or unsupported genres remain Other rather than defaulting to Action. Titles are not store genre evidence. Changing an overridden primary category resets unspecified dependent details; each field records reviewed, inferred, unknown or generated status. The picker displays these under classification evidence. Full table evidence is frozen in the new `classified.json` artifact. This is not a whole-library accuracy measurement.
 
 Standalone enrichment accepts `--workers` from 1 to 4 (default 2), with shared request pacing, cooldown and cached responses. Category IDs fix false controller-support negatives caused by localized descriptions. Missing fields preserve prior values, and both collection paths persist field observations. See [metadata enrichment](METADATA_ENRICHMENT.md) for cache v5 migration and historical results, and the [audit fixes](AUDIT_REMEDIATION.md) for total deadlines, cancellation, unavailable comparisons and remaining limitations.
 
@@ -186,7 +186,7 @@ python classify_games.py
 - Output:
   - `game_library_classified.csv`
   - `game_library_classified.md`
-- Rules live in `classify_games.py` (`MAIN_CATEGORY_RULES`, `TAG_RULES`)
+- Coarse genre rules live in `classification_rules.py` (`GENRE_RULES`); tag rules remain in `classify_games.py` (`TAG_RULES`)
 - More details in `CLASSIFICATION_RULES.md`
 
 ---

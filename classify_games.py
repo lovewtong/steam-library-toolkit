@@ -8,6 +8,7 @@ from pathlib import Path
 from collections import defaultdict
 from steam_sources import select_for_classification
 from steam_classification import add_selection_arguments, load_selected
+from classification_rules import genre_category
 
 # --- 路径 ---
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -17,20 +18,7 @@ DEFAULT_TABLE_MD = SCRIPT_DIR / "game_library_classified.md"
 RULES_FILE = SCRIPT_DIR / "CLASSIFICATION_RULES.md"
 
 
-# ========== 分类体系：主分类 + 标签 ==========
-# 主分类：每个游戏选一个（按优先级匹配第一个）
-MAIN_CATEGORY_RULES = [
-    # (优先级从高到低：先匹配的为主分类)
-    {"name": "射击", "genres": ["射击"], "keywords": ["FPS", "Shooter", "射击", "枪"]},
-    {"name": "动作/冒险", "genres": ["Action", "Adventure", "动作", "冒险"], "keywords": ["Action", "Adventure", "动作", "冒险", "平台", "Platform"]},
-    {"name": "RPG", "genres": ["RPG", "角色扮演"], "keywords": ["RPG", "角色扮演", "JRPG"]},
-    {"name": "策略", "genres": ["Strategy", "策略"], "keywords": ["Strategy", "策略", "4X", "RTS", "回合"]},
-    {"name": "模拟经营", "genres": ["Simulation", "模拟"], "keywords": ["Simulation", "模拟", "管理", "建造", "经营"]},
-    {"name": "休闲/益智", "genres": ["Casual", "休闲", "益智"], "keywords": ["Puzzle", "益智", "休闲", "Casual", "卡牌", "Card"]},
-    {"name": "体育/竞速", "genres": ["Sports", "Racing", "体育", "竞速"], "keywords": ["Sports", "Racing", "体育", "竞速", "足球", "篮球"]},
-    {"name": "独立/其他", "genres": ["Indie"], "keywords": ["Indie", "独立"]},
-    {"name": "其他", "genres": [], "keywords": []},  # 兜底
-]
+# 主分类映射由 classification_rules.py 统一维护。
 
 # 标签：可多选，用于细粒度描述
 TAG_RULES = [
@@ -59,21 +47,8 @@ def load_library(path: Path) -> list:
 
 
 def match_main_category(game: dict) -> str:
-    """根据类型与名称匹配主分类（按规则顺序，第一个命中即为主分类）。"""
-    name = (game.get("name") or "").lower()
-    genres = [x.lower() for x in (game.get("genres") or [])]
-    combined = name + " " + " ".join(genres)
-
-    for rule in MAIN_CATEGORY_RULES:
-        if rule["name"] == "其他":
-            return "其他"
-        for g in rule.get("genres", []):
-            if g.lower() in combined or (game.get("genres") and g in [x.lower() for x in game["genres"]]):
-                return rule["name"]
-        for kw in rule.get("keywords", []):
-            if kw.lower() in combined:
-                return rule["name"]
-    return "其他"
+    """只使用明确的类型标签；名称特例通过 AppID 校正维护。"""
+    return genre_category(game.get('genres'))[0]
 
 
 def match_tags(game: dict) -> list[str]:
@@ -122,7 +97,12 @@ def classify_library(library: list, overrides=None) -> list[dict]:
             "playtime_state": g.get("playtime", {}).get("state"),
             "last_played_iso": g.get("last_played_iso"),
             "main_category": main,
-            "classification_evidence": evidence(rule) if rule else {"source": "table_rules"},
+            "classification_evidence": {
+                **(evidence(rule) if rule else genre_category(g.get('genres'))[1]),
+                'fields': {
+                    'main_category': {**evidence(rule), 'state': 'reviewed'} if rule else genre_category(g.get('genres'))[1],
+                    'tags': {'source': 'tag_rules', 'state': 'inferred'},
+                }},
             "tags": tags,
             "is_multiplayer": g.get("is_multiplayer"),
             "is_controller": g.get("is_controller"),

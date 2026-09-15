@@ -105,7 +105,7 @@ python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.jso
 
 可用 `classification_overrides.local.json` 按 AppID 人工校正，并通过 `python steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json` 离线重建。两种分类输出共享校正，旧运行保持不变。格式与映射见 [CLASSIFICATION_OVERRIDES.md](CLASSIFICATION_OVERRIDES.md)。
 
-当前内置 14 条有来源的规则；缺少类型标签的 14 个项目中已校正 11 个，其余 3 个保留待核对。逐项依据、名称匹配修复与验证范围见 [分类核对记录](CLASSIFICATION_REVIEW.md)，这不代表全库准确率。
+当前内置 16 条有来源的规则；缺少类型标签的 14 个项目中已校正 11 个，其余 3 个保留待核对。新增 Ingression、63 Days 的 AppID 校正；基础中英文 genres 共用映射，缺少依据不再默认归为动作，名称不充当商店类型证据。人工改主类会使未指定的旧细项失效，页面可展开逐字段“分类依据”；详见 [校正规则](CLASSIFICATION_OVERRIDES.md)。逐项依据、名称匹配修复与验证范围见 [分类核对记录](CLASSIFICATION_REVIEW.md)，这不代表全库准确率。
 
 独立元数据补全支持 `--workers 1–4`（默认 2），共享请求间隔和冷却并复用缓存。类别 ID 判断修复了中文“控制器”被误判为不支持的问题；缺失字段保留旧值，并报告前后字段覆盖率。用法、缓存 v5 迁移及历史实测见 [元数据补全说明](METADATA_ENRICHMENT.md)。总超时、取消、字段证据及 API 不可比较状态的修复见 [审核修复记录](AUDIT_REMEDIATION.md)。
 
@@ -228,12 +228,12 @@ python classify_games.py
 - 输出：
   - **game_library_classified.csv**：表格数据（Excel/脚本用）。
   - **game_library_classified.md**：Markdown 表格（文档用）。
-- 分类体系：**主分类**（每款一个）+ **多标签**（可多个），规则在 `classify_games.py` 的 `MAIN_CATEGORY_RULES` 与 `TAG_RULES`。
+- 分类体系：**主分类**（每款一个）+ **多标签**（可多个），规则在 `classification_rules.py` 的 `GENRE_RULES` 和 `classify_games.py` 的 `TAG_RULES`。
 - 维护规则说明：见 **CLASSIFICATION_RULES.md**。
 
 ## 4. 修改分类规则
 
-- 编辑 `classify_games.py` 中的 `MAIN_CATEGORY_RULES`（主分类顺序与关键词）、`TAG_RULES`（标签条件/关键词）。
+- 编辑 `classification_rules.py` 中的 `GENRE_RULES`（明确类型标签及优先级）、`classify_games.py` 的 `TAG_RULES`（标签条件/关键词）。
 - 修改后重新运行 `classify_games.py` 即可更新 CSV/MD。
 - 详细说明见 **CLASSIFICATION_RULES.md**。
 

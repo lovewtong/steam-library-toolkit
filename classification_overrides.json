@@ -1,6 +1,18 @@
 {
   "schema_version": 1,
   "apps": {
+    "1966970": {
+      "main_category": "动作/冒险",
+      "sub": "精确平台跳跃",
+      "reason": "2026-09-15 核对开发商商店介绍：以传送门为核心的精确平台跳跃；仅复核主类与子类。",
+      "reference": "https://store.steampowered.com/app/1966970/Ingression/"
+    },
+    "2202120": {
+      "main_category": "策略",
+      "sub": "即时战术/潜行",
+      "reason": "2026-09-15 核对发行商商店介绍的战术、潜行与团队操作及实时战术标签；仅复核主类与子类。",
+      "reference": "https://store.steampowered.com/app/2202120/63_Days/"
+    },
     "500": {
       "main_category": "射击",
       "sub": "合作生存射击",

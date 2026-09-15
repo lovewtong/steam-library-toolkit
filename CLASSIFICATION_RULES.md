@@ -18,17 +18,17 @@
 
 ## 如何修改分类结果
 
-1. **改规则**：编辑 `classify_games.py` 中的 `MAIN_CATEGORY_RULES` 与 `TAG_RULES`。
-   - **主分类**：按列表顺序匹配，第一个命中的即为主分类；可调整顺序或增删「类型(genres)」「关键词(keywords)」。
+1. **改规则**：编辑 `classification_rules.py` 的 `GENRE_RULES` 和 `classify_games.py` 的 `TAG_RULES`。
+   - **主分类**：按共用优先级对完整 genres 标签进行忽略大小写的精确匹配，不对名称做子串匹配。优先级：射击、RPG、策略、模拟、体育/竞速、动作/冒险、休闲/益智、独立/其他；无可识别标签为其他。该粗分类优先级是编辑选择，不是官方唯一分类。
    - **标签**：每条规则独立，满足即打上对应标签；支持 `condition`（如 multiplayer/controller/coop/single）或 `keywords`。
 2. **改数据做实验**：存在运行指针时，直接修改平铺 `steam_library.json` 不会改变分类输入；修改运行目录中的文件则会导致哈希校验失败。请将库复制为独立文件（如 `library_manual.local.json`），确保旁边没有同名 `.current.json`，通过 `python classify_games.py -i library_manual.local.json` 单独测试。它属于人工编辑的实验输入，不再是已核验的采集结果；不要覆盖原运行目录。正式调整分类时优先修改规则并重新生成。
-3. **手动覆盖**：若需固定某游戏的主分类，可在 `classify_games.py` 中为指定 `appid` 做特例映射，或维护一张「主分类覆盖表」JSON/CSV，在分类脚本中读取并合并到结果。
+3. **手动覆盖**：使用 classification_overrides.local.json 按 AppID 校正并离线重建，见 [人工校正](CLASSIFICATION_OVERRIDES.md)。不要在分类入口另加一套特例。
 
 ## 规则定义位置
 
 | 内容     | 位置 |
 |----------|------|
-| 主分类规则 | `classify_games.py` → `MAIN_CATEGORY_RULES` |
+| 主分类规则 | `classification_rules.py` → `GENRE_RULES` |
 | 标签规则   | `classify_games.py` → `TAG_RULES` |
 
 ## 输出字段说明

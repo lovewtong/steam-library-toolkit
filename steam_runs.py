@@ -159,6 +159,7 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     atomic_json(directory / "steam_library.json", rows)
     atomic_json(directory / "steam_library.audit.json", audit)
     atomic_json(directory / "steam_library_classified.json", five)
+    atomic_json(directory / "classified.json", table)
     atomic_json(directory / "classification_overrides.json", {'schema_version': 1, 'apps': applied})
     atomic_json(directory / "summary.json", {"run_id": run_id, "producer": audit["producer"], **audit["summary"]})
     absent = set(audit.get("difference", {}).get("client_not_api", []))

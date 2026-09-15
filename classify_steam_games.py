@@ -2,6 +2,7 @@
 """根据 steam_library.json 对每款游戏进行五维分类，输出指定 JSON 格式。"""
 import json
 import re
+from classification_rules import genre_primary, genre_category
 
 INPUT_FILE = 'steam_library.json'
 OUTPUT_FILE = 'steam_library_classified.json'
@@ -222,7 +223,6 @@ KNOWN = {
     "between horizons": {"primary": "冒险", "sub": "科幻叙事", "vibe": "太空飞船", "intensity": "中", "slogan": "飞船上查案。"},
     "spirittea": {"primary": "策略/模拟", "sub": "经营+生活", "vibe": "治愈", "intensity": "低", "slogan": "开澡堂招待灵魂。"},
     "lost skies": {"primary": "动作/冒险", "sub": "合作生存", "vibe": "空岛", "intensity": "中", "slogan": "空岛生存建造。"},
-    "ingression": {"primary": "策略/模拟", "sub": "策略", "vibe": "科幻", "intensity": "中", "slogan": "科幻策略。"},
     "synergy": {"primary": "策略/模拟", "sub": "模拟", "vibe": "科幻", "intensity": "中", "slogan": "科幻模拟。"},
     "barro gt": {"primary": "策略/模拟", "sub": "竞速", "vibe": "拟真", "intensity": "中", "slogan": "巴罗GT竞速。"},
     "gatekeeper": {"primary": "策略/模拟", "sub": "塔防/策略", "vibe": "奇幻", "intensity": "中", "slogan": "守门人策略。"},
@@ -233,7 +233,6 @@ KNOWN = {
     "ghostrunner 2": {"primary": "动作/冒险", "sub": "跑酷砍杀", "vibe": "赛博朋克", "intensity": "高", "slogan": "一刀死跑酷续作。"},
     "cobalt core": {"primary": "策略/模拟", "sub": "卡牌 roguelike", "vibe": "太空", "intensity": "中", "slogan": "太空卡牌 roguelike。"},
     "wizard of legend 2": {"primary": "动作/冒险", "sub": " roguelike", "vibe": "魔法地牢", "intensity": "高", "slogan": "法师地牢 roguelike。"},
-    "63 days": {"primary": "独立/叙事", "sub": "叙事", "vibe": "生存", "intensity": "中", "slogan": "六十三天生存选择。"},
     "sucker for love: date to die for": {"primary": "独立/叙事", "sub": "恋爱+克苏鲁", "vibe": "邪典恋爱", "intensity": "中", "slogan": "和古神谈恋爱。"},
     "endless monday": {"primary": "独立/叙事", "sub": "叙事", "vibe": "职场", "intensity": "低", "slogan": "无限周一模拟器。"},
     "station to station": {"primary": "策略/模拟", "sub": "铁路拼图", "vibe": "解压", "intensity": "低", "slogan": "连铁路造景。"},
@@ -279,20 +278,7 @@ def find_known(name):
     return {key: value.strip() for key, value in candidates[0][1].items()}
 
 def primary_from_genres(genres):
-    g = " ".join(genres).lower()
-    if "射击" in g or "fps" in g or "tps" in g:
-        return "射击 (FPS/TPS)"
-    if "角色扮演" in g or "rpg" in g:
-        return "角色扮演 (RPG)"
-    if "策略" in g or "模拟" in g:
-        return "策略/模拟"
-    if "动作" in g or "冒险" in g:
-        return "动作/冒险"
-    if "解谜" in g or "休闲" in g:
-        return "解谜/休闲"
-    if "独立" in g:
-        return "独立/叙事"
-    return "动作/冒险"
+    return genre_primary(genres)
 
 def sub_from_name_and_genres(name, genres):
     n = normalize_name(name)
@@ -328,17 +314,17 @@ def vibe_from_genres(genres):
     return "风格各异"
 
 def intensity_from_genres(genres):
-    g = " ".join(genres).lower()
-    if "休闲" in g or "放松" in g:
+    primary = primary_from_genres(genres)
+    if primary == '解谜/休闲':
         return "低"
-    if "策略" in g or "模拟" in g:
+    if primary == '策略/模拟':
         return "中"
-    if "动作" in g or "射击" in g:
+    if primary in ('动作/冒险', '射击 (FPS/TPS)'):
         return "高"
-    return "中"
+    return "未知"
 
 def slogan_fallback(name, primary):
-    return f"《{name}》——{primary}，值得一试。"
+    return f"《{name}》：分类依据不足，待核对。" if primary == '其他' else f"《{name}》：{primary}，细分体验待核对。"
 
 def _classify_one(game):
     appid = game.get("appid")
@@ -361,6 +347,8 @@ def _classify_one(game):
     sub = sub_from_name_and_genres(name, genres)
     vibe = vibe_from_genres(genres)
     intensity = intensity_from_genres(genres)
+    if primary == '其他':
+        sub, vibe, intensity = '待核对', '待核对', '未知'
     slogan = slogan_fallback(name, primary)
     return {
         "appid": str(appid),
@@ -378,15 +366,39 @@ def classify_one(game, overrides=None):
     from classification_overrides import load_overrides, correction, evidence, MAIN_TO_PRIMARY
     overrides = load_overrides() if overrides is None else overrides
     result = _classify_one(game)
+    analysis = result['analysis']
+    known = find_known(game.get('name', ''))
+    source = 'known_name' if known else 'genre_rules'
+    fields = {key: {'source': source, 'state': 'inferred'} for key in analysis}
+    if not known:
+        fields['primary'] = genre_category(game.get('genres'))[1]
+        fields['sub']['source'] = 'name_genre_rules'
+        fields['slogan'] = {'source': 'template', 'state': 'generated'}
+        for key, fallback in (('sub', '多种元素'), ('vibe', '风格各异'), ('intensity', '未知')):
+            if analysis['primary'] == '其他' or analysis[key] == fallback:
+                fields[key] = {'source': 'default', 'state': 'unknown', 'reason': 'not_reviewed'}
     rule = correction(game, overrides)
     if rule:
-        result['analysis']['primary'] = MAIN_TO_PRIMARY[rule['main_category']]
-        result['analysis'].update({k: rule[k] for k in ('sub', 'vibe', 'intensity', 'slogan') if k in rule})
-        if 'slogan' not in rule and not find_known(game.get('name', '')):
-            result['analysis']['slogan'] = slogan_fallback(game.get('name', ''), result['analysis']['primary'])
+        primary = MAIN_TO_PRIMARY[rule['main_category']]
+        changed = analysis['primary'] != primary
+        sub_changed = 'sub' in rule and analysis['sub'] != rule['sub']
+        if changed:
+            for key, value in (('sub', '待核对'), ('vibe', '待核对'), ('intensity', '未知')):
+                analysis[key] = value
+                fields[key] = {'source': 'reset', 'state': 'unknown', 'reason': 'primary_changed'}
+        analysis['primary'] = primary
+        fields['primary'] = {**evidence(rule), 'state': 'reviewed'}
+        if changed or sub_changed or not known:
+            analysis['slogan'] = slogan_fallback(game.get('name', ''), primary)
+            fields['slogan'] = {'source': 'template', 'state': 'generated'}
+        for key in ('sub', 'vibe', 'intensity', 'slogan'):
+            if key in rule:
+                analysis[key] = rule[key]
+                fields[key] = {**evidence(rule), 'state': 'reviewed'}
         result['classification_evidence'] = evidence(rule)
     else:
-        result['classification_evidence'] = {'source': 'known_name' if find_known(game.get('name', '')) else 'genre_rules'}
+        result['classification_evidence'] = {'source': source if known else fields['primary']['source']}
+    result['classification_evidence']['fields'] = fields
     return result
 
 
