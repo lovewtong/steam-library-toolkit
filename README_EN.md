@@ -1,5 +1,9 @@
 # Steam Library Local Collection & Auto Classification
 
+**The first stable release scope is defined; release acceptance is still pending:** collection, auditing, metadata enrichment, classification corrections, local browsing and collection-plan export. The initial acceptance target is a single-account Windows workflow. Automatic writes to Steam Collections are excluded. See the [release scope and acceptance plan](STABLE_RELEASE_SCOPE.md) for boundaries and remaining gates.
+
+[R1 classification review](R1_CLASSIFICATION_REVIEW.md) fixes a 31-app sample, adds 12 AppID corrections and checks all 28 built-in rules. Passing the sample is not a full-library accuracy measure: four entries retain historical evidence and two remain unknown.
+
 Last-played exports now carry their own historical/unknown status, source and observation time. Both API adapters accept explicit null for the three time fields without converting it to zero; see [time-field contracts](TIME_FIELD_CONTRACT.md).
 
 ## Recommended workflow

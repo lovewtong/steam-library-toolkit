@@ -1,6 +1,78 @@
 {
   "schema_version": 1,
   "apps": {
+    "205930": {
+      "main_category": "射击",
+      "sub": "狙击",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。Square Enix 2012-10-05 公告包含 Windows，说明玩家使用狙击步枪暗杀目标；Steam EULA 205930 确认标题身份。",
+      "reference": "https://www.jp.square-enix.com/company/ja/news/2012/html/3049753882ca456c6f7a6dc6157286b4.html"
+    },
+    "214340": {
+      "main_category": "休闲/益智",
+      "sub": "点击冒险",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商喜剧冒险介绍与商店 Point & Click/Puzzle 标签；采用项目解谜展示组，与 Broken Age 统一。",
+      "reference": "https://store.steampowered.com/app/214340/Deponia/?l=english&u="
+    },
+    "232790": {
+      "main_category": "休闲/益智",
+      "sub": "点击冒险",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。Double Fine 官网将本作定义为 Point & Click Adventure，统一表格与 picker 主类。",
+      "reference": "https://www.doublefine.com/games/broken-age"
+    },
+    "462960": {
+      "main_category": "动作/冒险",
+      "sub": "2.5D平台跳跃",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商介绍复古 2.5D 平台冒险、越障和关卡；文明建设规则错误。",
+      "reference": "https://store.steampowered.com/app/462960/Caveman_World_Mountains_of_Unga_Boonga?l=french"
+    },
+    "493340": {
+      "main_category": "模拟经营",
+      "sub": "主题公园经营",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商说明主题公园建造、过山车设计和游客管理，按主要玩法选择模拟经营而非泛策略。",
+      "reference": "https://store.steampowered.com/app/493340/Planet_Coaster/?l=english"
+    },
+    "949480": {
+      "main_category": "动作/冒险",
+      "sub": "点击冒险/清版动作",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。COWCAT 介绍明确融合调查解谜、清版动作及 RPG 元素；项目按混合冒险归类，避免只有点击冒险或单列 RPG。",
+      "reference": "https://store.steampowered.com/app/949480/BROK_the_InvestiGator/"
+    },
+    "1200580": {
+      "main_category": "动作/冒险",
+      "sub": "动作平台跳跃",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商描述一个大型关卡、升级、障碍、Boss 和多难度的动作平台游戏；未找到 roguelike 依据。",
+      "reference": "https://store.steampowered.com/app/1200580?l=english"
+    },
+    "1268140": {
+      "main_category": "模拟经营",
+      "sub": "角色养成/视觉小说",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。发行商描述安排 Chilia 四年的日程、成长和选择；地牢经营及龙与地下城措辞错误。",
+      "reference": "https://store.steampowered.com/app/1268140/Lair_Land_Story/?curator_clanid=32977561"
+    },
+    "1272010": {
+      "main_category": "模拟经营",
+      "sub": "驱逐舰反潜模拟",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商描述指挥 Fletcher 级驱逐舰、护航及反潜；玩家操作的不是潜艇。模拟经营是项目现有 Simulation 粗类，不断言有经营系统。",
+      "reference": "https://store.steampowered.com/app/1272010/Destroyer_The_UBoat_Hunter/?curator_clanid=39457373"
+    },
+    "1301520": {
+      "main_category": "体育/竞速",
+      "sub": "多人体育合集",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商介绍击剑、摔跤、Smashball 等多人体育项目；统一体育主类，移除篮球推荐语。",
+      "reference": "https://store.steampowered.com/app/1301520/Wrestledunk_Sports/"
+    },
+    "2067050": {
+      "main_category": "射击",
+      "sub": "沙盒射击/解谜平台",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。开发商简介明确 sandbox shooter 和 puzzle platformer；经营模拟细分不符。",
+      "reference": "https://store.steampowered.com/app/2067050/Squirrel_with_a_Gun/"
+    },
+    "2201320": {
+      "main_category": "模拟经营",
+      "sub": "恋爱模拟",
+      "reason": "2026-09-28 R1 编辑核对；仅确认主类与子类。发行商明确 sandbox dating simulator；保留项目 Simulation 粗类，纠正无依据的经营细分。",
+      "reference": "https://store.steampowered.com/app/2201320/Date_Everything/?curator_clanid=3182421"
+    },
     "1966970": {
       "main_category": "动作/冒险",
       "sub": "精确平台跳跃",

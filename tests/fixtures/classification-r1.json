@@ -1,0 +1,698 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-28",
+  "baseline_commit": "58b4428",
+  "selection": "固定 31 个 AppID：原 16 规则、3 待核对、7 名称规则、5 genres 推断；风险导向样本，不用于估计全库准确率。只保留公开游戏身份和分类输入，不含账号、成员资格、时长或私人规则。",
+  "scope": [
+    "main_category",
+    "primary",
+    "sub"
+  ],
+  "samples": [
+    {
+      "appid": 500,
+      "name": "Left 4 Dead",
+      "genres": [
+        "动作"
+      ],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "合作生存射击"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "合作生存射击"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/500/Left_4_Dead/",
+      "note": "开发商介绍四人合作对抗感染者，商店 FPS 标签支持射击。"
+    },
+    {
+      "appid": 550,
+      "name": "Left 4 Dead 2",
+      "genres": [
+        "动作"
+      ],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "合作生存射击"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "合作生存射击"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/550/Left_4_Dead_2/",
+      "note": "开发商简介明确为合作动作恐怖 FPS。"
+    },
+    {
+      "appid": 730,
+      "name": "Counter-Strike 2",
+      "genres": [
+        "动作",
+        "免费开玩"
+      ],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "竞技战术射击"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "竞技战术射击"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/730/CounterStrike_2/",
+      "note": "商店竞技目标玩法、烟雾和 FPS 标签支持该项目分类。"
+    },
+    {
+      "appid": 15150,
+      "name": "Petz Catz 2",
+      "genres": [],
+      "cohort": "unresolved",
+      "baseline": {
+        "main_category": "其他",
+        "primary": "策略/模拟",
+        "sub": "宠物模拟"
+      },
+      "expected": {
+        "main_category": "其他",
+        "primary": "其他",
+        "sub": "待核对"
+      },
+      "action": "unknown",
+      "evidence_status": "unavailable",
+      "reference": "https://store.steampowered.com/app/15150/",
+      "note": "未取得 PC 版第一方玩法说明；移除未经身份核对的 Petz Catz 名称规则，不跨平台推断。"
+    },
+    {
+      "appid": 205930,
+      "name": "Hitman: Sniper Challenge",
+      "genres": [],
+      "cohort": "unresolved",
+      "baseline": {
+        "main_category": "其他",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "狙击"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "狙击"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://www.jp.square-enix.com/company/ja/news/2012/html/3049753882ca456c6f7a6dc6157286b4.html",
+      "note": "Square Enix 2012-10-05 公告包含 Windows，说明玩家使用狙击步枪暗杀目标；Steam EULA 205930 确认标题身份。"
+    },
+    {
+      "appid": 214340,
+      "name": "Deponia",
+      "genres": [
+        "冒险",
+        "独立"
+      ],
+      "cohort": "genre_rules",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "多种元素"
+      },
+      "expected": {
+        "main_category": "休闲/益智",
+        "primary": "解谜/休闲",
+        "sub": "点击冒险"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/214340/Deponia/?l=english&u=",
+      "note": "开发商喜剧冒险介绍与商店 Point & Click/Puzzle 标签；采用项目解谜展示组，与 Broken Age 统一。"
+    },
+    {
+      "appid": 230410,
+      "name": "Warframe 星际战甲",
+      "genres": [
+        "动作",
+        "角色扮演",
+        "免费开玩"
+      ],
+      "cohort": "genre_rules",
+      "baseline": {
+        "main_category": "RPG",
+        "primary": "角色扮演 (RPG)",
+        "sub": "多种元素"
+      },
+      "expected": {
+        "main_category": "RPG",
+        "primary": "角色扮演 (RPG)",
+        "sub": "多种元素"
+      },
+      "action": "accept_inferred",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/230410/Warframe/",
+      "note": "官方 Genre 包含 Action/RPG，现有 RPG 粗类可接受；未将泛化子类当作已完成细分，也未排除射击成分。"
+    },
+    {
+      "appid": 232790,
+      "name": "Broken Age",
+      "genres": [
+        "冒险",
+        "休闲",
+        "独立"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "解谜/休闲",
+        "sub": "点击冒险"
+      },
+      "expected": {
+        "main_category": "休闲/益智",
+        "primary": "解谜/休闲",
+        "sub": "点击冒险"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://www.doublefine.com/games/broken-age",
+      "note": "Double Fine 官网将本作定义为 Point & Click Adventure，统一表格与 picker 主类。"
+    },
+    {
+      "appid": 241930,
+      "name": "Middle-earth™: Shadow of Mordor™",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "开放世界动作"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "开放世界动作"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/241930/Middleearth_Shadow_of_Mordor/",
+      "note": "开发商战斗冒险介绍与商店 Open World/Action 标签支持现有编辑分类。"
+    },
+    {
+      "appid": 326480,
+      "name": "If My Heart Had Wings",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "独立/其他",
+        "primary": "独立/叙事",
+        "sub": "视觉小说"
+      },
+      "expected": {
+        "main_category": "独立/其他",
+        "primary": "独立/叙事",
+        "sub": "视觉小说"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/326480/If_My_Heart_Had_Wings/",
+      "note": "MoeNovel 简介明确为 animated visual novel；独立/叙事是现有展示组，不判断发行商性质。"
+    },
+    {
+      "appid": 462960,
+      "name": "Caveman World: Mountains of Unga Boonga",
+      "genres": [
+        "冒险",
+        "休闲",
+        "独立"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "策略/模拟",
+        "sub": "文明建设"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "2.5D平台跳跃"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/462960/Caveman_World_Mountains_of_Unga_Boonga?l=french",
+      "note": "开发商介绍复古 2.5D 平台冒险、越障和关卡；文明建设规则错误。"
+    },
+    {
+      "appid": 493340,
+      "name": "Planet Coaster",
+      "genres": [
+        "动作",
+        "冒险",
+        "休闲",
+        "模拟",
+        "策略"
+      ],
+      "cohort": "genre_rules",
+      "baseline": {
+        "main_category": "策略",
+        "primary": "策略/模拟",
+        "sub": "经营模拟"
+      },
+      "expected": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "主题公园经营"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/493340/Planet_Coaster/?l=english",
+      "note": "开发商说明主题公园建造、过山车设计和游客管理，按主要玩法选择模拟经营而非泛策略。"
+    },
+    {
+      "appid": 622590,
+      "name": "PUBG: Test Server",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "战术竞技射击（测试分支）"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "战术竞技射击（测试分支）"
+      },
+      "action": "retain_historical",
+      "evidence_status": "historical_not_refreshed",
+      "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/2356940714976801833",
+      "note": "沿用 2026-09-13 核对的 PUBG PC 1.0 Update #3 与 AppID 身份记录；本次原公告及社区入口无法获取，不记为重新验证。"
+    },
+    {
+      "appid": 627270,
+      "name": "Injustice™ 2",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "格斗"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "格斗"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/627270/Injustice_2/",
+      "note": "官方 Legendary Edition 介绍格斗、角色阵容与对局，支持格斗细分。"
+    },
+    {
+      "appid": 654310,
+      "name": "For Honor - Public Test",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "冷兵器动作（测试分支）"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "冷兵器动作（测试分支）"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://www.ubisoft.com/en-us/game/for-honor/news-updates/1IZoiczWorTTTsrEYprgzR/public-test-meta-changes",
+      "note": "Ubisoft Public Test Meta Changes 解释测试环境与攻防系统；AppID 身份沿用已核验旧记录，不证明服务器仍可用。"
+    },
+    {
+      "appid": 745960,
+      "name": "A Sky Full of Stars",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "独立/其他",
+        "primary": "独立/叙事",
+        "sub": "视觉小说"
+      },
+      "expected": {
+        "main_category": "独立/其他",
+        "primary": "独立/叙事",
+        "sub": "视觉小说"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/745960/A_Sky_Full_of_Stars/",
+      "note": "官方商店叙事介绍和 Visual Novel 标签支持现有展示组，不把氛围及强度当作已复核。"
+    },
+    {
+      "appid": 770720,
+      "name": "Hunt: Showdown 1896 (Test Server)",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "战术射击（测试分支）"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "战术射击（测试分支）"
+      },
+      "action": "retain_historical",
+      "evidence_status": "historical_not_refreshed",
+      "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5151601211226205949",
+      "note": "沿用 2026-09-13 核对的 Crytek Update 1.13 测试服枪械与射击场证据；本次公告入口无法获取。"
+    },
+    {
+      "appid": 813000,
+      "name": "PUBG: Experimental Server",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "战术竞技射击（实验分支）"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "战术竞技射击（实验分支）"
+      },
+      "action": "retain_historical",
+      "evidence_status": "historical_not_refreshed",
+      "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/2396358621996509996",
+      "note": "沿用 2026-09-13 核对的 PUBG Sanhok Testing Patch Notes #4；本次公告入口无法获取，不代表分支仍在线。"
+    },
+    {
+      "appid": 923810,
+      "name": "If My Heart Had Wings -Flight Diary-",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "独立/其他",
+        "primary": "独立/叙事",
+        "sub": "视觉小说"
+      },
+      "expected": {
+        "main_category": "独立/其他",
+        "primary": "独立/叙事",
+        "sub": "视觉小说"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/923810/If_My_Heart_Had_Wings_Flight_Diary/?l=german",
+      "note": "直接入口受区域限制；本次可检索官方商店发行方介绍：六篇独立可选故事，无故事内分支。"
+    },
+    {
+      "appid": 949480,
+      "name": "BROK the InvestiGator",
+      "genres": [
+        "动作",
+        "冒险",
+        "独立",
+        "角色扮演"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "RPG",
+        "primary": "解谜/休闲",
+        "sub": "点击冒险"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "点击冒险/清版动作"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/949480/BROK_the_InvestiGator/",
+      "note": "COWCAT 介绍明确融合调查解谜、清版动作及 RPG 元素；项目按混合冒险归类，避免只有点击冒险或单列 RPG。"
+    },
+    {
+      "appid": 976310,
+      "name": "Mortal Kombat 11",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "格斗"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "格斗"
+      },
+      "action": "retain_historical",
+      "evidence_status": "historical_not_refreshed",
+      "reference": "https://store.steampowered.com/app/976310/Mortal_Kombat_11?l=english",
+      "note": "沿用 2026-09-13 已核对的商店格斗规则；本次商店入口仅返回年龄页，未重复确认正文。"
+    },
+    {
+      "appid": 1200580,
+      "name": "One Gun Guy",
+      "genres": [
+        "动作",
+        "独立"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "roguelike 射击"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "动作平台跳跃"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/1200580?l=english",
+      "note": "开发商描述一个大型关卡、升级、障碍、Boss 和多难度的动作平台游戏；未找到 roguelike 依据。"
+    },
+    {
+      "appid": 1268140,
+      "name": "Lair Land Story",
+      "genres": [
+        "独立",
+        "模拟",
+        "策略"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "策略",
+        "primary": "策略/模拟",
+        "sub": "地牢经营"
+      },
+      "expected": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "角色养成/视觉小说"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/1268140/Lair_Land_Story/?curator_clanid=32977561",
+      "note": "发行商描述安排 Chilia 四年的日程、成长和选择；地牢经营及龙与地下城措辞错误。"
+    },
+    {
+      "appid": 1272010,
+      "name": "Destroyer: The U-Boat Hunter",
+      "genres": [
+        "动作",
+        "冒险",
+        "独立",
+        "模拟"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "潜艇模拟"
+      },
+      "expected": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "驱逐舰反潜模拟"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/1272010/Destroyer_The_UBoat_Hunter/?curator_clanid=39457373",
+      "note": "开发商描述指挥 Fletcher 级驱逐舰、护航及反潜；玩家操作的不是潜艇。模拟经营是项目现有 Simulation 粗类，不断言有经营系统。"
+    },
+    {
+      "appid": 1301520,
+      "name": "Wrestledunk Sports",
+      "genres": [
+        "动作",
+        "独立",
+        "体育"
+      ],
+      "cohort": "known_name",
+      "baseline": {
+        "main_category": "体育/竞速",
+        "primary": "动作/冒险",
+        "sub": "体育搞怪"
+      },
+      "expected": {
+        "main_category": "体育/竞速",
+        "primary": "体育/竞速",
+        "sub": "多人体育合集"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/1301520/Wrestledunk_Sports/",
+      "note": "开发商介绍击剑、摔跤、Smashball 等多人体育项目；统一体育主类，移除篮球推荐语。"
+    },
+    {
+      "appid": 1966970,
+      "name": "Ingression",
+      "genres": [
+        "动作",
+        "冒险",
+        "独立"
+      ],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "精确平台跳跃"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "精确平台跳跃"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/1966970/Ingression/",
+      "note": "开发商明确传送门与精确平台跳跃；复查历史误分类修复。"
+    },
+    {
+      "appid": 1971870,
+      "name": "Mortal Kombat 1",
+      "genres": [],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "格斗"
+      },
+      "expected": {
+        "main_category": "动作/冒险",
+        "primary": "动作/冒险",
+        "sub": "格斗"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://www.mortalkombat.com/en-id/game",
+      "note": "官方玩法页介绍主战角色、Kameo 辅助、招式及格斗行动；Steam 身份沿用已核验记录。"
+    },
+    {
+      "appid": 2067050,
+      "name": "Squirrel with a Gun",
+      "genres": [
+        "动作",
+        "冒险",
+        "独立",
+        "模拟"
+      ],
+      "cohort": "genre_rules",
+      "baseline": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "经营模拟"
+      },
+      "expected": {
+        "main_category": "射击",
+        "primary": "射击 (FPS/TPS)",
+        "sub": "沙盒射击/解谜平台"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/2067050/Squirrel_with_a_Gun/",
+      "note": "开发商简介明确 sandbox shooter 和 puzzle platformer；经营模拟细分不符。"
+    },
+    {
+      "appid": 2201320,
+      "name": "Date Everything!",
+      "genres": [
+        "模拟"
+      ],
+      "cohort": "genre_rules",
+      "baseline": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "经营模拟"
+      },
+      "expected": {
+        "main_category": "模拟经营",
+        "primary": "策略/模拟",
+        "sub": "恋爱模拟"
+      },
+      "action": "correct",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/2201320/Date_Everything/?curator_clanid=3182421",
+      "note": "发行商明确 sandbox dating simulator；保留项目 Simulation 粗类，纠正无依据的经营细分。"
+    },
+    {
+      "appid": 2202120,
+      "name": "63 Days",
+      "genres": [
+        "动作",
+        "冒险",
+        "独立",
+        "策略"
+      ],
+      "cohort": "existing_override",
+      "baseline": {
+        "main_category": "策略",
+        "primary": "策略/模拟",
+        "sub": "即时战术/潜行"
+      },
+      "expected": {
+        "main_category": "策略",
+        "primary": "策略/模拟",
+        "sub": "即时战术/潜行"
+      },
+      "action": "retain",
+      "evidence_status": "refreshed",
+      "reference": "https://store.steampowered.com/app/2202120/63_Days/",
+      "note": "发行方介绍战术、潜行、团队操作及 Real Time Tactics 标签；复查历史错误名称规则。"
+    },
+    {
+      "appid": 2871050,
+      "name": "Endless halo",
+      "genres": [],
+      "cohort": "unresolved",
+      "baseline": {
+        "main_category": "其他",
+        "primary": "其他",
+        "sub": "待核对"
+      },
+      "expected": {
+        "main_category": "其他",
+        "primary": "其他",
+        "sub": "待核对"
+      },
+      "action": "unknown",
+      "evidence_status": "unavailable",
+      "reference": "https://store.steampowered.com/app/2871050/",
+      "note": "商店入口不可获取，受限第一方检索没有结果；不凭 Halo 名称猜测，不以未知证明下架或不存在。"
+    }
+  ]
+}
