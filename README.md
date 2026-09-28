@@ -243,7 +243,7 @@ python classify_games.py
 
 ## 5. 在本地「应用」分类（选游戏）
 
-本工具默认在本地「选游戏」并用 Steam 启动；旧收藏写回脚本属于独立实验路径，尚未完成通用账号与持久性验收。
+本工具默认在本地「选游戏」并用 Steam 启动；Python 收藏入口仅支持校验后预览/导出计划，旧写回已停用。独立 Node 写回工具尚未完成账号与持久性验收。
 
 ### 5.1 使用五维分类结果（steam_library_classified.json）
 
@@ -283,22 +283,15 @@ python steam_picker.py --serve
 
 ---
 
-## 6. 写回 Steam 收藏夹（可选）
+## 6. 收藏计划（可选）
 
-如果你希望把 `steam_collections_result.json` 的分类写回 Steam 收藏夹，可以用 `import_script.js`。
+从已核验客户端成员运行预览或导出计划，显式选择对应 SteamID64：
 
-1. **完全退出 Steam**（含托盘图标）。
-2. 安装依赖：
-   ```bash
-   npm install
-   ```
-3. 显式设置目标账号的 32 位 AccountID，再执行导入（不要填写 SteamID64）：
-   ```powershell
-   $env:STEAM_ID_32 = "你的32位AccountID"
-   node import_script.js
-   ```
+```powershell
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --dry-run
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --export-only -o collection_plan.local.json
+```
 
-说明：
-- 脚本会优先写入 LevelDB，若未检测到收藏命名空间，会自动改用 `cloud-storage-namespace-1.json` 并生成 `.bak` 备份。
-- 导入完成后，启动 Steam，在「库」→「收藏夹」中核对分类与数量。
-- 未配置或配置无效时，脚本在写入前退出。此旧收藏路径仍待独立持久化验收；采集、补全和 picker 无需执行此步骤。
+默认只预览；dry-run 不创建计划、备份、锁或输出目录。确认的空库保持为空。导出前核验全部运行哈希、账号、运行及分类成员一致性，不重新确认当前所有权。
+
+旧 Python `--write`、`--from-result`、`--use-api` 已停用。计划不能直接交给独立 Node 写回工具，后者也没有通过本轮安全和持久化验收。详细格式、迁移和限制见 [收藏计划说明](STEAM_SYNC_README.md)。

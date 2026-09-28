@@ -1,120 +1,56 @@
-# 路线 B：API + 本地文件写入（写回 Steam 收藏）
+# 收藏计划：校验、预览与导出
 
-把分类结果写回 Steam 客户端保存收藏的文件，使库内出现对应收藏分组。
+`steam_sync_collections.py` 现在只生成收藏计划。旧 `--write` 写入 Steam 存储的功能已停用；此前按猜测格式追加 JSON、仅告警后继续写入的实现已移除。
 
-**收藏来源二选一：**
+## 使用方式
 
-- **`steam_collections_result.json`**（推荐）：由 `node classify_steam.js` 生成，格式为「分类名 → [appid]」。使用 `--from-result` 时读此文件。
-- **`steam_library_classified.json`**：由 `classify_steam_games.py` 生成，按强度/核心玩法/细分/氛围多维度。不加 `--from-result` 时读此文件。
+先选择已有采集运行及对应的 SteamID64。`--input` 接受输出名或 `.current.json` 指针；必须有完整运行，不能只提供平面 JSON。
 
----
+```powershell
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --dry-run
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --export-only -o collection_plan.local.json
+```
 
-## 自动化导入收藏（用 steam_collections_result.json）
+将 `YOUR_STEAMID64` 替换为目标账号的 17 位 SteamID64。这些命令只读取本地运行，不读取凭据、不连接 Steam，也不要求退出客户端。
 
-若你已有 `steam_collections_result.json`（由 `node classify_steam.js` 生成），可**半自动**写回 Steam 收藏：
+- 默认仅预览；只有显式 `--export-only` 才保存计划。
+- `--dry-run` 读取并校验输入，不创建或替换计划、备份、锁文件或输出目录；同时指定 `--export-only`、`--write` 时仍只预览。这里指应用数据，Python 自身可能维护导入缓存；需要抑制字节码缓存可用 `python -B`。
+- 单独使用 `--write` 返回 `COLLECTION_WRITE_DISABLED`，不会导出或写 Steam。
+- `--from-result`、`--use-api` 返回 `COLLECTION_LEGACY_SOURCE_DISABLED`。无账号绑定的分类映射或 GetOwnedGames 列表不再作为入口的数据依据。
+- `--no-backup` 已移除，因为此入口没有 Steam 写回功能。
 
-1. **完全关闭 Steam**（含托盘图标）。
-2. 在项目目录执行：
-   ```bash
-   python steam_sync_collections.py --from-result --write
-   ```
-3. 重新启动 Steam，在库中查看是否出现对应收藏。
+## 校验与空集合
 
-**注意**：Steam 可能用 LevelDB 存收藏，你机器上的 `cloud-storage-namespace-1.json` 有时会被覆盖或不被读取，导致写回后库内仍只有旧收藏或「未分类」。若出现这种情况，请改用「手动按 steam_collections_guide.md 建收藏」或本地工具（如 `steam_picker.py --serve`）按分类浏览。详见下文「若写回后 Steam 不认」。
+导出前检查运行 manifest 全部文件哈希、库与审计结构、显式账号、运行编号、客户端成员证据及分类成员集合。要求成功且完整的已核验客户端清单，拒绝候选集合、可疑缩减状态、跨账号和混合运行。
 
----
+分类 AppID 必须与该运行中的 `game` 类型成员完全一致；application、demo、beta 等不会自动加入。缺少或多出分类成员都失败。每个游戏按强度、核心玩法、细分、氛围生成分组；空标签显示“未分类”。这些分组沿用分类结果，不代表逐游戏人工确认。
 
-## 前提
+确认的空客户端库生成 `eligible_appids: []`、`collections: {}`，不会回退到全部分类。兼容数据函数中 `None` 表示没有过滤条件，`[]` 表示没有成员；它们不再参与 CLI 的来源回退。
 
-1. **Steam 必须关闭**：读写 `cloud-storage-namespace-1.json` 时若 Steam 在运行，可能冲突或损坏，脚本会检测并提示。
-2. **路径**：收藏文件位于  
-   `Steam/userdata/{你的 Steam64_ID}/config/cloudstorage/cloud-storage-namespace-1.json`  
-   （Stelicas 等项目采用同一路径；部分老客户端可能仍用 LevelDB，本脚本针对 JSON 文件。）
-3. **配置**：`config_local.json` 中需有 `steam_id`（Steam64 位）；可选 `steam_install_path`（不填则尝试注册表/环境变量 `STEAM_PATH`）；写回前建议先 `--dry-run`。
+## 计划内容与输出保护
 
----
+输出是 `kind: steam_collection_plan` 的 JSON 对象，包含：
 
-## 步骤 1：用 Web API 或本地库拿到拥有游戏
+| 字段 | 含义 |
+|---|---|
+| `steam_id`、`run_id` | 所选账号和来源运行 |
+| `source_manifest_sha256` | 本次读取的运行指针摘要 |
+| `membership_observed_at` | 原客户端成员观察时间 |
+| `membership_count`、`eligible_appids` | 原库数量及允许参与分类的 game AppID |
+| `collections` | 收藏名到 AppID 数组的映射 |
+| `ownership_revalidated: false` | 本次未联网重新确认当前所有权 |
+| `write_supported: false` | 本计划不是可执行的 Steam 写回操作 |
 
-- **不传 `--use-api`**：脚本用本地 `steam_library.json` 里的 appid 作为「拥有游戏」，只把库里已有的游戏归入收藏。
-- **传 `--use-api`**：用 Steam Web API `IPlayerService/GetOwnedGames` 拉取拥有游戏（需在 `config_local.json` 填 `steam_api_key`）。  
-  API Key 申请：<https://steamcommunity.com/dev/apikey>  
-  **注意**：不要用已废弃的 `ISteamApps/GetAppList` 做全量 app 列表；用 `GetOwnedGames` + appid 匹配即可。
+快照即使通过哈希和来源校验，也可能已经过时。导出不会让历史成员变成当前所有权证明。哈希用于发现产物变化，不是数字签名或防篡改认证。
 
----
+不允许覆盖来源指针、对应库、运行目录、配置或旧分类输入；已有目标必须是同账号的计划。导出前再次检查指针，变化则失败。计划通过临时文件和原子替换保存，替换失败保留旧计划。这不是多个导出进程之间的事务锁。
 
-## 步骤 2：分类规则（你已有）
+计划含账号和游戏清单，应保存在本地；示例的 `*.local.json` 被 Git 忽略。它不兼容旧的“收藏名 → AppID 数组”顶层格式，**不能直接交给 `import_script.js` 或 `steam_sync_leveldb.js`**。
 
-脚本直接使用 `steam_library_classified.json`：  
-按「强度 / 核心玩法 / 细分 / 氛围」四个维度，每个维度值生成一个收藏（如 `强度-低`、`核心玩法-策略/模拟`），收藏内容为对应 appid 列表。  
-只包含「拥有游戏」列表里的 appid（来自 API 或 `steam_library.json`）。
+## 验收边界及后续
 
----
+F10 对此 Python 入口通过修复空集合、只读预览、绑定运行校验和停用旧写回来处理。`tests/test_collection_plan.py` 使用隔离合成运行验证这些约束以及失败后的文件保护；没有进行真实认证或 Steam 存储写入。
 
-## 步骤 3：写回 Steam（关键）
+独立 Node 写回工具没有在本轮修改或完成安全、持久化验收，不是绕过停用限制的推荐替代入口。当前可用本地 picker 浏览，或按计划在 Steam 中人工建立收藏。
 
-1. **只导出、不写 Steam 目录**（安全）  
-   ```bash
-   python steam_sync_collections.py --from-result --export-only
-   ```  
-   会从 `steam_collections_result.json` 生成 `steam_collections_export.json`（收藏名 -> [appid]），可手动合并或自用。  
-   若不用 `--from-result`，则从 `steam_library_classified.json` 生成。
-
-2. **试跑：不写文件**  
-   ```bash
-   python steam_sync_collections.py --from-result --dry-run
-   ```  
-   会打印 Steam 路径、目标 JSON 路径、将生成的收藏数量与名称，**不读写任何文件**。
-
-3. **实际写回（请先关闭 Steam）**  
-   ```bash
-   python steam_sync_collections.py --from-result --write
-   ```  
-   - 默认会先备份原文件为 `cloud-storage-namespace-1.json.bak`（可用 `--no-backup` 关闭）。  
-   - 脚本会尝试解析现有 JSON 格式（列表 / 单 key 命名空间 / 键值对等），在原有结构上**追加**本脚本生成的收藏；若无法识别格式则**不覆盖**原文件，只提示你用手动合并 `steam_collections_export.json`。
-
-4. **用 API 拉取拥有游戏再写回**  
-   ```bash
-   python steam_sync_collections.py --use-api --write
-   ```  
-   先通过 GetOwnedGames 拿到拥有游戏，再按分类写回。
-
----
-
-## 可选配置
-
-| 来源 | 项 | 说明 |
-|------|-----|------|
-| config_local.json | steam_id | Steam64 位 ID（必须） |
-| config_local.json | steam_api_key | 仅在使用 --use-api 时需要 |
-| config_local.json | steam_install_path | Steam 安装目录（可不填，自动检测） |
-| 环境变量 | STEAM_PATH | 同 steam_install_path |
-| 环境变量 | STEAM_ID | 同 steam_id |
-
----
-
-## 若写回后 Steam 不认
-
-- 不同 Steam 版本/分支可能使用不同格式（如 LevelDB 与 JSON）。若你机器上实际不是 `cloud-storage-namespace-1.json`，脚本会跳过写入并提示。
-- 可先用 `--export-only` 得到 `steam_collections_export.json`，再按 Stelicas 或官方文档说明，手动合并到当前客户端使用的存储中。
-- 写回后请**完全退出并重新打开 Steam** 再查看库内收藏是否生效。
-
-### 若脚本显示写入成功但库内仍只有旧收藏，或只剩「未分类」
-
-可能原因：
-
-1. **Steam 实际用 LevelDB 存收藏**  
-   Steam 官方/第三方工具（如 DumpSteamCollections）说明：收藏数据主要在 **LevelDB** 里，`cloud-storage-namespace-1.json` 可能是同步/缓存用。直接改 JSON 不一定被客户端采用，甚至可能被覆盖或解析失败，导致界面回退成「只剩未分类」。
-2. **云同步或校验覆盖**  
-   启动时 Steam 用服务器或本地 LevelDB 覆盖了我们写过的 JSON，导致写回的内容消失；若格式不被认可，也可能被当成无效数据，只显示「未分类」。
-
-**建议：**
-
-- **先恢复原有收藏**：若你还有备份，把  
-  `userdata/886001714/config/cloudstorage/cloud-storage-namespace-1.json.bak`  
-  重命名回 `cloud-storage-namespace-1.json`，完全关闭 Steam 后替换回去，再启动 Steam，看「收藏夹」「策略游戏」等是否恢复。
-- **不再依赖写回 JSON**：为避免再次出现「只剩未分类」，建议**不要再用 `--write` 写回该文件**。改用本地工具按分类浏览和启动游戏：
-  - 用 **`steam_picker.py --serve`** 打开网页，按「核心玩法 / 强度 / 氛围」等筛选并启动；
-  - 或查看 **`steam_collections_guide.md`** 按分类清单在 Steam 里**手动**建收藏（一次性的活，但稳定可控）。
-
-若仍想尝试写回，请务必先备份，并在写回前完全关闭 Steam；写回后先离线模式启动查看。但鉴于当前表现，写回方式风险较高，不推荐作为主方案。
+恢复自动写回前，需要另行确认当前客户端的存储格式、目标账号与目录对应关系、写入前的新鲜成员核验、客户端停止条件、现有收藏保留、幂等性、备份恢复及重启/云同步后的持久性，并先在隔离副本验证。

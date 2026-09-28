@@ -203,25 +203,18 @@ Use filters (primary/sub/vibe/intensity) in the browser, then open the game in S
 
 ---
 
-## 5. Write collections back to Steam (optional)
+## 5. Collection plans (optional)
 
-If you want to import `steam_collections_result.json` into Steam Collections:
+Preview or export a plan from a verified client-membership generation, selecting its SteamID64 explicitly:
 
-1. Fully exit Steam (including tray)
-2. Install Node deps:
-   ```bash
-   npm install
-   ```
-3. Explicitly select the target account's 32-bit AccountID (not SteamID64), then run:
-   ```powershell
-   $env:STEAM_ID_32 = "YOUR_32_BIT_ACCOUNT_ID"
-   node import_script.js
-   ```
+```powershell
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --dry-run
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --export-only -o collection_plan.local.json
+```
 
-Notes:
-- The script tries LevelDB first; if no namespace is found, it falls back to `cloud-storage-namespace-1.json` and writes a `.bak` backup.
-- After import, reopen Steam and verify in Library → Collections.
-- Missing or invalid account configuration exits before writes. This legacy collection path still needs separate persistence validation; collection, enrichment and the picker do not require it.
+The default is preview only. Dry-run creates no plan, backup, lock or output directory (use `python -B` to suppress Python bytecode caches too). Confirmed empty libraries remain empty. All manifest hashes, the account, run IDs and exact game membership are checked before export. The plan records the original membership observation time and does not revalidate current ownership.
+
+Legacy Python `--write`, `--from-result` and `--use-api` are disabled. The account-bound plan is not compatible with the old top-level collection map and must not be passed directly to the separate Node writers. Those tools remain outside this safety/persistence validation. See [collection plan details](STEAM_SYNC_README.md).
 
 ## Report implementation and migration
 
