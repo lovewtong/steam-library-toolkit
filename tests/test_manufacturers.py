@@ -22,6 +22,15 @@ from test_phase_two import run_bundle, ACCOUNT, ROOT
 
 
 class ManufacturerTests(unittest.TestCase):
+    def test_benchmark_compares_manufacturer_values_without_cache_read_timestamps(self):
+        from tools.benchmark_enrichment import semantic_rows, without_metadata
+        cold = {'appid': 1, 'developers': ['A'], 'publishers': ['P'],
+                'manufacturer_evidence': {'developers': {'source': 'store_api', 'read_at': 10}}}
+        warm = {**cold, 'manufacturer_evidence': {'developers': {'source': 'store_cache', 'read_at': 20}}}
+        self.assertEqual(semantic_rows([cold]), semantic_rows([warm]))
+        self.assertNotEqual(semantic_rows([cold]), semantic_rows([{**warm, 'developers': ['B']}]))
+        self.assertEqual(without_metadata(cold), {'appid': 1})
+
     def test_presence_normalization_and_retention(self):
         row = {'appid': 1, 'developers': ['Original'], 'publishers': ['Publisher']}
         observation = {'source': 'store_api', 'fetched_at': 100, 'read_at': 101}
