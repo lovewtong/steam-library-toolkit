@@ -1,5 +1,7 @@
 # Steam Library Local Collection & Auto Classification
 
+**Planned v1.1.0 (not released):** the primary-classification review queue, six AppID corrections, and upgrade compatibility guidance. See the [scope and acceptance plan](V1_1_RELEASE_PLAN.md). The published [v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0) tag remains unchanged.
+
 **v1.0.0 scope:** collection, auditing, metadata enrichment, classification corrections, local browsing and collection-plan export. The initial acceptance target is a single-account Windows workflow. Automatic writes to Steam Collections are excluded. See the [release notes and migration guide](RELEASE_NOTES.md), [R5 integration and release preparation](R5_RELEASE_PREPARATION.md), and [scope and acceptance plan](STABLE_RELEASE_SCOPE.md). GitHub Releases/tags determine whether the version has been published.
 
 [R1 classification review](R1_CLASSIFICATION_REVIEW.md) fixes a 31-app sample, adds 12 AppID corrections and checks all 28 built-in rules. Passing the sample is not a full-library accuracy measure: four entries retain historical evidence and two remain unknown.
