@@ -155,6 +155,16 @@ class ClassificationReviewQueueTests(unittest.TestCase):
                 review.export_review(self.root / 'failed.json', *args)
         self.assertEqual(self.snapshot(), before)
 
+    def test_missing_compatibility_library_is_still_a_reserved_output(self):
+        args = review.build_review(self.pointer)
+        # A valid generation can exist even when its convenience copy was not written.
+        self.source.unlink()
+        before = self.snapshot()
+        with self.assertRaisesRegex(ValueError, 'OUTPUT_CONFLICT'):
+            review.export_review(self.source, *args)
+        self.assertEqual(self.snapshot(), before)
+        self.assertEqual(review.build_review(self.pointer)[0]['summary']['games'], 5)
+
     def test_cli_preview_is_read_only_and_limit_does_not_truncate_export(self):
         command = [sys.executable, '-B', '-X', 'utf8', str(ROOT / 'steam_review_classification.py'),
                    '--input', str(self.source), '--limit', '0']

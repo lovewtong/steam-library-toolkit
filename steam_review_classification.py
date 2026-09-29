@@ -121,7 +121,8 @@ def build_review(source):
 
 def export_review(output, report, pointer, before, directory):
     output = Path(output).resolve()
-    if (output.exists() or output in RESERVED_OUTPUTS or output.name.endswith('.current.json')
+    library = pointer.with_name(pointer.name.removesuffix('.current.json') + '.json')
+    if (output.exists() or output == library or output in RESERVED_OUTPUTS or output.name.endswith('.current.json')
             or output.is_relative_to(directory.parent)):
         raise ValueError('REVIEW_OUTPUT_CONFLICT')
     if pointer.read_bytes() != before:
