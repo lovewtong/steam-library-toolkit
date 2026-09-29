@@ -1,7 +1,7 @@
 {
   "name": "steam-collections",
   "private": true,
-  "description": "Steam 收藏分类与 LevelDB 同步",
+  "description": "Collect, audit and organize your Steam library with local browsing and collection-plan exports.",
   "scripts": {
     "test": "node --test tests/test_steam_client.cjs tests/test_steam_web_sources.cjs tests/test_picker_evidence.cjs",
     "classify": "node classify_steam.js",
