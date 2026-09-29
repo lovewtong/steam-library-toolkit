@@ -12,13 +12,15 @@ from steam_picker_server import PickerLibrary
 from steam_runs import publish_run, resolve_artifact
 from steam_sync_collections import build_plan
 from test_phase_two import run_bundle, ACCOUNT
-from tools.review_classification_sample import evaluate, FIXTURE, ROOT
+from tools.review_classification_sample import evaluate, FIXTURE, FIXTURES, ROOT
 
 
 class R1ClassificationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.samples = json.loads(FIXTURE.read_text(encoding='utf-8'))['samples']
+        cls.editorial_samples = [sample for path in FIXTURES.values()
+                                 for sample in json.loads(path.read_text(encoding='utf-8'))['samples']]
         cls.rules = read_rules(ROOT / 'classification_overrides.json')
 
     def test_fixed_sample_retains_all_cohorts_and_original_overrides(self):
@@ -30,7 +32,8 @@ class R1ClassificationTests(unittest.TestCase):
         self.assertEqual({s['appid'] for s in self.samples if s['cohort'] == 'existing_override'},
                          {500, 550, 730, 241930, 326480, 627270, 745960, 923810,
                           976310, 1971870, 622590, 813000, 654310, 770720, 1966970, 2202120})
-        self.assertTrue(set(map(int, self.rules)) <= ids, 'New rules need an editorial sample too')
+        covered = {s['appid'] for s in self.editorial_samples}
+        self.assertTrue(set(map(int, self.rules)) <= covered, 'New rules need an editorial sample too')
 
     def test_frozen_editorial_expectations_match_both_classifiers(self):
         report = evaluate()
@@ -42,7 +45,7 @@ class R1ClassificationTests(unittest.TestCase):
                          {'refreshed': 25, 'unavailable': 2, 'historical_not_refreshed': 4})
 
     def test_all_builtin_rules_survive_renaming_and_do_not_overclaim_field_review(self):
-        expected = {str(s['appid']): s['expected'] for s in self.samples}
+        expected = {str(s['appid']): s['expected'] for s in self.editorial_samples}
         for aid, rule in self.rules.items():
             for name, genres in (('本地化名称™', []), ('BioShock', ['Action'])):
                 with self.subTest(appid=aid, name=name):

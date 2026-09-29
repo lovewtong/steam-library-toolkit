@@ -168,6 +168,42 @@
       "sub": "战术射击（测试分支）",
       "reason": "该 AppID 的 Crytek 官方 Update 1.13 公告明确测试服枪械玩法与射击场；仅校正展示，不改应用类型。 2026-09-13 核对。",
       "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5151601211226205949"
+    },
+    "7670": {
+      "main_category": "射击",
+      "sub": "武器/异能射击",
+      "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。原版商店正文明确为射击，并描述武器、基因改造与异能；按主要战斗方式归入射击，不将 RPG 元素当成唯一主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=7670&l=english"
+    },
+    "8850": {
+      "main_category": "射击",
+      "sub": "武器/异能射击",
+      "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。原版商店单人介绍明确射击、武器与 Plasmids 双持；按主要战斗方式归入射击。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=8850&l=english"
+    },
+    "8870": {
+      "main_category": "射击",
+      "sub": "武器/异能射击",
+      "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。原版商店描述武器、Vigors 与时空裂隙战斗及营救 Elizabeth；按主要战斗方式归入射击。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=8870&l=english"
+    },
+    "63380": {
+      "main_category": "射击",
+      "sub": "狙击潜行",
+      "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。原版商店描述狙击、弹道与隐蔽追踪目标；与 AppID 63380 的原版手册对应，不以重制版代替。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=63380&l=english"
+    },
+    "214550": {
+      "main_category": "休闲/益智",
+      "sub": "物理解谜",
+      "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。Klei 官方介绍与原版商店正文明确物理解谜和关卡编辑；按核心谜题玩法归入休闲/益智，不沿用泛 Strategy 标签优先级。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=214550&l=english"
+    },
+    "241260": {
+      "main_category": "休闲/益智",
+      "sub": "侦探推理",
+      "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。原版商店介绍调查六个案件、审问与演绎指认嫌疑人；项目选择解谜展示组，不否认其 Adventure 类型。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=241260&l=english"
     }
   }
 }

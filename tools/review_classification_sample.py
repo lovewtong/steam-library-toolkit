@@ -15,10 +15,11 @@ from classify_steam_games import classify_one
 from steam_sources import atomic_json
 
 FIXTURE = ROOT / 'tests/fixtures/classification-r1.json'
+FIXTURES = {'r1': FIXTURE, 'batch-01': ROOT / 'tests/fixtures/classification-batch-01.json'}
 
 
-def evaluate():
-    fixture = json.loads(FIXTURE.read_text(encoding='utf-8'))
+def evaluate(fixture_path=FIXTURE):
+    fixture = json.loads(fixture_path.read_text(encoding='utf-8'))
     rules = read_rules(ROOT / 'classification_overrides.json')  # Never load personal rules.
     results = []
     for sample in fixture['samples']:
@@ -42,13 +43,14 @@ def evaluate():
 
 
 def main():
-    parser = argparse.ArgumentParser(description='离线重放固定 R1 分类样本；不联网、不读取个人规则')
+    parser = argparse.ArgumentParser(description='离线重放固定分类样本；不联网、不读取个人规则')
+    parser.add_argument('--sample-set', choices=FIXTURES, default='r1', help='样本集，默认 r1')
     parser.add_argument('-o', '--output', type=Path, help='可选本地报告路径')
     args = parser.parse_args()
-    report = evaluate()
+    report = evaluate(FIXTURES[args.sample_set])
     if args.output:
         atomic_json(args.output, report)
-    print(f"R1: {report['matched']}/{report['samples']} 结果符合预期；内置校正 {report['builtin_rules']} 条")
+    print(f"{args.sample_set}: {report['matched']}/{report['samples']} 结果符合预期；内置校正 {report['builtin_rules']} 条")
     print('证据状态：' + json.dumps(report['evidence_status'], ensure_ascii=False))
     print('样本回归不等于全部样本均有新证据，也不是全库准确率。')
     return int(report['matched'] != report['samples'])
