@@ -4,13 +4,15 @@ from collections import Counter
 from copy import deepcopy
 import hashlib
 import json
+import os
 from pathlib import Path
+import tempfile
 
 from classification_overrides import MAIN_TO_PRIMARY, read_rules
 from steam_picker_server import normalized_games
 from steam_runs import manifest_path, resolve_artifact
 from steam_schema import validate_artifacts
-from steam_sources import atomic_json, select_for_classification
+from steam_sources import select_for_classification
 
 ROOT = Path(__file__).resolve().parent
 RESERVED_OUTPUTS = {ROOT / name for name in ('config_local.json', 'classification_overrides.json',
@@ -127,7 +129,20 @@ def export_review(output, report, pointer, before, directory):
         raise ValueError('REVIEW_OUTPUT_CONFLICT')
     if pointer.read_bytes() != before:
         raise ValueError('REVIEW_GENERATION_CHANGED')
-    atomic_json(output, report)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(prefix=output.name + '.', suffix='.tmp', dir=output.parent)
+    try:
+        with os.fdopen(handle, 'w', encoding='utf-8') as stream:
+            json.dump(report, stream, ensure_ascii=False, indent=2)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if pointer.read_bytes() != before:
+            raise ValueError('REVIEW_GENERATION_CHANGED')
+        # Publish complete bytes without replacing an entry created after our precheck.
+        # Keep the temporary on the same filesystem; unsupported hard links fail closed.
+        os.link(temporary, output)
+    finally:
+        os.unlink(temporary)
 
 
 def main(argv=None):

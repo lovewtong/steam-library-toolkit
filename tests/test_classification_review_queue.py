@@ -5,7 +5,9 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
 
 import steam_review_classification as review
@@ -150,7 +152,7 @@ class ClassificationReviewQueueTests(unittest.TestCase):
                      self.root / 'new.current.json', ROOT / 'classification_overrides.local.json'):
             with self.subTest(path=path), self.assertRaisesRegex(ValueError, 'OUTPUT_CONFLICT'):
                 review.export_review(path, *args)
-        with patch('steam_sources.os.replace', side_effect=OSError('injected')):
+        with patch('steam_review_classification.os.link', side_effect=OSError('injected')):
             with self.assertRaises(OSError):
                 review.export_review(self.root / 'failed.json', *args)
         self.assertEqual(self.snapshot(), before)
@@ -164,6 +166,41 @@ class ClassificationReviewQueueTests(unittest.TestCase):
             review.export_review(self.source, *args)
         self.assertEqual(self.snapshot(), before)
         self.assertEqual(review.build_review(self.pointer)[0]['summary']['games'], 5)
+
+    def test_file_created_after_precheck_is_never_overwritten(self):
+        args = review.build_review(self.source)
+        output = self.root / 'competing.json'
+        original_fsync = os.fsync
+        def create_competing_file(fd):
+            original_fsync(fd)
+            output.write_bytes(b'unrelated concurrent data')
+        with patch('os.fsync', side_effect=create_competing_file):
+            with self.assertRaises(FileExistsError):
+                review.export_review(output, *args)
+        self.assertEqual(output.read_bytes(), b'unrelated concurrent data')
+        self.assertFalse(list(self.root.glob('competing.json.*.tmp')))
+
+    def test_concurrent_exports_have_exactly_one_winner(self):
+        args = review.build_review(self.source)
+        output = self.root / 'concurrent.json'
+        ready = threading.Barrier(2)
+        original_fsync = os.fsync
+        def wait_until_both_prechecks_passed(fd):
+            original_fsync(fd)
+            ready.wait(timeout=5)
+        def export(index):
+            try:
+                review.export_review(output, {**args[0], 'test_writer': index}, *args[1:])
+                return index
+            except FileExistsError:
+                return None
+        with patch('os.fsync', side_effect=wait_until_both_prechecks_passed):
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                outcomes = list(pool.map(export, (1, 2)))
+        winners = [value for value in outcomes if value is not None]
+        self.assertEqual(len(winners), 1)
+        self.assertEqual(json.loads(output.read_bytes())['test_writer'], winners[0])
+        self.assertFalse(list(self.root.glob('concurrent.json.*.tmp')))
 
     def test_cli_preview_is_read_only_and_limit_does_not_truncate_export(self):
         command = [sys.executable, '-B', '-X', 'utf8', str(ROOT / 'steam_review_classification.py'),
