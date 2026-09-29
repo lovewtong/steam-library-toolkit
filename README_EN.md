@@ -4,6 +4,8 @@
 
 [R1 classification review](R1_CLASSIFICATION_REVIEW.md) fixes a 31-app sample, adds 12 AppID corrections and checks all 28 built-in rules. Passing the sample is not a full-library accuracy measure: four entries retain historical evidence and two remain unknown.
 
+[R2 transport baseline](R2_PERFORMANCE_BASELINE.md) is complete: 388 cold-cache entries took 582.236 seconds; three warm runs had a median of 0.843 seconds. The fixed sample produced consistent results at workers=1/2/4, and data-protection checks passed. Real-account end-to-end acceptance and release gates remain pending.
+
 Last-played exports now carry their own historical/unknown status, source and observation time. Both API adapters accept explicit null for the three time fields without converting it to zero; see [time-field contracts](TIME_FIELD_CONTRACT.md).
 
 ## Recommended workflow
