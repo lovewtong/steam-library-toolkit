@@ -17,6 +17,25 @@ function fetchSequence(items) {
     return {status: 200, headers: {get: () => '1'}, json: async () => ({response: value})};
   };
 }
+
+test('API accepts shared absent/null/zero/positive time cases without losing other apps', async () => {
+  const cases = require('./fixtures/api-time-values.json');
+  for (const field of cases.fields) for (const example of cases.valid) {
+    const row = {appid: 1, ...(example.present ? {[field]: example.value} : {})};
+    const result = await ownedGames('fixture-key', account, true, fetchSequence([
+      {game_count: 2, games: [row, {appid: 2, playtime_forever: 7}]}]));
+    assert.equal(result.state, 'complete');
+    assert.deepEqual(result.records, [{...row, name: ''}, {appid: 2, name: '', playtime_forever: 7}]);
+  }
+});
+
+test('API rejects shared invalid time values rather than converting them to unknown', async () => {
+  const cases = require('./fixtures/api-time-values.json');
+  for (const field of cases.fields) for (const value of cases.invalid) {
+    await assert.rejects(() => ownedGames('fixture-key', account, true, fetchSequence([
+      {game_count: 1, games: [{appid: 1, [field]: value}]}])), {code: 'RESPONSE_INVALID'});
+  }
+});
 test('only stable lists on the same authenticated desktop become complete', async () => {
   const r = await clientLibrary('secret', account, 'desktop', fetchSequence([session, list([10, 20]), list([20, 10]), session]));
   assert.equal(r.state, 'complete');

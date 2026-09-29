@@ -31,7 +31,7 @@
     <label>核心玩法 <select id="primary"><option value="">全部</option></select></label>
     <label>细分流派 <select id="sub"><option value="">全部</option></select></label>
     <label>氛围 <select id="vibe"><option value="">全部</option></select></label>
-    <label>强度 <select id="intensity"><option value="">全部</option><option value="低">低</option><option value="中">中</option><option value="高">高</option></select></label>
+    <label>强度 <select id="intensity"><option value="">全部</option><option value="低">低</option><option value="中">中</option><option value="高">高</option><option value="未知">未知</option></select></label>
     <label>名称 <input type="text" id="name" placeholder="搜索名称" /></label>
     <span class="count" id="count">0 款</span>
   </div>
@@ -82,7 +82,7 @@
         const a = g.analysis || {};
         const url = "steam://rungameid/" + g.appid;
         return `<div class="game">
-          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div></div>
+          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div>${renderEvidence(g)}</div>
           <a href="${url}">在 Steam 中打开</a>
         </div>`;
       }).join("");
@@ -92,6 +92,23 @@
       const div = document.createElement("div");
       div.textContent = s;
       return div.innerHTML;
+    }
+
+    function renderEvidence(game) {
+      const fields = game.classification_evidence?.fields || {};
+      const labels = {primary: '主类', sub: '子类', vibe: '氛围', intensity: '强度', slogan: '推荐语'};
+      const states = {reviewed: '人工确认', inferred: '规则推断', unknown: '待核对', generated: '模板生成'};
+      const sources = {appid_override: 'AppID 校正', known_name: '名称规则', genre_rules: '类型规则',
+                       name_genre_rules: '名称与类型规则',
+                       template: '通用模板', reset: '原细项已失效', default: '默认值', unknown: '依据不足'};
+      const reasons = {primary_changed: '主类已改变，原细项待重新核对', not_reviewed: '尚未核对',
+                       no_recognized_genre: '缺少可识别的类型标签'};
+      const entries = Object.entries(labels).map(([key, label]) => {
+        const f = fields[key] || {};
+        const explanation = [sources[f.source], reasons[f.reason] || f.reason, f.reference].filter(Boolean).join('；');
+        return `<div>${label}：${escapeHtml(states[f.state] || '未记录依据')}${explanation ? ' — ' + escapeHtml(explanation) : ''}</div>`;
+      }).join('');
+      return `<details class="meta"><summary>分类依据</summary>${entries}</details>`;
     }
 
     primaryEl.addEventListener("change", filter);

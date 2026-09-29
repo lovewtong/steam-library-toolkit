@@ -1,5 +1,17 @@
 # Steam Library Local Collection & Auto Classification
 
+**v1.0.0 scope:** collection, auditing, metadata enrichment, classification corrections, local browsing and collection-plan export. The initial acceptance target is a single-account Windows workflow. Automatic writes to Steam Collections are excluded. See the [release notes and migration guide](RELEASE_NOTES.md), [R5 integration and release preparation](R5_RELEASE_PREPARATION.md), and [scope and acceptance plan](STABLE_RELEASE_SCOPE.md). GitHub Releases/tags determine whether the version has been published.
+
+[R1 classification review](R1_CLASSIFICATION_REVIEW.md) fixes a 31-app sample, adds 12 AppID corrections and checks all 28 built-in rules. Passing the sample is not a full-library accuracy measure: four entries retain historical evidence and two remain unknown.
+
+[R2 transport baseline](R2_PERFORMANCE_BASELINE.md) is complete: 388 cold-cache entries took 582.236 seconds; three warm runs had a median of 0.843 seconds. The fixed sample produced consistent results at workers=1/2/4, and data-protection checks passed. See the report for measurement conditions and limitations.
+
+[R3 Windows acceptance](R3_WINDOWS_ACCEPTANCE.md) passed in an independently installed environment: single-account live collection, auditing, enrichment, correction and rollback, local browsing, and collection-plan export. All 129 Python and 24 Node tests passed.
+
+[R4 final-candidate review](R4_FINAL_REVIEW.md) found no new blockers; full regression, three-platform CI and offline rebuilding of saved artifacts passed. R5 integrates the complete candidate: PR #5 alone omits later changes. The release target must pass the final mainline checks.
+
+Last-played exports now carry their own historical/unknown status, source and observation time. Both API adapters accept explicit null for the three time fields without converting it to zero; see [time-field contracts](TIME_FIELD_CONTRACT.md).
+
 ## Recommended workflow
 
 This repo keeps all classification locally and does not modify Steam by default.
@@ -43,10 +55,10 @@ QR authorization / explicit local session / optional API config
 
 ## 1. Install and authorize
 
-Requires Python 3.10+ and Node.js 18+:
+The verified Windows combination is Python 3.14.2 and Node.js 22.19.0. Offline CI uses Python 3.12 and Node 22 on all three platforms. The earlier Python 3.10+/Node 18+ minimum claims have not received full acceptance testing. Prefer a verified combination:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-tested.txt
 npm ci
 # Keep desktop Steam online; scan with the Steam mobile app
 python steam_collect.py --login --no-store
@@ -58,7 +70,7 @@ On Windows, an isolated environment avoids mismatched pip/Python installations:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
 npm ci
 .\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict
 ```
@@ -99,7 +111,7 @@ python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.jso
 
 AppID corrections in `classification_overrides.local.json` are shared by both classifiers. Run `python steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json` to rebuild offline without changing membership, playtime or the original generation. See [CLASSIFICATION_OVERRIDES.md](CLASSIFICATION_OVERRIDES.md) for the format and category mapping.
 
-There are now 14 sourced built-in corrections. Review has classified 11 of 14 entries without genre metadata; 3 await further evidence. See the [review log](CLASSIFICATION_REVIEW.md) for sources, name-matching fixes and validation limits. This is not a whole-library accuracy measurement.
+There are now 16 sourced built-in corrections, including the reviewed Ingression and 63 Days entries. Review has classified 11 of 14 entries without genre metadata; 3 await further evidence. See the [review log](CLASSIFICATION_REVIEW.md) for sources, name-matching fixes and validation limits. Both classifiers share explicit English/Chinese genre mapping; missing or unsupported genres remain Other rather than defaulting to Action. Titles are not store genre evidence. Changing an overridden primary category resets unspecified dependent details; each field records reviewed, inferred, unknown or generated status. The picker displays these under classification evidence. Full table evidence is frozen in the new `classified.json` artifact. This is not a whole-library accuracy measurement.
 
 Standalone enrichment accepts `--workers` from 1 to 4 (default 2), with shared request pacing, cooldown and cached responses. Category IDs fix false controller-support negatives caused by localized descriptions. Missing fields preserve prior values, and both collection paths persist field observations. See [metadata enrichment](METADATA_ENRICHMENT.md) for cache v5 migration and historical results, and the [audit fixes](AUDIT_REMEDIATION.md) for total deadlines, cancellation, unavailable comparisons and remaining limitations.
 
@@ -186,7 +198,7 @@ python classify_games.py
 - Output:
   - `game_library_classified.csv`
   - `game_library_classified.md`
-- Rules live in `classify_games.py` (`MAIN_CATEGORY_RULES`, `TAG_RULES`)
+- Coarse genre rules live in `classification_rules.py` (`GENRE_RULES`); tag rules remain in `classify_games.py` (`TAG_RULES`)
 - More details in `CLASSIFICATION_RULES.md`
 
 ---
@@ -201,25 +213,18 @@ Use filters (primary/sub/vibe/intensity) in the browser, then open the game in S
 
 ---
 
-## 5. Write collections back to Steam (optional)
+## 5. Collection plans (optional)
 
-If you want to import `steam_collections_result.json` into Steam Collections:
+Preview or export a plan from a verified client-membership generation, selecting its SteamID64 explicitly:
 
-1. Fully exit Steam (including tray)
-2. Install Node deps:
-   ```bash
-   npm install
-   ```
-3. Explicitly select the target account's 32-bit AccountID (not SteamID64), then run:
-   ```powershell
-   $env:STEAM_ID_32 = "YOUR_32_BIT_ACCOUNT_ID"
-   node import_script.js
-   ```
+```powershell
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --dry-run
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --export-only -o collection_plan.local.json
+```
 
-Notes:
-- The script tries LevelDB first; if no namespace is found, it falls back to `cloud-storage-namespace-1.json` and writes a `.bak` backup.
-- After import, reopen Steam and verify in Library → Collections.
-- Missing or invalid account configuration exits before writes. This legacy collection path still needs separate persistence validation; collection, enrichment and the picker do not require it.
+The default is preview only. Dry-run creates no plan, backup, lock or output directory (use `python -B` to suppress Python bytecode caches too). Confirmed empty libraries remain empty. All manifest hashes, the account, run IDs and exact game membership are checked before export. The plan records the original membership observation time and does not revalidate current ownership.
+
+Legacy Python `--write`, `--from-result` and `--use-api` are disabled. The account-bound plan is not compatible with the old top-level collection map and must not be passed directly to the separate Node writers. Those tools remain outside this safety/persistence validation. See [collection plan details](STEAM_SYNC_README.md).
 
 ## Report implementation and migration
 

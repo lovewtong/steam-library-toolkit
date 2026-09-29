@@ -2,6 +2,7 @@
 """根据 steam_library.json 对每款游戏进行五维分类，输出指定 JSON 格式。"""
 import json
 import re
+from classification_rules import genre_primary, genre_category
 
 INPUT_FILE = 'steam_library.json'
 OUTPUT_FILE = 'steam_library_classified.json'
@@ -40,7 +41,6 @@ KNOWN = {
     "baldur's gate": {"primary": "角色扮演 (RPG)", "sub": "CRPG", "vibe": "史诗奇幻", "intensity": "高", "slogan": "龙与地下城，掷骰子定生死。"},
     "baldur's gate ii": {"primary": "角色扮演 (RPG)", "sub": "CRPG", "vibe": "史诗奇幻", "intensity": "高", "slogan": "二代更史诗。"},
     "baldur's gate 3": {"primary": "角色扮演 (RPG)", "sub": "CRPG", "vibe": "史诗奇幻", "intensity": "高", "slogan": "掷骰子谈恋爱打怪三不误。"},
-    "broken age": {"primary": "解谜/休闲", "sub": "点击冒险", "vibe": "独立/叙事", "intensity": "低", "slogan": "双线叙事，解谜看故事。"},
     "mad max": {"primary": "动作/冒险", "sub": "开放世界动作", "vibe": "废土狂野", "intensity": "中", "slogan": "废土飙车揍人。"},
     "sherlock holmes": {"primary": "解谜/休闲", "sub": "侦探推理", "vibe": "维多利亚悬疑", "intensity": "中", "slogan": "当福尔摩斯破案。"},
     "middle-earth™: shadow of mordor": {"primary": "动作/冒险", "sub": "开放世界动作", "vibe": "史诗黑暗", "intensity": "中", "slogan": "魔多割草与宿敌系统。"},
@@ -93,7 +93,6 @@ KNOWN = {
     "drawful 2": {"primary": "解谜/休闲", "sub": "派对猜画", "vibe": "轻松搞怪", "intensity": "低", "slogan": "你画我猜互坑。"},
     "oxygen not included": {"primary": "策略/模拟", "sub": "生存建造", "vibe": "硬核模拟", "intensity": "高", "slogan": "小人别缺氧别饿别崩。"},
     "the deed": {"primary": "独立/叙事", "sub": "短篇推理", "vibe": "黑色幽默", "intensity": "低", "slogan": "小体量谋杀解谜。"},
-    "caveman world": {"primary": "策略/模拟", "sub": "文明建设", "vibe": "搞怪", "intensity": "中", "slogan": "原始人建文明。"},
     "planescape: torment": {"primary": "角色扮演 (RPG)", "sub": "CRPG", "vibe": "哲学奇幻", "intensity": "高", "slogan": "What can change the nature of a man?"},
     "northgard": {"primary": "策略/模拟", "sub": "RTS", "vibe": "北欧神话", "intensity": "中", "slogan": "维京人占格子打怪。"},
     "warhammer 40,000: gladius": {"primary": "策略/模拟", "sub": "4X回合", "vibe": "战锤40K", "intensity": "高", "slogan": "40K 回合制打架。"},
@@ -125,7 +124,6 @@ KNOWN = {
     "mark of the ninja": {"primary": "动作/冒险", "sub": "横版潜行", "vibe": "忍者暗杀", "intensity": "中", "slogan": "横版潜行天花板。"},
     "anno 1800": {"primary": "策略/模拟", "sub": "城建模拟", "vibe": "工业时代", "intensity": "高", "slogan": "造岛贸易，肝到天明。"},
     "back 4 blood": {"primary": "射击 (FPS/TPS)", "sub": "合作射击", "vibe": "僵尸末世", "intensity": "高", "slogan": "精神续作，四人打怪。"},
-    "brok the investigator": {"primary": "解谜/休闲", "sub": "点击冒险", "vibe": "动物侦探", "intensity": "低", "slogan": "鳄鱼侦探破案。"},
     "heavy rain": {"primary": "独立/叙事", "sub": "互动电影", "vibe": "悬疑沉重", "intensity": "中", "slogan": "折纸杀手与父亲们的选择。"},
     "beyond: two souls": {"primary": "独立/叙事", "sub": "互动电影", "vibe": "超自然叙事", "intensity": "中", "slogan": "灵异少女的人生电影。"},
     "autonauts": {"primary": "策略/模拟", "sub": "自动化建造", "vibe": "编程解压", "intensity": "低", "slogan": "教机器人种地。"},
@@ -149,7 +147,6 @@ KNOWN = {
     "the lamplighters league": {"primary": "策略/模拟", "sub": "回合战术", "vibe": "复古冒险", "intensity": "中", "slogan": "1930 年代小队战术。"},
     "bright memory: infinite": {"primary": "射击 (FPS/TPS)", "sub": "动作FPS", "vibe": "爽快科幻", "intensity": "高", "slogan": "短小精悍的刀枪剑戟FPS。"},
     "pathfinder: wrath of the righteous": {"primary": "角色扮演 (RPG)", "sub": "CRPG", "vibe": "史诗奇幻", "intensity": "高", "slogan": "正义之怒，神话道途。"},
-    "one gun guy": {"primary": "射击 (FPS/TPS)", "sub": " roguelike 射击", "vibe": "极简硬核", "intensity": "高", "slogan": "一把枪闯关。"},
     "a space for the unbound": {"primary": "独立/叙事", "sub": "像素叙事", "vibe": "治愈青春", "intensity": "低", "slogan": "印尼小镇与超自然治愈。"},
     "paleo pines": {"primary": "策略/模拟", "sub": "农场模拟", "vibe": "治愈恐龙", "intensity": "低", "slogan": "养恐龙种田。"},
     "detroit: become human": {"primary": "独立/叙事", "sub": "互动电影", "vibe": "赛博朋克伦理", "intensity": "中", "slogan": "仿生人有没有灵魂。"},
@@ -158,15 +155,12 @@ KNOWN = {
     "ad infinitum": {"primary": "冒险", "sub": "恐怖生存", "vibe": "一战恐怖", "intensity": "高", "slogan": "战壕里的噩梦。"},
     "sonic frontiers": {"primary": "动作/冒险", "sub": "开放世界跑酷", "vibe": "速度感", "intensity": "中", "slogan": "音速小子跑大地图。"},
     "terraformers": {"primary": "策略/模拟", "sub": "火星殖民", "vibe": "科幻策略", "intensity": "中", "slogan": "火星造地化。"},
-    "lair land story": {"primary": "策略/模拟", "sub": "地牢经营", "vibe": "龙与地下城", "intensity": "中", "slogan": "地牢当老板。"},
     "this means warp": {"primary": "策略/模拟", "sub": " roguelike 太空", "vibe": "合作策略", "intensity": "中", "slogan": "飞船 roguelike 合作。"},
     "mind over magic": {"primary": "策略/模拟", "sub": "魔法学院建造", "vibe": "奇幻经营", "intensity": "中", "slogan": "建魔法学校养学生。"},
-    "destroyer: the u-boat hunter": {"primary": "策略/模拟", "sub": "潜艇模拟", "vibe": "二战拟真", "intensity": "高", "slogan": "当驱逐舰猎潜艇。"},
     "remnant ii": {"primary": "射击 (FPS/TPS)", "sub": "魂系射击", "vibe": "黑暗科幻", "intensity": "高", "slogan": "打枪版黑魂。"},
     "tiny tina's wonderlands": {"primary": "射击 (FPS/TPS)", "sub": "刷宝射击", "vibe": "无厘头奇幻", "intensity": "中", "slogan": "无主之地味龙与地下城。"},
     "rollerdrome": {"primary": "动作/冒险", "sub": "轮滑射击", "vibe": "复古未来", "intensity": "高", "slogan": "滑旱冰射爆。"},
     "gori: cuddly carnage": {"primary": "动作/冒险", "sub": "动作砍杀", "vibe": "可爱暴力", "intensity": "中", "slogan": "可爱风砍怪。"},
-    "wrestledunk sports": {"primary": "动作/冒险", "sub": "体育搞怪", "vibe": "轻松", "intensity": "低", "slogan": "摔角篮球大乱斗。"},
     "fashion police squad": {"primary": "射击 (FPS/TPS)", "sub": "搞笑FPS", "vibe": "无厘头", "intensity": "中", "slogan": "用服装纠正路人审美。"},
     "wolfstride": {"primary": "策略/模拟", "sub": "机甲回合+经营", "vibe": "西部机甲", "intensity": "中", "slogan": "开机甲打黑拳养狗。"},
     "lacuna": {"primary": "解谜/休闲", "sub": "侦探解谜", "vibe": "科幻 noir", "intensity": "中", "slogan": "科幻侦探选结局。"},
@@ -222,7 +216,6 @@ KNOWN = {
     "between horizons": {"primary": "冒险", "sub": "科幻叙事", "vibe": "太空飞船", "intensity": "中", "slogan": "飞船上查案。"},
     "spirittea": {"primary": "策略/模拟", "sub": "经营+生活", "vibe": "治愈", "intensity": "低", "slogan": "开澡堂招待灵魂。"},
     "lost skies": {"primary": "动作/冒险", "sub": "合作生存", "vibe": "空岛", "intensity": "中", "slogan": "空岛生存建造。"},
-    "ingression": {"primary": "策略/模拟", "sub": "策略", "vibe": "科幻", "intensity": "中", "slogan": "科幻策略。"},
     "synergy": {"primary": "策略/模拟", "sub": "模拟", "vibe": "科幻", "intensity": "中", "slogan": "科幻模拟。"},
     "barro gt": {"primary": "策略/模拟", "sub": "竞速", "vibe": "拟真", "intensity": "中", "slogan": "巴罗GT竞速。"},
     "gatekeeper": {"primary": "策略/模拟", "sub": "塔防/策略", "vibe": "奇幻", "intensity": "中", "slogan": "守门人策略。"},
@@ -233,7 +226,6 @@ KNOWN = {
     "ghostrunner 2": {"primary": "动作/冒险", "sub": "跑酷砍杀", "vibe": "赛博朋克", "intensity": "高", "slogan": "一刀死跑酷续作。"},
     "cobalt core": {"primary": "策略/模拟", "sub": "卡牌 roguelike", "vibe": "太空", "intensity": "中", "slogan": "太空卡牌 roguelike。"},
     "wizard of legend 2": {"primary": "动作/冒险", "sub": " roguelike", "vibe": "魔法地牢", "intensity": "高", "slogan": "法师地牢 roguelike。"},
-    "63 days": {"primary": "独立/叙事", "sub": "叙事", "vibe": "生存", "intensity": "中", "slogan": "六十三天生存选择。"},
     "sucker for love: date to die for": {"primary": "独立/叙事", "sub": "恋爱+克苏鲁", "vibe": "邪典恋爱", "intensity": "中", "slogan": "和古神谈恋爱。"},
     "endless monday": {"primary": "独立/叙事", "sub": "叙事", "vibe": "职场", "intensity": "低", "slogan": "无限周一模拟器。"},
     "station to station": {"primary": "策略/模拟", "sub": "铁路拼图", "vibe": "解压", "intensity": "低", "slogan": "连铁路造景。"},
@@ -258,7 +250,6 @@ KNOWN = {
     "man i just wanna go home": {"primary": "解谜/休闲", "sub": "休闲", "vibe": "治愈", "intensity": "低", "slogan": "只想回家。"},
     "monster hunter wilds beta": {"primary": "动作/冒险", "sub": "共斗狩猎", "vibe": "史诗", "intensity": "高", "slogan": "野化测试服。"},
     "escape from tarkov": {"primary": "射击 (FPS/TPS)", "sub": "硬核大逃杀", "vibe": "硬核拟真", "intensity": "高", "slogan": "跑刀与心跳，拟真到自闭。"},
-    "petz catz": {"primary": "策略/模拟", "sub": "宠物模拟", "vibe": "轻松", "intensity": "低", "slogan": "养猫模拟。"},
     "skillshot city": {"primary": "动作/冒险", "sub": "体育", "vibe": "街头", "intensity": "中", "slogan": "街头技巧球。"},
     "movavi video suite": {"primary": "策略/模拟", "sub": "实用工具", "vibe": "工具", "intensity": "低", "slogan": "视频编辑软件，非游戏。"},
     "postal: brain damaged": {"primary": "射击 (FPS/TPS)", "sub": "复古FPS", "vibe": "恶搞", "intensity": "中", "slogan": "POSTAL 复古射爆。"},
@@ -279,20 +270,7 @@ def find_known(name):
     return {key: value.strip() for key, value in candidates[0][1].items()}
 
 def primary_from_genres(genres):
-    g = " ".join(genres).lower()
-    if "射击" in g or "fps" in g or "tps" in g:
-        return "射击 (FPS/TPS)"
-    if "角色扮演" in g or "rpg" in g:
-        return "角色扮演 (RPG)"
-    if "策略" in g or "模拟" in g:
-        return "策略/模拟"
-    if "动作" in g or "冒险" in g:
-        return "动作/冒险"
-    if "解谜" in g or "休闲" in g:
-        return "解谜/休闲"
-    if "独立" in g:
-        return "独立/叙事"
-    return "动作/冒险"
+    return genre_primary(genres)
 
 def sub_from_name_and_genres(name, genres):
     n = normalize_name(name)
@@ -303,7 +281,8 @@ def sub_from_name_and_genres(name, genres):
         return "类魂"
     if "metroidvania" in n or "银河" in g or "恶魔城" in g:
         return "银河恶魔城"
-    if "模拟" in g or "经营" in g or "sim" in n:
+    # Broad Simulation and title fragments such as 'sim' are not management evidence.
+    if "经营" in g:
         return "经营模拟"
     if "生存" in g or "don't starve" in n or "survival" in n:
         return "生存建造"
@@ -328,17 +307,17 @@ def vibe_from_genres(genres):
     return "风格各异"
 
 def intensity_from_genres(genres):
-    g = " ".join(genres).lower()
-    if "休闲" in g or "放松" in g:
+    primary = primary_from_genres(genres)
+    if primary == '解谜/休闲':
         return "低"
-    if "策略" in g or "模拟" in g:
+    if primary == '策略/模拟':
         return "中"
-    if "动作" in g or "射击" in g:
+    if primary in ('动作/冒险', '射击 (FPS/TPS)'):
         return "高"
-    return "中"
+    return "未知"
 
 def slogan_fallback(name, primary):
-    return f"《{name}》——{primary}，值得一试。"
+    return f"《{name}》：分类依据不足，待核对。" if primary == '其他' else f"《{name}》：{primary}，细分体验待核对。"
 
 def _classify_one(game):
     appid = game.get("appid")
@@ -361,6 +340,8 @@ def _classify_one(game):
     sub = sub_from_name_and_genres(name, genres)
     vibe = vibe_from_genres(genres)
     intensity = intensity_from_genres(genres)
+    if primary == '其他':
+        sub, vibe, intensity = '待核对', '待核对', '未知'
     slogan = slogan_fallback(name, primary)
     return {
         "appid": str(appid),
@@ -378,15 +359,39 @@ def classify_one(game, overrides=None):
     from classification_overrides import load_overrides, correction, evidence, MAIN_TO_PRIMARY
     overrides = load_overrides() if overrides is None else overrides
     result = _classify_one(game)
+    analysis = result['analysis']
+    known = find_known(game.get('name', ''))
+    source = 'known_name' if known else 'genre_rules'
+    fields = {key: {'source': source, 'state': 'inferred'} for key in analysis}
+    if not known:
+        fields['primary'] = genre_category(game.get('genres'))[1]
+        fields['sub']['source'] = 'name_genre_rules'
+        fields['slogan'] = {'source': 'template', 'state': 'generated'}
+        for key, fallback in (('sub', '多种元素'), ('vibe', '风格各异'), ('intensity', '未知')):
+            if analysis['primary'] == '其他' or analysis[key] == fallback:
+                fields[key] = {'source': 'default', 'state': 'unknown', 'reason': 'not_reviewed'}
     rule = correction(game, overrides)
     if rule:
-        result['analysis']['primary'] = MAIN_TO_PRIMARY[rule['main_category']]
-        result['analysis'].update({k: rule[k] for k in ('sub', 'vibe', 'intensity', 'slogan') if k in rule})
-        if 'slogan' not in rule and not find_known(game.get('name', '')):
-            result['analysis']['slogan'] = slogan_fallback(game.get('name', ''), result['analysis']['primary'])
+        primary = MAIN_TO_PRIMARY[rule['main_category']]
+        changed = analysis['primary'] != primary
+        sub_changed = 'sub' in rule and analysis['sub'] != rule['sub']
+        if changed:
+            for key, value in (('sub', '待核对'), ('vibe', '待核对'), ('intensity', '未知')):
+                analysis[key] = value
+                fields[key] = {'source': 'reset', 'state': 'unknown', 'reason': 'primary_changed'}
+        analysis['primary'] = primary
+        fields['primary'] = {**evidence(rule), 'state': 'reviewed'}
+        if changed or sub_changed or not known:
+            analysis['slogan'] = slogan_fallback(game.get('name', ''), primary)
+            fields['slogan'] = {'source': 'template', 'state': 'generated'}
+        for key in ('sub', 'vibe', 'intensity', 'slogan'):
+            if key in rule:
+                analysis[key] = rule[key]
+                fields[key] = {**evidence(rule), 'state': 'reviewed'}
         result['classification_evidence'] = evidence(rule)
     else:
-        result['classification_evidence'] = {'source': 'known_name' if find_known(game.get('name', '')) else 'genre_rules'}
+        result['classification_evidence'] = {'source': source if known else fields['primary']['source']}
+    result['classification_evidence']['fields'] = fields
     return result
 
 

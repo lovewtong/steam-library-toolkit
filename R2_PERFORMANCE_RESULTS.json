@@ -1,0 +1,868 @@
+{
+  "producer": {
+    "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+    "dirty": false
+  },
+  "environment": {
+    "schema_version": 1,
+    "os": "Windows",
+    "python_version": "3.14.2",
+    "node_version": "v22.19.0",
+    "python_packages": {
+      "requests": "2.34.2",
+      "keyring": "25.7.0",
+      "vdf": "3.4",
+      "jsonschema": "4.26.0"
+    },
+    "node_packages": {
+      "steam-user": "5.3.0",
+      "steam-session": "1.9.4",
+      "undici": "6.21.3"
+    },
+    "proxy_detected": true,
+    "account_binding": "not_checked",
+    "steam_client_version": null,
+    "network_probed": false
+  },
+  "source_pointer_sha256": "9ca980f0280735b9ea31719d456dda00b4c8ead26f906543267ed2cea29f65af",
+  "warm_median_seconds": 0.843,
+  "warm_range_seconds": [
+    0.841,
+    0.845
+  ],
+  "warm_semantic_results_equal": true,
+  "subset_semantic_results_equal": true,
+  "subset_observation_results_equal": true,
+  "schema_version": 1,
+  "measured_at": "2026-09-29T00:37:47.465419+00:00",
+  "harness_sha256": "6f6e692b69af3ac8795c25d6f4c77134db7d0b5fd8e665979529099ba5095735",
+  "source_library_sha256": "d9dfcc6c089358a7496c73a31a0c05e040d4f63141c4d73099099af6b89334ff",
+  "subset": [
+    500,
+    550,
+    730,
+    241930,
+    770720,
+    326480,
+    627270,
+    15150
+  ],
+  "gate_interval_seconds": 1.5,
+  "trials": [
+    {
+      "phase": "cold",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 582.236,
+      "metadata_seconds": 581.415,
+      "workers": 2,
+      "selected": 388,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 382,
+        "not_found": 6,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 0,
+        "cache_misses": 388,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 388,
+      "http_retries": 0,
+      "http_statuses": {
+        "200": 388
+      },
+      "gate_grants": 388,
+      "gate_min_gap_seconds": 1.500014,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "categories": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "is_multiplayer": {
+          "true": 128,
+          "false": 248,
+          "unknown": 12
+        },
+        "is_controller": {
+          "true": 251,
+          "false": 125,
+          "unknown": 12
+        }
+      },
+      "semantic_sha256": "19339d313c8ecdafb0edd8df3693e7607b2afa8678f4239a4bc444c715054e4c",
+      "observations_sha256": "4b7ac803e5f6b8acf3923a22697bc56a3cc303db76726966f684575f63e99623",
+      "cache_files_before": 0,
+      "cache_files_after": 388,
+      "cache_unchanged": false,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 1,
+      "attempt_seconds": {
+        "min": 0.794054,
+        "median": 0.886076,
+        "max": 1.225237
+      },
+      "attempt_start_gap_min_seconds": 1.499959,
+      "field_actions": {
+        "genres": {
+          "updated": 376,
+          "retained": 12
+        },
+        "categories": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_multiplayer": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_controller": {
+          "updated": 376,
+          "retained": 12
+        }
+      },
+      "field_value_changes": {
+        "genres": 6,
+        "categories": 9,
+        "is_multiplayer": 6,
+        "is_controller": 8
+      }
+    },
+    {
+      "phase": "warm1",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 0.841,
+      "metadata_seconds": 0.058,
+      "workers": 2,
+      "selected": 388,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 382,
+        "not_found": 6,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 388,
+        "cache_misses": 0,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 0,
+      "http_retries": 0,
+      "http_statuses": {},
+      "gate_grants": 0,
+      "gate_min_gap_seconds": null,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "categories": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "is_multiplayer": {
+          "true": 128,
+          "false": 248,
+          "unknown": 12
+        },
+        "is_controller": {
+          "true": 251,
+          "false": 125,
+          "unknown": 12
+        }
+      },
+      "semantic_sha256": "19339d313c8ecdafb0edd8df3693e7607b2afa8678f4239a4bc444c715054e4c",
+      "observations_sha256": "4b7ac803e5f6b8acf3923a22697bc56a3cc303db76726966f684575f63e99623",
+      "cache_files_before": 388,
+      "cache_files_after": 388,
+      "cache_unchanged": true,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 0,
+      "attempt_seconds": null,
+      "attempt_start_gap_min_seconds": null,
+      "field_actions": {
+        "genres": {
+          "updated": 376,
+          "retained": 12
+        },
+        "categories": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_multiplayer": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_controller": {
+          "updated": 376,
+          "retained": 12
+        }
+      },
+      "field_value_changes": {
+        "genres": 6,
+        "categories": 9,
+        "is_multiplayer": 6,
+        "is_controller": 8
+      }
+    },
+    {
+      "phase": "warm2",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 0.845,
+      "metadata_seconds": 0.059,
+      "workers": 2,
+      "selected": 388,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 382,
+        "not_found": 6,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 388,
+        "cache_misses": 0,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 0,
+      "http_retries": 0,
+      "http_statuses": {},
+      "gate_grants": 0,
+      "gate_min_gap_seconds": null,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "categories": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "is_multiplayer": {
+          "true": 128,
+          "false": 248,
+          "unknown": 12
+        },
+        "is_controller": {
+          "true": 251,
+          "false": 125,
+          "unknown": 12
+        }
+      },
+      "semantic_sha256": "19339d313c8ecdafb0edd8df3693e7607b2afa8678f4239a4bc444c715054e4c",
+      "observations_sha256": "4b7ac803e5f6b8acf3923a22697bc56a3cc303db76726966f684575f63e99623",
+      "cache_files_before": 388,
+      "cache_files_after": 388,
+      "cache_unchanged": true,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 0,
+      "attempt_seconds": null,
+      "attempt_start_gap_min_seconds": null,
+      "field_actions": {
+        "genres": {
+          "updated": 376,
+          "retained": 12
+        },
+        "categories": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_multiplayer": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_controller": {
+          "updated": 376,
+          "retained": 12
+        }
+      },
+      "field_value_changes": {
+        "genres": 6,
+        "categories": 9,
+        "is_multiplayer": 6,
+        "is_controller": 8
+      }
+    },
+    {
+      "phase": "warm3",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 0.843,
+      "metadata_seconds": 0.058,
+      "workers": 2,
+      "selected": 388,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 382,
+        "not_found": 6,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 388,
+        "cache_misses": 0,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 0,
+      "http_retries": 0,
+      "http_statuses": {},
+      "gate_grants": 0,
+      "gate_min_gap_seconds": null,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "categories": {
+          "nonempty": 376,
+          "empty_or_unknown": 12
+        },
+        "is_multiplayer": {
+          "true": 128,
+          "false": 248,
+          "unknown": 12
+        },
+        "is_controller": {
+          "true": 251,
+          "false": 125,
+          "unknown": 12
+        }
+      },
+      "semantic_sha256": "19339d313c8ecdafb0edd8df3693e7607b2afa8678f4239a4bc444c715054e4c",
+      "observations_sha256": "4b7ac803e5f6b8acf3923a22697bc56a3cc303db76726966f684575f63e99623",
+      "cache_files_before": 388,
+      "cache_files_after": 388,
+      "cache_unchanged": true,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 0,
+      "attempt_seconds": null,
+      "attempt_start_gap_min_seconds": null,
+      "field_actions": {
+        "genres": {
+          "updated": 376,
+          "retained": 12
+        },
+        "categories": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_multiplayer": {
+          "updated": 376,
+          "retained": 12
+        },
+        "is_controller": {
+          "updated": 376,
+          "retained": 12
+        }
+      },
+      "field_value_changes": {
+        "genres": 6,
+        "categories": 9,
+        "is_multiplayer": 6,
+        "is_controller": 8
+      }
+    },
+    {
+      "phase": "subset1",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 12.168,
+      "metadata_seconds": 11.368,
+      "workers": 1,
+      "selected": 8,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 7,
+        "not_found": 1,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 0,
+        "cache_misses": 8,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 8,
+      "http_retries": 0,
+      "http_statuses": {
+        "200": 8
+      },
+      "gate_grants": 8,
+      "gate_min_gap_seconds": 1.500019,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 372,
+          "empty_or_unknown": 16
+        },
+        "categories": {
+          "nonempty": 372,
+          "empty_or_unknown": 16
+        },
+        "is_multiplayer": {
+          "true": 126,
+          "false": 246,
+          "unknown": 16
+        },
+        "is_controller": {
+          "true": 247,
+          "false": 125,
+          "unknown": 16
+        }
+      },
+      "semantic_sha256": "80b6efb725122d4e8fd32c5e80642aa4d4f2effc8aec2021fcdf1965397c7346",
+      "observations_sha256": "dea951d4c1dac4540dd4ed98b14930be17b744908d0621cbc7f070478f894844",
+      "cache_files_before": 0,
+      "cache_files_after": 8,
+      "cache_unchanged": false,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 1,
+      "attempt_seconds": {
+        "min": 0.805084,
+        "median": 0.856856,
+        "max": 1.039685
+      },
+      "attempt_start_gap_min_seconds": 1.500007,
+      "field_actions": {
+        "genres": {
+          "updated": 5,
+          "retained": 3
+        },
+        "categories": {
+          "updated": 7,
+          "retained": 1
+        },
+        "is_multiplayer": {
+          "updated": 7,
+          "retained": 1
+        },
+        "is_controller": {
+          "updated": 7,
+          "retained": 1
+        }
+      },
+      "field_value_changes": {
+        "genres": 2,
+        "categories": 2,
+        "is_multiplayer": 2,
+        "is_controller": 2
+      }
+    },
+    {
+      "phase": "subset2",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 12.134,
+      "metadata_seconds": 11.381,
+      "workers": 2,
+      "selected": 8,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 7,
+        "not_found": 1,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 0,
+        "cache_misses": 8,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 8,
+      "http_retries": 0,
+      "http_statuses": {
+        "200": 8
+      },
+      "gate_grants": 8,
+      "gate_min_gap_seconds": 1.500078,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 372,
+          "empty_or_unknown": 16
+        },
+        "categories": {
+          "nonempty": 372,
+          "empty_or_unknown": 16
+        },
+        "is_multiplayer": {
+          "true": 126,
+          "false": 246,
+          "unknown": 16
+        },
+        "is_controller": {
+          "true": 247,
+          "false": 125,
+          "unknown": 16
+        }
+      },
+      "semantic_sha256": "80b6efb725122d4e8fd32c5e80642aa4d4f2effc8aec2021fcdf1965397c7346",
+      "observations_sha256": "dea951d4c1dac4540dd4ed98b14930be17b744908d0621cbc7f070478f894844",
+      "cache_files_before": 0,
+      "cache_files_after": 8,
+      "cache_unchanged": false,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 1,
+      "attempt_seconds": {
+        "min": 0.849198,
+        "median": 0.878417,
+        "max": 1.147385
+      },
+      "attempt_start_gap_min_seconds": 1.500065,
+      "field_actions": {
+        "genres": {
+          "updated": 5,
+          "retained": 3
+        },
+        "categories": {
+          "updated": 7,
+          "retained": 1
+        },
+        "is_multiplayer": {
+          "updated": 7,
+          "retained": 1
+        },
+        "is_controller": {
+          "updated": 7,
+          "retained": 1
+        }
+      },
+      "field_value_changes": {
+        "genres": 2,
+        "categories": 2,
+        "is_multiplayer": 2,
+        "is_controller": 2
+      }
+    },
+    {
+      "phase": "subset4",
+      "producer": {
+        "git_commit": "1662c7afc8257537b36684d931f6e26c0d68202d",
+        "dirty": false
+      },
+      "wall_seconds": 12.11,
+      "metadata_seconds": 11.342,
+      "workers": 4,
+      "selected": 8,
+      "records": 388,
+      "games": 377,
+      "unknown_playtime": 27,
+      "metadata_state": "partial",
+      "counts": {
+        "success": 7,
+        "not_found": 1,
+        "access_denied": 0,
+        "rate_limited": 0,
+        "parse_error": 0,
+        "transient_error": 0,
+        "deferred": 0,
+        "cache_hits": 0,
+        "cache_misses": 8,
+        "cache_write_errors": 0
+      },
+      "http_attempts": 8,
+      "http_retries": 0,
+      "http_statuses": {
+        "200": 8
+      },
+      "gate_grants": 8,
+      "gate_min_gap_seconds": 1.500041,
+      "cooldown_events": 0,
+      "coverage_before": {
+        "genres": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "categories": {
+          "nonempty": 370,
+          "empty_or_unknown": 18
+        },
+        "is_multiplayer": {
+          "true": 125,
+          "false": 245,
+          "unknown": 18
+        },
+        "is_controller": {
+          "true": 246,
+          "false": 124,
+          "unknown": 18
+        }
+      },
+      "coverage_after": {
+        "genres": {
+          "nonempty": 372,
+          "empty_or_unknown": 16
+        },
+        "categories": {
+          "nonempty": 372,
+          "empty_or_unknown": 16
+        },
+        "is_multiplayer": {
+          "true": 126,
+          "false": 246,
+          "unknown": 16
+        },
+        "is_controller": {
+          "true": 247,
+          "false": 125,
+          "unknown": 16
+        }
+      },
+      "semantic_sha256": "80b6efb725122d4e8fd32c5e80642aa4d4f2effc8aec2021fcdf1965397c7346",
+      "observations_sha256": "dea951d4c1dac4540dd4ed98b14930be17b744908d0621cbc7f070478f894844",
+      "cache_files_before": 0,
+      "cache_files_after": 8,
+      "cache_unchanged": false,
+      "checks": {
+        "passed": true,
+        "members_and_protected_fields_unchanged": true,
+        "collection_audit_and_snapshot_unchanged": true,
+        "source_unchanged": true,
+        "all_manifest_hashes_valid": true,
+        "gate_spacing_valid": true
+      },
+      "maximum_inflight_attempts": 1,
+      "attempt_seconds": {
+        "min": 0.817564,
+        "median": 0.84258,
+        "max": 0.933307
+      },
+      "attempt_start_gap_min_seconds": 1.500065,
+      "field_actions": {
+        "genres": {
+          "updated": 5,
+          "retained": 3
+        },
+        "categories": {
+          "updated": 7,
+          "retained": 1
+        },
+        "is_multiplayer": {
+          "updated": 7,
+          "retained": 1
+        },
+        "is_controller": {
+          "updated": 7,
+          "retained": 1
+        }
+      },
+      "field_value_changes": {
+        "genres": 2,
+        "categories": 2,
+        "is_multiplayer": 2,
+        "is_controller": 2
+      }
+    }
+  ]
+}

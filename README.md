@@ -2,6 +2,18 @@
 
 English: [README_EN.md](README_EN.md)
 
+**v1.0.0 首发范围：**采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。首发以 Windows 单账号流程为验收目标，自动写回 Steam 收藏不在范围内。[发布说明与迁移](RELEASE_NOTES.md)、[R5 整合与发布准备](R5_RELEASE_PREPARATION.md)说明已测版本及发布检查；正式发布状态以 GitHub Release/标签为准。支持边界见 [首发范围与验收](STABLE_RELEASE_SCOPE.md)。
+
+[R1 分类质量复核](R1_CLASSIFICATION_REVIEW.md)已固定 31 个样本，新增 12 条 AppID 校正，并检查全部 28 条内置规则。样本通过不代表全库准确率；4 项保留历史证据、2 项保持未知。
+
+[R2 当前传输基准](R2_PERFORMANCE_BASELINE.md)已完成：388 项冷缓存 582.236 秒，三轮暖缓存中位数 0.843 秒；并发 1/2/4 子样本结果一致。数据保护检查通过；完整条件与限制见报告。
+
+[R3 Windows 端到端](R3_WINDOWS_ACCEPTANCE.md)已在独立安装环境完成单账号真实采集、审计、补全、校正撤销、本地浏览及收藏计划导出；129 项 Python、24 项 Node 通过。
+
+[R4 最终候选复审](R4_FINAL_REVIEW.md)未发现新的阻塞项，完整回归、三平台 CI 及保存产物离线重建通过。R5 按完整候选整合；PR #5 单独合并不包含后续全部改动，发布目标必须通过最终主线检查。
+
+时间字段说明：表格中的最近游玩现在独立保留历史状态、来源与观察时间；Node/Python 的三个 API 时间字段均支持 null 表示未知，见 [时间字段契约](TIME_FIELD_CONTRACT.md)。
+
 ## 如何实现自动分类（推荐流程）
 
 不写 Steam 内部文件、不依赖写回收藏，用本地脚本完成「自动分类 + 按分类选游戏」：
@@ -45,10 +57,10 @@ python steam_picker.py --serve
 
 ## 1. 安装与账号授权
 
-需要 Python 3.10+、Node.js 18+：
+Windows 已验证 Python 3.14.2、Node.js 22.19.0；三平台离线 CI 使用 Python 3.12、Node 22。旧最低声明 Python 3.10+/Node 18+ 尚无完整验收，不等同于首发已验证版本。推荐使用已测组合安装：
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-tested.txt
 npm ci
 ```
 
@@ -56,7 +68,7 @@ Windows 也可以使用项目独立环境，避免 `pip` 与运行脚本的 Pyth
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
 npm ci
 .\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict
 ```
@@ -105,7 +117,7 @@ python steam_enrich.py --input steam_live_test.json -o steam_enriched_sample.jso
 
 可用 `classification_overrides.local.json` 按 AppID 人工校正，并通过 `python steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json` 离线重建。两种分类输出共享校正，旧运行保持不变。格式与映射见 [CLASSIFICATION_OVERRIDES.md](CLASSIFICATION_OVERRIDES.md)。
 
-当前内置 14 条有来源的规则；缺少类型标签的 14 个项目中已校正 11 个，其余 3 个保留待核对。逐项依据、名称匹配修复与验证范围见 [分类核对记录](CLASSIFICATION_REVIEW.md)，这不代表全库准确率。
+当前内置 16 条有来源的规则；缺少类型标签的 14 个项目中已校正 11 个，其余 3 个保留待核对。新增 Ingression、63 Days 的 AppID 校正；基础中英文 genres 共用映射，缺少依据不再默认归为动作，名称不充当商店类型证据。人工改主类会使未指定的旧细项失效，页面可展开逐字段“分类依据”；详见 [校正规则](CLASSIFICATION_OVERRIDES.md)。逐项依据、名称匹配修复与验证范围见 [分类核对记录](CLASSIFICATION_REVIEW.md)，这不代表全库准确率。
 
 独立元数据补全支持 `--workers 1–4`（默认 2），共享请求间隔和冷却并复用缓存。类别 ID 判断修复了中文“控制器”被误判为不支持的问题；缺失字段保留旧值，并报告前后字段覆盖率。用法、缓存 v5 迁移及历史实测见 [元数据补全说明](METADATA_ENRICHMENT.md)。总超时、取消、字段证据及 API 不可比较状态的修复见 [审核修复记录](AUDIT_REMEDIATION.md)。
 
@@ -228,12 +240,12 @@ python classify_games.py
 - 输出：
   - **game_library_classified.csv**：表格数据（Excel/脚本用）。
   - **game_library_classified.md**：Markdown 表格（文档用）。
-- 分类体系：**主分类**（每款一个）+ **多标签**（可多个），规则在 `classify_games.py` 的 `MAIN_CATEGORY_RULES` 与 `TAG_RULES`。
+- 分类体系：**主分类**（每款一个）+ **多标签**（可多个），规则在 `classification_rules.py` 的 `GENRE_RULES` 和 `classify_games.py` 的 `TAG_RULES`。
 - 维护规则说明：见 **CLASSIFICATION_RULES.md**。
 
 ## 4. 修改分类规则
 
-- 编辑 `classify_games.py` 中的 `MAIN_CATEGORY_RULES`（主分类顺序与关键词）、`TAG_RULES`（标签条件/关键词）。
+- 编辑 `classification_rules.py` 中的 `GENRE_RULES`（明确类型标签及优先级）、`classify_games.py` 的 `TAG_RULES`（标签条件/关键词）。
 - 修改后重新运行 `classify_games.py` 即可更新 CSV/MD。
 - 详细说明见 **CLASSIFICATION_RULES.md**。
 
@@ -241,7 +253,7 @@ python classify_games.py
 
 ## 5. 在本地「应用」分类（选游戏）
 
-本工具默认在本地「选游戏」并用 Steam 启动；旧收藏写回脚本属于独立实验路径，尚未完成通用账号与持久性验收。
+本工具默认在本地「选游戏」并用 Steam 启动；Python 收藏入口仅支持校验后预览/导出计划，旧写回已停用。独立 Node 写回工具尚未完成账号与持久性验收。
 
 ### 5.1 使用五维分类结果（steam_library_classified.json）
 
@@ -281,22 +293,15 @@ python steam_picker.py --serve
 
 ---
 
-## 6. 写回 Steam 收藏夹（可选）
+## 6. 收藏计划（可选）
 
-如果你希望把 `steam_collections_result.json` 的分类写回 Steam 收藏夹，可以用 `import_script.js`。
+从已核验客户端成员运行预览或导出计划，显式选择对应 SteamID64：
 
-1. **完全退出 Steam**（含托盘图标）。
-2. 安装依赖：
-   ```bash
-   npm install
-   ```
-3. 显式设置目标账号的 32 位 AccountID，再执行导入（不要填写 SteamID64）：
-   ```powershell
-   $env:STEAM_ID_32 = "你的32位AccountID"
-   node import_script.js
-   ```
+```powershell
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --dry-run
+python steam_sync_collections.py --input steam_library.json --account YOUR_STEAMID64 --export-only -o collection_plan.local.json
+```
 
-说明：
-- 脚本会优先写入 LevelDB，若未检测到收藏命名空间，会自动改用 `cloud-storage-namespace-1.json` 并生成 `.bak` 备份。
-- 导入完成后，启动 Steam，在「库」→「收藏夹」中核对分类与数量。
-- 未配置或配置无效时，脚本在写入前退出。此旧收藏路径仍待独立持久化验收；采集、补全和 picker 无需执行此步骤。
+默认只预览；dry-run 不创建计划、备份、锁或输出目录。确认的空库保持为空。导出前核验全部运行哈希、账号、运行及分类成员一致性，不重新确认当前所有权。
+
+旧 Python `--write`、`--from-result`、`--use-api` 已停用。计划不能直接交给独立 Node 写回工具，后者也没有通过本轮安全和持久化验收。详细格式、迁移和限制见 [收藏计划说明](STEAM_SYNC_README.md)。

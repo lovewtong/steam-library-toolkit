@@ -51,7 +51,7 @@ function records(raw, client = false) {
     if (client) row.app_type = g.app_type ?? 'unknown';
     else for (const field of ['playtime_forever', 'playtime_2weeks', 'rtime_last_played']) {
       if (Object.hasOwn(g, field)) {
-        if (!Number.isInteger(g[field]) || g[field] < 0 || g[field] > 0xffffffff)
+        if (g[field] !== null && (!Number.isInteger(g[field]) || g[field] < 0 || g[field] > 0xffffffff))
           throw new SourceError('RESPONSE_INVALID', 'invalid');
         row[field] = g[field];
       }
