@@ -14,6 +14,8 @@ English: [README_EN.md](README_EN.md)
 
 时间字段说明：表格中的最近游玩现在独立保留历史状态、来源与观察时间；Node/Python 的三个 API 时间字段均支持 null 表示未知，见 [时间字段契约](TIME_FIELD_CONTRACT.md)。
 
+后续分类改进提供 [主类待复核清单](CLASSIFICATION_REVIEW_QUEUE.md)：`python -B steam_review_classification.py --input 你的库.json` 只读列出保存分类的差异、未知及推断依据，帮助按 AppID 人工校正。此新增工具不包含在 v1.0.0 已冻结的发布目标中。
+
 ## 如何实现自动分类（推荐流程）
 
 不写 Steam 内部文件、不依赖写回收藏，用本地脚本完成「自动分类 + 按分类选游戏」：

@@ -12,6 +12,8 @@
 
 Last-played exports now carry their own historical/unknown status, source and observation time. Both API adapters accept explicit null for the three time fields without converting it to zero; see [time-field contracts](TIME_FIELD_CONTRACT.md).
 
+The subsequent [primary-classification review queue](CLASSIFICATION_REVIEW_QUEUE.md) reads frozen disagreements, unknowns and inference evidence: `python -B steam_review_classification.py --input your-library.json`. It helps select AppIDs for manual correction without changing classifications or rules. This new tool is outside the frozen v1.0.0 release target.
+
 ## Recommended workflow
 
 This repo keeps all classification locally and does not modify Steam by default.
