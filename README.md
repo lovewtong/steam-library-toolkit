@@ -8,7 +8,9 @@ English: [README_EN.md](README_EN.md)
 
 [R2 当前传输基准](R2_PERFORMANCE_BASELINE.md)已完成：388 项冷缓存 582.236 秒，三轮暖缓存中位数 0.843 秒；并发 1/2/4 子样本结果一致。数据保护检查通过；完整条件与限制见报告。
 
-[R3 Windows 端到端](R3_WINDOWS_ACCEPTANCE.md)已在独立安装环境完成单账号真实采集、审计、补全、校正撤销、本地浏览及收藏计划导出；129 项 Python、24 项 Node 通过。最终候选复审与整合发布仍待完成。
+[R3 Windows 端到端](R3_WINDOWS_ACCEPTANCE.md)已在独立安装环境完成单账号真实采集、审计、补全、校正撤销、本地浏览及收藏计划导出；129 项 Python、24 项 Node 通过。
+
+[R4 最终候选复审](R4_FINAL_REVIEW.md)未发现新的阻塞项，完整回归、三平台 CI 及保存产物离线重建通过。下一步为 R5 主线整合与发布准备；当前尚未合并或发布，PR #5 单独合并不包含后续全部改动。
 
 时间字段说明：表格中的最近游玩现在独立保留历史状态、来源与观察时间；Node/Python 的三个 API 时间字段均支持 null 表示未知，见 [时间字段契约](TIME_FIELD_CONTRACT.md)。
 
