@@ -25,6 +25,8 @@ classification_evidence.fields 为每个五维字段（表格为 main_category/t
 
 ## 应用到现有库
 
+可先用 [主类待复核清单](CLASSIFICATION_REVIEW_QUEUE.md) 查看保存分类的差异、未知项及名称规则依据，再决定需要校正哪些 AppID。该清单不会自动接受或写入规则。
+
 ```powershell
 .\.venv\Scripts\python.exe steam_reclassify.py --input steam_enriched.json -o steam_reclassified.json
 .\.venv\Scripts\python.exe steam_picker.py --serve --input steam_reclassified.json
