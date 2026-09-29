@@ -36,6 +36,6 @@ classification_evidence.fields 为每个五维字段（表格为 main_category/t
 
 ## 当前覆盖与限制
 
-内置规则现有 16 条：首批三款射击游戏、七款动作/格斗/视觉小说、四个测试分支，以及 F06 核对的 Ingression 和 63 Days。完整逐项来源、分类取舍与待核对清单见 [CLASSIFICATION_REVIEW.md](CLASSIFICATION_REVIEW.md)。这些是明确的校正样本，不代表全库准确率。
+内置规则现有 28 条：原 16 条加 R1 的 12 条 AppID 校正。固定 31 项样本及全部规则一致性检查见 [R1_CLASSIFICATION_REVIEW.md](R1_CLASSIFICATION_REVIEW.md)，早期逐项来源与分类取舍见 [CLASSIFICATION_REVIEW.md](CLASSIFICATION_REVIEW.md)。这些是明确的校正样本，不代表全库准确率。
 
-原有 KNOWN 名称规则尚未全部迁移到 AppID，14 个缺少类型标签的项目中仍有 3 个待核对。名称匹配已增加词边界及商标/空白规范化，但仍是启发式。元数据字段状态、类别 ID 与有限并发已加入，见 [补全说明](METADATA_ENRICHMENT.md)；认证体验、未知时长研究及收藏写回等第三阶段工作仍未完成。
+原有 KNOWN 名称规则尚未全部迁移到 AppID；早期记录的“其他 14→3”属于历史产物。R1 固定样本中 2 项仍为未知，4 项仅沿用历史证据，不能将不同样本计数混用。名称匹配已增加词边界及商标/空白规范化，但仍是启发式。元数据字段状态、类别 ID 与有限并发见 [补全说明](METADATA_ENRICHMENT.md)；未知时长研究和自动收藏写回仍为后续工作。

@@ -2,7 +2,7 @@
 
 English: [README_EN.md](README_EN.md)
 
-**首个稳定版本范围已确定，尚未完成发布验收：**采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。首发以 Windows 单账号流程为验收目标，自动写回 Steam 收藏不在范围内。支持边界、待办及发布门槛见 [首发范围与验收](STABLE_RELEASE_SCOPE.md)。
+**v1.0.0 首发范围：**采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。首发以 Windows 单账号流程为验收目标，自动写回 Steam 收藏不在范围内。[发布说明与迁移](RELEASE_NOTES.md)、[R5 整合与发布准备](R5_RELEASE_PREPARATION.md)说明已测版本及发布检查；正式发布状态以 GitHub Release/标签为准。支持边界见 [首发范围与验收](STABLE_RELEASE_SCOPE.md)。
 
 [R1 分类质量复核](R1_CLASSIFICATION_REVIEW.md)已固定 31 个样本，新增 12 条 AppID 校正，并检查全部 28 条内置规则。样本通过不代表全库准确率；4 项保留历史证据、2 项保持未知。
 
@@ -10,7 +10,7 @@ English: [README_EN.md](README_EN.md)
 
 [R3 Windows 端到端](R3_WINDOWS_ACCEPTANCE.md)已在独立安装环境完成单账号真实采集、审计、补全、校正撤销、本地浏览及收藏计划导出；129 项 Python、24 项 Node 通过。
 
-[R4 最终候选复审](R4_FINAL_REVIEW.md)未发现新的阻塞项，完整回归、三平台 CI 及保存产物离线重建通过。下一步为 R5 主线整合与发布准备；当前尚未合并或发布，PR #5 单独合并不包含后续全部改动。
+[R4 最终候选复审](R4_FINAL_REVIEW.md)未发现新的阻塞项，完整回归、三平台 CI 及保存产物离线重建通过。R5 按完整候选整合；PR #5 单独合并不包含后续全部改动，发布目标必须通过最终主线检查。
 
 时间字段说明：表格中的最近游玩现在独立保留历史状态、来源与观察时间；Node/Python 的三个 API 时间字段均支持 null 表示未知，见 [时间字段契约](TIME_FIELD_CONTRACT.md)。
 
@@ -57,10 +57,10 @@ python steam_picker.py --serve
 
 ## 1. 安装与账号授权
 
-需要 Python 3.10+、Node.js 18+：
+Windows 已验证 Python 3.14.2、Node.js 22.19.0；三平台离线 CI 使用 Python 3.12、Node 22。旧最低声明 Python 3.10+/Node 18+ 尚无完整验收，不等同于首发已验证版本。推荐使用已测组合安装：
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-tested.txt
 npm ci
 ```
 
@@ -68,7 +68,7 @@ Windows 也可以使用项目独立环境，避免 `pip` 与运行脚本的 Pyth
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
 npm ci
 .\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict
 ```

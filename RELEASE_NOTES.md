@@ -1,4 +1,61 @@
-# 报告落地：采集契约与 picker 修复
+# v1.0.0 发布说明
+
+首个稳定版本面向 **Windows、本机、单个明确账号**，提供采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。发布目标及检查约定见 [R5 发布准备](R5_RELEASE_PREPARATION.md)；正式发布时间和提交以 GitHub Release/标签为准。
+
+## 本版本交付
+
+- 客户端核验后的清单决定本轮成员；API、许可与快照保留各自证据，未知时长不会变成零，候选数据不冒充当前拥有。
+- 完整运行保存账号、来源、字段观察和哈希；先发布完整产物再原子切换 current，失败、取消及异常缩减保护旧有效数据。
+- 商店补全有缓存、1–4 有限并发、共享间隔、总请求预算、取消和有限重试；保留 missing/empty/invalid 及字段应用动作。
+- 28 条 AppID 校正规则、31 项固定复核样本和逐字段依据；人工校正可离线重建，picker 展示已核验运行及分类依据。
+- 收藏入口默认预览；显式导出绑定账号及运行的计划。**旧 Python `--write` 已停用**；计划不是 Steam 写回文件。
+
+## 安装与已测环境
+
+Windows 真人链路使用 Python **3.14.2**、Node **22.19.0**；三平台离线 CI 使用 Python **3.12**、Node **22**。旧最低声明 Python 3.10+/Node 18+ 没有完整验收证据。Linux/macOS 暂只有离线测试证据，QR 路径也不等同于本次 Windows 本机会话验收。
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
+npm ci
+.\.venv\Scripts\python.exe -m pip check
+```
+
+`requirements-tested.txt` 固定直接依赖，并非跨平台全部传递依赖锁；Node 使用提交的 package-lock.json。完整检查为 129 Python/24 Node，实际最终提交的 CI 结果须在发布记录中核对。
+
+## 迁移与六项流程
+
+先备份现有个人配置、`classification_overrides.local.json` 和完整输出目录；已核验运行需要 **current 指针与其引用的隐藏 `.runs` 目录一同保留**，仅复制平面库 JSON 不够。不要编辑旧运行里的文件。不同账号使用独立目录，新版本首次运行使用新输出名，便于保留旧版本结果。
+
+以下在项目根目录执行；先将 `$steamAccount` 改为目标账号的 17 位 SteamID64。示例输出放到 Git 忽略的 `outputs` 下，仅在本地保存。
+
+```powershell
+$steamAccount = 'YOUR_STEAMID64'
+.\.venv\Scripts\python.exe steam_collect.py --local-session --account $steamAccount --no-store --strict-membership -o outputs/v1/library.json
+.\.venv\Scripts\python.exe steam_enrich.py --input outputs/v1/library.json -o outputs/v1/enriched.json
+# 按 CLASSIFICATION_OVERRIDES.md 编辑 classification_overrides.local.json 后重建
+.\.venv\Scripts\python.exe steam_reclassify.py --input outputs/v1/enriched.json -o outputs/v1/reclassified.json
+.\.venv\Scripts\python.exe steam_picker.py --serve --input outputs/v1/reclassified.json
+# 在另一终端预览或导出计划
+.\.venv\Scripts\python.exe steam_sync_collections.py --input outputs/v1/reclassified.json --account $steamAccount --dry-run
+.\.venv\Scripts\python.exe steam_sync_collections.py --input outputs/v1/reclassified.json --account $steamAccount --export-only -o outputs/v1/collections.local.json
+```
+
+采集同时生成审计和分类：以相应 `.current.json` 指向的完整运行查看 `steam_library.audit.json`、`summary.json`、`classified.json`、`classified.csv` 等。`--strict-membership` 要求客户端成员可信；需要所有启用来源都成功时改用 `--strict`。本次导出不重新核验当前所有权，计划的 `ownership_revalidated` 和 `write_supported` 均为 false。
+
+兼容性变化：缓存使用 v5，旧版本会按需重新抓取；CSV 新增最近游玩状态/来源/观察时间列，读取方应按列名解析；个人校正按 AppID 整条替换内置规则。旧平面分类不能作为收藏计划输入；`--from-result`、`--use-api` 被拒绝，`--no-backup` 已移除。不要把新计划传给 `import_script.js`、`steam_sync_leveldb.js` 或 npm 的旧 sync-leveldb 命令，这些工具不在首发支持流程内。
+
+## 已知限制
+
+游戏库绝对完整性未证明；27 条未知时长仅是验收账号样本，不能填零或当作所有账号固定数量。31 个分类样本通过不等于全库准确率；名称启发式及氛围/强度等推断仍可能错误，未确认项保持未知并支持人工校正。
+
+R2 的 388 项冷缓存 582.236 秒、暖缓存中位 0.843 秒只描述指定环境，不保证所有网络/规模性能。多账号/多设备、Families、退款/撤销/免费周末变化、跨系统真人认证、自动收藏写回和旧 Node 写回工具尚未完成验收。哈希用于完整性检查，不是数字签名。源码凭据模式检查不等同于 Git 历史或全面安全审计。
+
+证据见 [R1](R1_CLASSIFICATION_REVIEW.md)、[R2](R2_PERFORMANCE_BASELINE.md)、[R3](R3_WINDOWS_ACCEPTANCE.md)、[R4](R4_FINAL_REVIEW.md)。下方保留早期记录，其版本、计数和“待验证”状态属于当时，不覆盖本节的首发范围。
+
+---
+
+# 历史记录：报告落地、采集契约与 picker 修复
 
 基线为 `a28e4de`。修复分支已推送至 PR #2；第一阶段验收、全库补全与分类覆盖结果见 [PHASE_ONE_ACCEPTANCE.md](PHASE_ONE_ACCEPTANCE.md)，合并状态以 GitHub 为准。
 

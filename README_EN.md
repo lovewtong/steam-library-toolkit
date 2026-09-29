@@ -1,6 +1,6 @@
 # Steam Library Local Collection & Auto Classification
 
-**The first stable release scope is defined; release acceptance is still pending:** collection, auditing, metadata enrichment, classification corrections, local browsing and collection-plan export. The initial acceptance target is a single-account Windows workflow. Automatic writes to Steam Collections are excluded. See the [release scope and acceptance plan](STABLE_RELEASE_SCOPE.md) for boundaries and remaining gates.
+**v1.0.0 scope:** collection, auditing, metadata enrichment, classification corrections, local browsing and collection-plan export. The initial acceptance target is a single-account Windows workflow. Automatic writes to Steam Collections are excluded. See the [release notes and migration guide](RELEASE_NOTES.md), [R5 integration and release preparation](R5_RELEASE_PREPARATION.md), and [scope and acceptance plan](STABLE_RELEASE_SCOPE.md). GitHub Releases/tags determine whether the version has been published.
 
 [R1 classification review](R1_CLASSIFICATION_REVIEW.md) fixes a 31-app sample, adds 12 AppID corrections and checks all 28 built-in rules. Passing the sample is not a full-library accuracy measure: four entries retain historical evidence and two remain unknown.
 
@@ -8,7 +8,7 @@
 
 [R3 Windows acceptance](R3_WINDOWS_ACCEPTANCE.md) passed in an independently installed environment: single-account live collection, auditing, enrichment, correction and rollback, local browsing, and collection-plan export. All 129 Python and 24 Node tests passed.
 
-[R4 final-candidate review](R4_FINAL_REVIEW.md) found no new blockers; full regression, three-platform CI and offline rebuilding of saved artifacts passed. R5 mainline integration and release preparation are next. Nothing has been merged or released in these acceptance steps; merging PR #5 alone would omit the later changes.
+[R4 final-candidate review](R4_FINAL_REVIEW.md) found no new blockers; full regression, three-platform CI and offline rebuilding of saved artifacts passed. R5 integrates the complete candidate: PR #5 alone omits later changes. The release target must pass the final mainline checks.
 
 Last-played exports now carry their own historical/unknown status, source and observation time. Both API adapters accept explicit null for the three time fields without converting it to zero; see [time-field contracts](TIME_FIELD_CONTRACT.md).
 
@@ -55,10 +55,10 @@ QR authorization / explicit local session / optional API config
 
 ## 1. Install and authorize
 
-Requires Python 3.10+ and Node.js 18+:
+The verified Windows combination is Python 3.14.2 and Node.js 22.19.0. Offline CI uses Python 3.12 and Node 22 on all three platforms. The earlier Python 3.10+/Node 18+ minimum claims have not received full acceptance testing. Prefer a verified combination:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-tested.txt
 npm ci
 # Keep desktop Steam online; scan with the Steam mobile app
 python steam_collect.py --login --no-store
@@ -70,7 +70,7 @@ On Windows, an isolated environment avoids mismatched pip/Python installations:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
 npm ci
 .\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict
 ```
