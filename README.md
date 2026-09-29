@@ -2,6 +2,8 @@
 
 English: [README_EN.md](README_EN.md)
 
+**未发布开发扩展：**新增[开发商／发行商筛选与收藏计划](MANUFACTURER_FACETS.md)，包括商店补全、字段来源、AppID 人工校正及多厂商分组。旧库需独立补全才能获得新字段；此扩展不在已冻结的 v1.1.0 发布目标内。
+
 **下一版本 v1.1.0（尚未发布）：**范围限定为主类待复核清单、首批六项 AppID 校正及升级兼容性说明；见 [v1.1.0 计划与验收](V1_1_RELEASE_PLAN.md)。已发布的 [v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0) 标签保持不变。
 
 **v1.0.0 首发范围：**采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。首发以 Windows 单账号流程为验收目标，自动写回 Steam 收藏不在范围内。[发布说明与迁移](RELEASE_NOTES.md)、[R5 整合与发布准备](R5_RELEASE_PREPARATION.md)说明已测版本及发布检查；正式发布状态以 GitHub Release/标签为准。支持边界见 [首发范围与验收](STABLE_RELEASE_SCOPE.md)。

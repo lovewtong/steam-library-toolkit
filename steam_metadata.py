@@ -4,7 +4,16 @@ import threading
 import time
 from steam_http import check_cancel, SourceCoolingDown, wait_delay
 
-FIELDS = ('genres', 'categories', 'is_multiplayer', 'is_controller')
+MANUFACTURER_FIELDS = ('developers', 'publishers')
+LIST_FIELDS = ('genres', 'categories', *MANUFACTURER_FIELDS)
+FIELDS = (*LIST_FIELDS, 'is_multiplayer', 'is_controller')
+
+
+def manufacturer_names(value):
+    """None means unavailable/invalid; [] is an explicit empty observation."""
+    if not isinstance(value, list) or any(not isinstance(x, str) or not x.strip() for x in value):
+        return None
+    return list(dict.fromkeys(x.strip() for x in value))
 
 
 class RequestGate:
@@ -37,6 +46,10 @@ STORE_GATE = RequestGate()
 
 def parse_fields(data):
     details, states = {}, {}
+    for key in MANUFACTURER_FIELDS:
+        names = manufacturer_names(data.get(key))
+        states[key] = ('present' if names else 'empty') if names is not None else 'missing' if key not in data else 'invalid'
+        details[key] = names
     for key in ('genres', 'categories'):
         raw = data.get(key)
         valid = isinstance(raw, list) and all(isinstance(x, dict) and
@@ -82,7 +95,12 @@ def merge_fields(row, details):
 def coverage(rows):
     result = {}
     for key in FIELDS:
-        if key in ('genres', 'categories'):
+        if key in MANUFACTURER_FIELDS:
+            values = [manufacturer_names(r.get(key)) for r in rows]
+            result[key] = {'nonempty': sum(bool(v) for v in values),
+                           'empty': sum(v == [] for v in values),
+                           'unknown': sum(v is None for v in values)}
+        elif key in ('genres', 'categories'):
             result[key] = {'nonempty': sum(bool(r.get(key)) for r in rows),
                            'empty_or_unknown': sum(not r.get(key) for r in rows)}
         else:
@@ -107,3 +125,9 @@ def apply_observation(row, details, stats, observation, metadata):
         metadata[key] = metadata.get(key, 0) + value
     if applied:
         row.setdefault('provenance', {})['store_metadata'] = source
+    for key in MANUFACTURER_FIELDS:
+        if key in applied:
+            row.setdefault('manufacturer_evidence', {})[key] = {
+                'state': states.get(key, 'present' if row[key] else 'empty'),
+                'source': source, 'fetched_at': observation.get('fetched_at'),
+                'read_at': observation.get('read_at')}

@@ -132,7 +132,7 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None, *, ca
         try:
             cached = json.loads(path.read_text(encoding="utf-8"))
             status = cached.get("status", "success")
-            if (cached.get("schema_version") == 5 and status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
+            if (cached.get("schema_version") == 6 and status in ttl and 0 <= time.time() - cached["fetched_at"] < ttl[status]
                     and (status != "success" or valid_store_details(cached["details"]))):
                 cache = cached
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
@@ -141,7 +141,7 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None, *, ca
     if cache is None:
         result = get_store_result(appid, cancel_event=cancel_event)
         check_cancel(cancel_event)
-        cache = {"schema_version": 5, "fetched_at": time.time(), **result}
+        cache = {"schema_version": 6, "fetched_at": time.time(), **result}
         if result['status'] != 'deferred':
             try:
                 atomic_json(path, cache)
@@ -160,13 +160,16 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None, *, ca
 
 
 def valid_store_details(details):
+    from steam_metadata import MANUFACTURER_FIELDS, manufacturer_names
     return (isinstance(details, dict)
+            and all(key in details and (details[key] is None or manufacturer_names(details[key]) is not None)
+                    for key in MANUFACTURER_FIELDS)
             and all(isinstance(details.get(key), list)
                     and all(isinstance(x, str) for x in details[key]) for key in ("genres", "categories"))
             and all(details.get(key) is None or type(details.get(key)) is bool for key in ("is_multiplayer", "is_controller"))
             and isinstance(details.get('field_states'), dict)
             and all(details['field_states'].get(key) in ('present', 'empty', 'missing', 'invalid')
-                    for key in ('genres', 'categories'))
+                    for key in ('genres', 'categories', *MANUFACTURER_FIELDS))
             and all(details['field_states'].get(key) in ('known', 'missing')
                     for key in ('is_multiplayer', 'is_controller')))
 

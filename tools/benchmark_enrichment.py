@@ -23,7 +23,8 @@ def digest(value):
 
 def without_metadata(row):
     value = deepcopy(row)
-    for field in ('run_id', 'genres', 'categories', 'is_multiplayer', 'is_controller'):
+    for field in ('run_id', 'genres', 'categories', 'is_multiplayer', 'is_controller',
+                  'developers', 'publishers', 'manufacturer_evidence'):
         value.pop(field, None)
     value.get('provenance', {}).pop('store_metadata', None)
     return value

@@ -1,5 +1,7 @@
 # Steam Library Local Collection & Auto Classification
 
+**Unreleased development extension:** [developer/publisher facets](MANUFACTURER_FACETS.md) add store metadata, field evidence, AppID corrections, combined picker filters and opt-in collection-plan grouping. Enrich old libraries into a separate output to obtain the new fields. This extension is outside the frozen v1.1.0 release target.
+
 **Planned v1.1.0 (not released):** the primary-classification review queue, six AppID corrections, and upgrade compatibility guidance. See the [scope and acceptance plan](V1_1_RELEASE_PLAN.md). The published [v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0) tag remains unchanged.
 
 **v1.0.0 scope:** collection, auditing, metadata enrichment, classification corrections, local browsing and collection-plan export. The initial acceptance target is a single-account Windows workflow. Automatic writes to Steam Collections are excluded. See the [release notes and migration guide](RELEASE_NOTES.md), [R5 integration and release preparation](R5_RELEASE_PREPARATION.md), and [scope and acceptance plan](STABLE_RELEASE_SCOPE.md). GitHub Releases/tags determine whether the version has been published.
