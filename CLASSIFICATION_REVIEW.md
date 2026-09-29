@@ -1,6 +1,6 @@
 # 分类人工核对记录（2026-09-13）
 
-本轮针对商店补全后表格仍为“其他”的 14 个项目。7 个获得带官方来源的 AppID 校正，7 个保留待核对。加上先前 500、550、730，内置规则共 10 条。以下分类是本项目的编辑判断，并非 Steam 官方分类名称。
+针对商店补全后表格仍为“其他”的 14 个项目，第一轮校正 7 个，第二轮再校正 4 个测试分支，目前 3 个保留待核对。加上先前 500、550、730，内置规则共 14 条。以下分类是本项目的编辑判断，并非 Steam 官方分类名称。
 
 ## 已加入规则
 
@@ -18,14 +18,23 @@
 
 ## 保留待核对
 
+第二轮重新请求这 7 个项目的公开 appdetails：6 个 success=false，Hunt 测试服 success=true 但缺少 genres。随后核对官方公告，解决以下 4 项：
+
+| AppID | 分类 | 依据 |
+|---|---|---|
+| 622590 | 射击 / 战术竞技射击（测试分支） | [PUBG 开发团队 PC 1.0 Update #3](https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/2356940714976801833)说明测试服、正式服更新关系与地图/武器变更 |
+| 813000 | 射击 / 战术竞技射击（实验分支） | [PUBG Corp. Sanhok Testing Patch Notes #4](https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/2396358621996509996)明确实验服及 FPP/TPP、投掷武器玩法 |
+| 654310 | 动作/冒险 / 冷兵器动作（测试分支） | [Ubisoft Public Test Meta Changes](https://www.ubisoft.com/en-us/game/for-honor/news-updates/1IZoiczWorTTTsrEYprgzR/public-test-meta-changes)解释测试环境和攻防战斗系统 |
+| 770720 | 射击 / 战术射击（测试分支） | [该 AppID 下 Crytek 的 Update 1.13 公告](https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5151601211226205949)说明测试服枪械及射击场 |
+
+AppID 与名称取自已经核验的客户端库；玩法和分支关系依据官方公告进行人工判断。只为这些确切 AppID 添加规则，不按名称自动继承所有测试应用，不修改 app_type、成员或权益。历史测试公告不证明测试服今天仍能连接。
+
+剩余 3 项：
+
 | AppID | 名称 | 当前缺口与后续动作 |
 |---|---|---|
-| 15150 | Petz Catz 2 | 支持页可确认名称，但本轮未取得 PC 版玩法的一手依据；需核对 PC 版官方手册，避免套用其他平台版本。 |
-| 205930 | Hitman: Sniper Challenge | 旧 picker 名称规则为狙击；尚未补齐对应 AppID 的官方玩法证据，表格保持其他。 |
-| 622590 | PUBG: Test Server | 需核对测试应用与正式游戏的官方关系，再决定分类继承规则。 |
-| 654310 | For Honor - Public Test | 同上；不能只凭名称覆盖应用类型或当前成员资格。 |
-| 770720 | Hunt: Showdown 1896 (Test Server) | 商店补全返回成功但 genres 为空；需核对测试应用关系及分类继承。 |
-| 813000 | PUBG: Experimental Server | 需单独核对实验分支关系，不能把另一个测试 AppID 的结论直接套用。 |
+| 15150 | Petz Catz 2 | Steam 商店及 manual/15150 入口当前重定向首页，未取得 PC 版官方玩法依据；仍需旧版手册。 |
+| 205930 | Hitman: Sniper Challenge | 官方新闻接口找到 IO Interactive/Nixxes 补丁公告，可确认产品但未完整说明玩法；旧 picker 狙击规则保留，尚未迁移 AppID。 |
 | 2871050 | Endless halo | 本轮搜索主要找到第三方聚合信息，未取得可核对的官方玩法介绍；不按名称推断为 Halo 系列。 |
 
 “待核对”表示本轮证据未闭合，不表示无法修复，也不表示这些项目不存在自动分类。旧 picker 名称启发式仍可能提供分类；表格与 picker 的所有非校正项尚未统一。
@@ -34,6 +43,6 @@
 
 原来直接使用子串匹配，`Konami` 会命中 `kona`，`Shanked` 会命中 `shank`。现在匹配前移除商标符号、统一大小写和空白，并要求匹配词两侧不是词字符。保留最长规则优先与系列后缀匹配；相同完整词语仍不能保证 AppID 身份，人工规则始终以 AppID 为准。
 
-本机已有库离线重建验证：388 条记录、377 个 game；表格“其他”从 14 降至 7，27 条未知时长保持未知。除新 run_id 外原始记录字段完全一致。现有库名称规则命中仍为 265，所有名称规则结果与修改前相同。新增回归覆盖无名称/无 genres 的人工样本、词内误匹配、商标、空白、系列及具体作品优先。
+第一轮本机已有库离线重建验证：388 条记录、377 个 game；表格“其他”从 14 降至 7，27 条未知时长保持未知。除新 run_id 外原始记录字段完全一致。现有库名称规则命中仍为 265，所有名称规则结果与修改前相同。第二轮加入四个测试分支后，“其他”降至 3。新增回归覆盖无名称/无 genres 的人工样本、词内误匹配、商标、空白、系列及具体作品优先。
 
 这不是全库准确率评测。仍需扩大独立人工样本、迁移名称规则到 AppID，并完成字段覆盖、补全性能与真实多环境认证验证；第三阶段整体尚未完成。

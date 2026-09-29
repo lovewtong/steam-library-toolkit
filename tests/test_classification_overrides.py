@@ -23,6 +23,10 @@ class ClassificationOverridesTests(unittest.TestCase):
             (923810, '独立/其他', '独立/叙事', '视觉小说'),
             (976310, '动作/冒险', '动作/冒险', '格斗'),
             (1971870, '动作/冒险', '动作/冒险', '格斗'),
+            (622590, '射击', '射击 (FPS/TPS)', '战术竞技射击（测试分支）'),
+            (813000, '射击', '射击 (FPS/TPS)', '战术竞技射击（实验分支）'),
+            (654310, '动作/冒险', '动作/冒险', '冷兵器动作（测试分支）'),
+            (770720, '射击', '射击 (FPS/TPS)', '战术射击（测试分支）'),
         ]
         rules = load_overrides(Path('nonexistent-local-rules.json'))
         for appid, main, primary, sub in cases:

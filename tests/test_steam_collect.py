@@ -25,7 +25,7 @@ class CollectionTests(unittest.TestCase):
         self.path.write_text(text, encoding=encoding)
         return self.path
 
-    @patch("steam_collect.requests.get")
+    @patch("steam_http.request_once")
     def test_api_filters_are_explicit_on_wire(self, get):
         get.return_value = Mock(status_code=200)
         get.return_value.json.return_value = {"response": {"games": [{"appid": 10}]}}
@@ -40,9 +40,9 @@ class CollectionTests(unittest.TestCase):
         params = get.call_args.kwargs["params"]
         self.assertNotIn("key", params)
         self.assertEqual(params["access_token"], "private-access")
-        self.assertFalse(get.call_args.kwargs["allow_redirects"])
+        self.assertGreater(get.call_args.kwargs['max_bytes'], 0)
 
-    @patch("steam_collect.requests.get")
+    @patch("steam_http.request_once")
     def test_invalid_api_response_is_not_silently_an_empty_library(self, get):
         get.return_value = Mock(status_code=200)
         for data in ({}, [], {"response": {}}, {"response": {"games": {}}},

@@ -162,12 +162,16 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     atomic_json(directory / "classification_overrides.json", {'schema_version': 1, 'apps': applied})
     atomic_json(directory / "summary.json", {"run_id": run_id, "producer": audit["producer"], **audit["summary"]})
     absent = set(audit.get("difference", {}).get("client_not_api", []))
-    atomic_json(directory / "missing_from_web_api.json", {"run_id": run_id, "apps": [
+    comparison = audit.get('web_api_comparison', {'state': 'complete' if
+        audit.get('sources', {}).get('web_api', {}).get('state') == 'complete'
+        and audit.get('membership') == 'client_snapshot' else 'unavailable'})
+    comparable = comparison['state'] == 'complete'
+    atomic_json(directory / "missing_from_web_api.json", {"run_id": run_id, 'comparison': comparison, "apps": [
         {"appid": r["appid"], "name": r["name"], "app_type": r["app_type"],
-         "present_in_client": True, "present_in_web_api": False,
+         "present_in_client": True, "present_in_web_api": False if comparable else None,
          "license_evidence": r.get("license_evidence", {}),
-         "classification": {"cause": "web_api_absent", "cause_confirmed": False}}
-        for r in rows if r["appid"] in absent]})
+         "classification": {"cause": "web_api_absent" if comparable else 'comparison_unavailable', "cause_confirmed": False}}
+        for r in rows if (r["appid"] in absent if comparable else audit.get('membership') == 'client_snapshot')]})
     atomic_json(directory / "playtime_probe.json", {"run_id": run_id, **audit.get("overview_probe", {})})
     if snapshot:
         atomic_json(directory / "client.snapshot.json", snapshot)

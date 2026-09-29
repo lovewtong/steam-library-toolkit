@@ -125,7 +125,7 @@ class ReportContractTests(unittest.TestCase):
 
     def test_store_missing_invalid_and_empty_categories_are_distinct(self):
         response = Mock(status_code=200)
-        with patch('steam_collect.requests.get', return_value=response):
+        with patch('steam_http.request_once', return_value=response):
             for data in ({}, {'categories': None}, {'categories': 'bad'}, {'categories': [{}]}):
                 response.json.return_value = {'1': {'success': True, 'data': data}}
                 details = steam_collect.get_store_details(1)
@@ -180,12 +180,12 @@ class ReportContractTests(unittest.TestCase):
     def test_python_http_retry_respects_retry_after_and_does_not_retry_auth(self):
         limited = Mock(status_code=429, headers={'Retry-After': '2'})
         okay = Mock(status_code=200)
-        with patch('steam_http.requests.get', side_effect=[limited, okay]) as get, patch('steam_http.time.sleep') as sleep:
+        with patch('steam_http.request_once', side_effect=[limited, okay]) as get, patch('steam_http.wait_delay') as sleep:
             stats = {}
             self.assertIs(get_response('https://example.invalid', params={}, timeout=5, stats=stats), okay)
             self.assertEqual(stats['attempts'], 2)
             self.assertEqual(sleep.call_args.args[0], 2)
-        with patch('steam_http.requests.get', return_value=Mock(status_code=403)) as get:
+        with patch('steam_http.request_once', return_value=Mock(status_code=403)) as get:
             get_response('https://example.invalid', params={}, timeout=5)
             self.assertEqual(get.call_count, 1)
 

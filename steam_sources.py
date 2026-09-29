@@ -195,7 +195,11 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
         output.append(row)
     api_ids = set(by_source.get("web_api", {}))
     client_ids = set(by_source.get("client_library", {})) if client else set()
-    differences = {"client_not_api": sorted(client_ids - api_ids), "api_not_client": sorted(api_ids - client_ids),
+    comparable = bool(client) and 'web_api' in providers
+    comparison = {'state': 'complete' if comparable else 'unavailable',
+                  'reason': None if comparable else 'client_unavailable' if not client else 'web_api_unavailable'}
+    differences = {"client_not_api": sorted(client_ids - api_ids) if comparable else [],
+                   "api_not_client": sorted(api_ids - client_ids) if comparable else [],
                    "snapshot_not_client": sorted(set(by_source.get("license_file", {})) - client_ids) if client else [],
                    "license_not_client": sorted(set(by_source.get("licenses", {})) - client_ids) if client else []}
     types = {r["appid"]: r["app_type"] for r in output}
@@ -212,10 +216,15 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
         "summary": {"records": len(output), "types": dict(Counter(r["app_type"] for r in output)),
                     "playtime_known": sum(r["playtime_evidence"]["playtime_forever"]["state"] in ("known_zero", "known_nonzero") for r in output)},
         "difference": differences,
+        "web_api_comparison": comparison,
         "difference_summary": {name: {"count": len(values), "by_type": dict(Counter(types.get(i, "unknown") for i in values))}
                                for name, values in differences.items()},
         "warnings": [],
     }
+    for name in ('client_not_api', 'api_not_client'):
+        audit['difference_summary'][name]['state'] = comparison['state']
+        if not comparable:
+            audit['difference_summary'][name]['count'] = None
     if client and ids != {r["appid"] for r in output}:
         raise RuntimeError("MEMBERSHIP_INVARIANT_FAILED")
     if any(s.scope == "unbound_snapshot" for s in usable):

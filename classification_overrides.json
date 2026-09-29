@@ -60,6 +60,30 @@
       "sub": "格斗",
       "reason": "Steam AppID 对应 Mortal Kombat 1，官网介绍主战角色、辅助角色及格斗玩法。 2026-09-13 人工核对。",
       "reference": "https://www.mortalkombat.com/en-id/game"
+    },
+    "622590": {
+      "main_category": "射击",
+      "sub": "战术竞技射击（测试分支）",
+      "reason": "客户端 AppID 名称对应 PUBG Test Server；PUBG 开发团队 PC 1.0 Update #3 公告确认测试服与正式游戏的更新关系及武器/地图玩法。 2026-09-13 核对。",
+      "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/2356940714976801833"
+    },
+    "813000": {
+      "main_category": "射击",
+      "sub": "战术竞技射击（实验分支）",
+      "reason": "客户端 AppID 名称对应 PUBG Experimental Server；PUBG Corp. Sanhok Testing Patch Notes #4 明确实验服、FPP/TPP 及投掷武器玩法。 2026-09-13 核对。",
+      "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/2396358621996509996"
+    },
+    "654310": {
+      "main_category": "动作/冒险",
+      "sub": "冷兵器动作（测试分支）",
+      "reason": "客户端 AppID 名称对应 For Honor Public Test；Ubisoft 官方 Public Test Meta Changes 说明本作测试环境与攻防战斗系统。 2026-09-13 核对。",
+      "reference": "https://www.ubisoft.com/en-us/game/for-honor/news-updates/1IZoiczWorTTTsrEYprgzR/public-test-meta-changes"
+    },
+    "770720": {
+      "main_category": "射击",
+      "sub": "战术射击（测试分支）",
+      "reason": "该 AppID 的 Crytek 官方 Update 1.13 公告明确测试服枪械玩法与射击场；仅校正展示，不改应用类型。 2026-09-13 核对。",
+      "reference": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5151601211226205949"
     }
   }
 }
