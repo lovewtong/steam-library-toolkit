@@ -20,6 +20,42 @@ const document = {
 const context = vm.createContext({document, fetch: () => new Promise(() => {})});
 vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], context);
 
+test('manufacturer filters preserve multiple names and separate unknown from empty and literal names', () => {
+  assert.equal(context.matchesManufacturer(['A', 'B'], 'name:B'), true);
+  assert.equal(context.matchesManufacturer(['A'], 'name:B'), false);
+  assert.equal(context.matchesManufacturer(null, 'unknown'), true);
+  assert.equal(context.matchesManufacturer([], 'unknown'), false);
+  assert.equal(context.matchesManufacturer([], 'empty'), true);
+  assert.equal(context.matchesManufacturer(['unknown'], 'name:unknown'), true);
+});
+
+test('manufacturer rendering escapes names and evidence and tolerates old data', () => {
+  const result = context.renderManufacturers({developers: ['<img src=x onerror=alert(1)>'], publishers: [],
+    manufacturer_evidence: {developers: {source: 'appid_override', reason: '<script>', fetched_at: 'bad'}}});
+  assert.ok(result.includes('&lt;img'));
+  assert.ok(result.includes('&lt;script&gt;'));
+  assert.ok(!result.includes('<img'));
+  assert.ok(result.includes('人工校正'));
+  assert.ok(result.includes('明确未列出'));
+  assert.ok(context.renderManufacturers({}).includes('开发商：未知'));
+});
+
+test('picker intersects manufacturer selections with existing filters and shows correct count', () => {
+  vm.runInContext(`data = [
+    {appid:'1', name:'First', developers:['A','B'], publishers:['P'], analysis:{primary:'Action'}},
+    {appid:'2', name:'Second', developers:['B'], publishers:['Q'], analysis:{primary:'Action'}}];`, context);
+  elements.get('developers').value = 'name:B';
+  elements.get('publishers').value = 'name:P';
+  elements.get('primary').value = 'Action';
+  context.filter();
+  assert.equal(elements.get('count').textContent, '1 款');
+  assert.ok(elements.get('list').innerHTML.includes('First'));
+  assert.ok(!elements.get('list').innerHTML.includes('Second'));
+  elements.get('publishers').value = 'name:Missing';
+  context.filter();
+  assert.equal(elements.get('count').textContent, '0 款');
+});
+
 test('picker distinguishes reviewed, inferred, unknown and generated fields', () => {
   const rendered = context.renderEvidence({classification_evidence: {fields: {
     primary: {state: 'reviewed', source: 'appid_override'},

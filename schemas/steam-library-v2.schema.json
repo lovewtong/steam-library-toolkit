@@ -8,6 +8,8 @@
     "properties": {
       "appid": {"type": "integer", "minimum": 1, "maximum": 4294967295},
       "name": {"type": "string"},
+      "developers": {"$ref": "#/$defs/manufacturers"},
+      "publishers": {"$ref": "#/$defs/manufacturers"},
       "app_type": {"type": "string"},
       "run_id": {"type": "string", "minLength": 1},
       "membership": {"type": "object", "required": ["state", "source"], "properties": {
@@ -20,6 +22,7 @@
     }
   },
   "$defs": {
+    "manufacturers": {"type": ["array", "null"], "items": {"type": "string", "pattern": "\\S"}, "uniqueItems": true},
     "time": {
       "type": "object", "required": ["value", "state"],
       "properties": {"value": {"type": ["integer", "null"], "minimum": 0}, "state": {"enum": ["unknown", "known_zero", "known_nonzero", "historical"]}},

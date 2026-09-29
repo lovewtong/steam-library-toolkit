@@ -23,10 +23,17 @@ def digest(value):
 
 def without_metadata(row):
     value = deepcopy(row)
-    for field in ('run_id', 'genres', 'categories', 'is_multiplayer', 'is_controller'):
+    for field in ('run_id', 'genres', 'categories', 'is_multiplayer', 'is_controller',
+                  'developers', 'publishers', 'manufacturer_evidence'):
         value.pop(field, None)
     value.get('provenance', {}).pop('store_metadata', None)
     return value
+
+
+def semantic_rows(rows):
+    # Observation timestamps/cache sources vary across trials; field values must not.
+    return [{k: v for k, v in row.items() if k not in ('run_id', 'provenance', 'manufacturer_evidence')}
+            for row in rows]
 
 
 def main():
@@ -168,7 +175,7 @@ def main():
         grants.sort()
         gaps = [b - a for a, b in zip(grants, grants[1:])]
         assert not gaps or min(gaps) >= gate.interval - .02, 'Request gate spacing violated'
-        semantic = [{k: v for k, v in r.items() if k not in ('run_id', 'provenance')} for r in after]
+        semantic = semantic_rows(after)
         observations = {k: {f: v for f, v in entry.items() if f not in ('source', 'fetched_at', 'read_at', 'cache_hit')}
                         for k, entry in metadata['apps'].items()}
         normalized_hash = lambda v: digest(json.dumps(v, ensure_ascii=False, sort_keys=True).encode('utf-8'))

@@ -371,7 +371,7 @@ def classify_one(game, overrides=None):
             if analysis['primary'] == '其他' or analysis[key] == fallback:
                 fields[key] = {'source': 'default', 'state': 'unknown', 'reason': 'not_reviewed'}
     rule = correction(game, overrides)
-    if rule:
+    if rule and 'main_category' in rule:
         primary = MAIN_TO_PRIMARY[rule['main_category']]
         changed = analysis['primary'] != primary
         sub_changed = 'sub' in rule and analysis['sub'] != rule['sub']
@@ -392,6 +392,8 @@ def classify_one(game, overrides=None):
     else:
         result['classification_evidence'] = {'source': source if known else fields['primary']['source']}
     result['classification_evidence']['fields'] = fields
+    from steam_manufacturers import manufacturer_fields
+    result.update(manufacturer_fields(game, rule))
     return result
 
 

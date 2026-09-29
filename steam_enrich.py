@@ -126,6 +126,7 @@ def main(argv=None):
     print(f"补全状态：{metadata['state']}；成功：{metadata.get('success', 0)}/{metadata['requested']}")
     fields = metadata['coverage_after']
     print(f"总库字段覆盖：类型标签 {fields['genres']['nonempty']}；"
+          f"开发商 {fields['developers']['nonempty']}；发行商 {fields['publishers']['nonempty']}；"
           f"多人支持未知 {fields['is_multiplayer']['unknown']}；"
           f"手柄支持未知 {fields['is_controller']['unknown']}（请求成功不代表字段齐全）")
     print(f'输出：{output}\n运行指针：{pointer}')

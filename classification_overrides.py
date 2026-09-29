@@ -25,15 +25,21 @@ def read_rules(path):
                 or not isinstance(data['apps'], dict)):
             raise ValueError()
         result = {}
-        allowed = {'main_category', 'reason', 'reference', 'sub', 'vibe', 'intensity', 'slogan'}
+        from steam_metadata import MANUFACTURER_FIELDS, manufacturer_names
+        allowed = {'main_category', 'reason', 'reference', 'sub', 'vibe', 'intensity', 'slogan', *MANUFACTURER_FIELDS}
         for appid, rule in data['apps'].items():
             if (not appid.isascii() or not appid.isdigit() or str(int(appid)) != appid
                     or not 0 < int(appid) <= 0xffffffff or not isinstance(rule, dict)
-                    or not {'main_category', 'reason'} <= set(rule) or not set(rule) <= allowed
-                    or any(not isinstance(v, str) or not v.strip() or len(v) > 2000 for v in rule.values())):
+                    or 'reason' not in rule or not set(rule) <= allowed
+                    or not {'main_category', *MANUFACTURER_FIELDS}.intersection(rule)
+                    or ('main_category' not in rule and {'sub', 'vibe', 'intensity', 'slogan'}.intersection(rule))
+                    or any(not isinstance(v, str) or not v.strip() or len(v) > 2000
+                           for k, v in rule.items() if k not in MANUFACTURER_FIELDS)
+                    or any(manufacturer_names(rule[k]) is None or any(len(v) > 2000 for v in rule[k])
+                           for k in MANUFACTURER_FIELDS if k in rule)):
                 raise ValueError()
-            rule = {k: v.strip() for k, v in rule.items()}
-            if rule['main_category'] not in MAIN_TO_PRIMARY or ('intensity' in rule and rule['intensity'] not in {'低', '中', '高'}):
+            rule = {k: manufacturer_names(v) if k in MANUFACTURER_FIELDS else v.strip() for k, v in rule.items()}
+            if ('main_category' in rule and rule['main_category'] not in MAIN_TO_PRIMARY) or ('intensity' in rule and rule['intensity'] not in {'低', '中', '高'}):
                 raise ValueError()
             result[appid] = rule
         return result

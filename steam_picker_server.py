@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 from classify_steam_games import classify_one
 from steam_runs import manifest_path, resolve_artifact, load_library
 from steam_sources import select_for_classification
+from steam_manufacturers import manufacturer_fields
 
 ROOT = Path(__file__).resolve().parent
 
@@ -43,6 +44,7 @@ def normalized_games(games):
         if any(not isinstance(analysis.get(k), str) for k in ("primary", "sub", "vibe", "intensity", "slogan")):
             raise ValueError("PICKER_DATA_INVALID")
         result.append({"appid": str(value), "name": game["name"], "run_id": game.get("run_id"),
+                       **manufacturer_fields(game),
                        "classification_evidence": field_evidence(game),
                        "analysis": {k: analysis[k].strip() for k in ("primary", "sub", "vibe", "intensity", "slogan")}})
     return result
