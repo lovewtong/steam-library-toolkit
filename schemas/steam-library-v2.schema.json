@@ -10,6 +10,12 @@
       "name": {"type": "string"},
       "developers": {"$ref": "#/$defs/manufacturers"},
       "publishers": {"$ref": "#/$defs/manufacturers"},
+      "first_seen_at": {"type": ["string", "null"], "format": "date-time"},
+      "first_seen_evidence": {"type": "object", "required": ["state"], "properties": {
+        "state": {"enum": ["observed", "historical", "unknown"]},
+        "source": {"enum": ["client_library", "saved_client_snapshot"]},
+        "steam_id": {"type": "string", "pattern": "^[0-9]{17}$"},
+        "run_id": {"type": "string", "minLength": 1}}},
       "app_type": {"type": "string"},
       "run_id": {"type": "string", "minLength": 1},
       "membership": {"type": "object", "required": ["state", "source"], "properties": {

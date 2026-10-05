@@ -92,13 +92,13 @@ outputs/
 
 无论阅读哪种语言的文档，当前页面分类标签都使用中文。发布新运行后刷新浏览器。`--open INDEX` 会在 Steam 中启动游戏，不是预览操作。
 
-分类复核清单已在 main 和 v1.1.0 草稿中，v1.0.0 不包含此命令：
+分类复核清单已在 main 和 v1.1.0 中，v1.0.0 不包含此命令：
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-开发商／发行商筛选和计划分组已在 `main`，v1.0.0 和 v1.1.0 草稿不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
+开发商／发行商筛选和计划分组已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)。首次观察记录正在开发，见[时间分类](TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
 
 ## 证据与故障排查
 

@@ -350,6 +350,7 @@ def main():
     parser.add_argument("--max-unexplained-removal-ratio", type=float, default=.20,
                         help="与同账号上次实时结果比较，超过此缩减比例不发布；范围 0..1")
     parser.add_argument("--snapshot-out", type=Path, help="导出带账号、时间、类型的客户端快照")
+    parser.add_argument("--history-from", type=Path, help="从同账号已核验运行继承首次观察历史")
     parser.add_argument("--refresh-metadata", action="store_true")
     parser.add_argument("--cache-dir", type=Path)
     parser.add_argument("-o", "--output", type=Path, default=OUTPUT_FILE)
@@ -400,6 +401,8 @@ def main():
                 check_previous(args.output.with_suffix(".candidates.json"), library, report, args.max_unexplained_removal_ratio)
             if report["status"] == "suspicious_change":
                 raise RuntimeError("SUSPICIOUS_REMOVAL：库成员缩减超过阈值，保留当前运行；核实后可调整 --max-unexplained-removal-ratio")
+            from steam_observation import attach_first_seen
+            attach_first_seen(args.output, library, report, history_from=args.history_from)
             published_output, pointer, export_warnings = publish_run(args.output, library, report,
                 audit_export=audit_path, snapshot_export=args.snapshot_out, allow_candidates=args.allow_candidates)
     except KeyboardInterrupt:

@@ -46,7 +46,7 @@ python -m venv .venv
 npm ci
 ```
 
-This installs `main`, including developer/publisher filters. For the published v1.0.0 release, add `--branch v1.0.0` to the clone command; that release does not include those filters or the classification review queue.
+This installs `main`, including developer/publisher filters. For the published v1.1.0 release, add `--branch v1.1.0` to the clone command; that release includes the review queue but does not include those filters. First-observation features currently require the `feat/library-observation-time` branch.
 
 ## Usage
 
@@ -93,6 +93,8 @@ $steamAccount = 'YOUR_STEAMID64'
 
 On `main`, add `--group-by developers publishers` for manufacturer groups, or `--developer "NAME"` / `--publisher "NAME"` to filter by an exact name.
 
+On the first-observation branch, filter by `--first-seen-year 2026 --first-seen-month 10` and group plans by `first_seen_year` / `first_seen_month`. These dates refer to the first recorded client observation, not the purchase date. See [time classification](TIME_CLASSIFICATION.md) for history and unknown values.
+
 ### Help
 
 Each script supports `--help`. For dependency problems, start with:
@@ -105,9 +107,9 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 ## Versions
 
-[v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0) is the latest published release. It includes collection, audits, metadata enrichment, classification overrides, local browsing and collection-plan export.
+[v1.1.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.1.0) is the latest published release. It adds the classification review queue and six AppID corrections to v1.0.0's collection, audit, enrichment, correction, browsing and plan-export workflow.
 
-`main` also includes the classification review queue, six additional AppID corrections, and developer/publisher fields, filters and plan groups. These changes have not been released. The [v1.1.0 draft](V1_1_RELEASE_PLAN.md) covers the review queue and classification corrections; manufacturer support will ship separately. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
+Developer/publisher support is on `main`; first-observation tracking and year/month filters are being developed for a later release. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
 ## Limitations
 
@@ -116,14 +118,14 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 - Classification rules sometimes need manual correction. Developer and publisher names follow the store listing unless you override them.
 - Multi-account switching, Steam Families and expiring access need more testing. The browser's classification labels are currently in Chinese.
 - Plans are export-only. The older Node/LevelDB writers are not part of the supported workflow.
-- Acquisition-date grouping is not implemented yet.
+- Exact purchase dates are not available. First-observation dates only describe the saved history available to the tool.
 
 ## Documentation
 
 - [Advanced usage](USAGE.md) · [进阶用法](USAGE.zh.md)
 - [Classification rules](CLASSIFICATION_RULES.md) · [Personal corrections](CLASSIFICATION_OVERRIDES.md) · [Review queue](CLASSIFICATION_REVIEW_QUEUE.md)
 - [Metadata enrichment](METADATA_ENRICHMENT.md) · [Developers and publishers](MANUFACTURER_FACETS.md)
-- [Collection plans](STEAM_SYNC_README.md) · [Time fields](TIME_FIELD_CONTRACT.md)
+- [Collection plans](STEAM_SYNC_README.md) · [Time fields](TIME_FIELD_CONTRACT.md) · [Time classification](TIME_CLASSIFICATION.md)
 - [Release notes](RELEASE_NOTES.md) · [Stable scope](STABLE_RELEASE_SCOPE.md)
 - Test reports: [performance](R2_PERFORMANCE_BASELINE.md), [Windows workflow](R3_WINDOWS_ACCEPTANCE.md), [bug fixes](AUDIT_REMEDIATION.md)
 

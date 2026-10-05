@@ -92,13 +92,13 @@ The classifiers select explicit `game` types by default. `--include-type all` in
 
 The picker uses Chinese classification labels in both documentation modes. Refresh the browser after publishing a new run. `--open INDEX` launches a game in Steam; it is not a preview operation.
 
-The review queue is available on main and in the v1.1.0 draft, not v1.0.0:
+The review queue is available on main and in v1.1.0, not v1.0.0:
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-Developer/publisher filters and plan groups are available on `main`, but are not included in v1.0.0 or the v1.1.0 draft. See [manufacturer usage](MANUFACTURER_FACETS.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
+Developer/publisher filters and plan groups are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](MANUFACTURER_FACETS.md). First-observation tracking is under development; see [time classification](TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
 
 ## Evidence and troubleshooting
 

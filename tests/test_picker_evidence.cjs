@@ -20,6 +20,17 @@ const document = {
 const context = vm.createContext({document, fetch: () => new Promise(() => {})});
 vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], context);
 
+test('first observation year and month intersect and unknown never becomes 1970', () => {
+  const game = {first_seen_year: '2026', first_seen_month: '2026-10', first_seen_at: '2026-10-05T00:00:00+00:00'};
+  assert.equal(context.matchesFirstSeen(game, '2026', '10'), true);
+  assert.equal(context.matchesFirstSeen(game, '2025', '10'), false);
+  assert.equal(context.matchesFirstSeen({}, 'unknown', ''), true);
+  assert.equal(context.matchesFirstSeen({}, 'unknown', '01'), false);
+  assert.ok(context.renderFirstSeen({}).includes('未知'));
+  assert.ok(!context.renderFirstSeen({}).includes('1970'));
+  assert.ok(context.renderFirstSeen(game).includes('2026-10-05'));
+});
+
 test('manufacturer filters preserve multiple names and separate unknown from empty and literal names', () => {
   assert.equal(context.matchesManufacturer(['A', 'B'], 'name:B'), true);
   assert.equal(context.matchesManufacturer(['A'], 'name:B'), false);
