@@ -7,9 +7,7 @@
 
 [English](README.md) | **简体中文**
 
-一个使用 Python 和 Node.js 的本地工具：采集 Steam 游戏库、核对数据来源、补全商店信息、人工纠正分类，并在浏览器中筛选游戏。未知值明确保留，每次发布的运行都保存可校验的独立产物。
-
-npm 配置沿用历史私有辅助包名称 `steam-collections`；本项目通过源码仓库使用，不是已发布的 npm 安装包。
+把 Steam 游戏库导出到本地，补全商店信息，再按玩法、氛围、开发商或发行商筛选。分类不合适时，可以按 AppID 修改规则，也可以将结果导出为收藏计划。
 
 ## 目录
 
@@ -17,8 +15,8 @@ npm 配置沿用历史私有辅助包名称 `steam-collections`；本项目通�
 - [背景](#背景)
 - [安装](#安装)
 - [用法](#用法)
-- [功能与版本](#功能与版本)
-- [支持范围与限制](#支持范围与限制)
+- [版本](#版本)
+- [已知限制](#已知限制)
 - [文档](#文档)
 - [维护者](#维护者)
 - [参与贡献](#参与贡献)
@@ -26,51 +24,35 @@ npm 配置沿用历史私有辅助包名称 `steam-collections`；本项目通�
 
 ## 安全
 
-- 不要在 Issue 或 PR 中提交凭据、Cookie、账号配置和个人游戏库明细。`config_local.json`、`*.local.json`、缓存和 `outputs/` 已由 Git 忽略。
-- `--local-session` 显式使用当前 Windows 用户的 Steam 本地登录凭据，仅供本次进程使用。扫码授权保存在认可的系统凭据存储中，不回退到明文文件。
-- 本地浏览器服务只监听 `127.0.0.1`，仅提供页面与游戏库接口。已验收的 Python 流程不支持自动写回 Steam 收藏。
+账号配置放在 `config_local.json`，个人分类规则放在 `classification_overrides.local.json`，这两个文件都已加入 Git 忽略列表。提交问题时，请去掉凭据、Cookie 和个人游戏库数据。
+
+浏览页面只在 `127.0.0.1` 提供服务。本地登录使用已有 Steam 凭据，仅用于当前进程；扫码授权保存在系统凭据存储中。
 
 ## 背景
 
-Steam 的 `GetOwnedGames` 可能遗漏客户端中可见的游戏。本项目核对在线客户端清单、许可、Web API 和历史快照，避免把单一接口当成完整游戏库。
-
-项目目标是尽量完整地采集游戏库，让缺失值和来源清晰可查，并让分类结果可以验证、纠正和安全使用。对客户端响应进行核验属于工程保护，不代表已经证明服务端清单绝对完整。
+项目最初解决两个问题：`classify_games.py` 缺少运行入口，以及 `GetOwnedGames` 会漏掉部分客户端可见的游戏。现在采集会结合在线客户端清单、许可、Web API 和快照。审计文件记录各来源是否成功，以及字段的来源。
 
 ## 安装
 
-### 环境要求
+使用 Windows，安装并登录 Steam。项目已在 Python 3.12／3.14 和 Node.js 22 下测试。需要安装环境时，可访问 [Python](https://www.python.org/downloads/)、[Node.js](https://nodejs.org/en/download) 和 [Git](https://git-scm.com/downloads) 下载页面。
 
-| 组件 | 已验证环境 |
-| --- | --- |
-| Windows，桌面 Steam 已登录 | 主要真人验收环境，单账号 |
-| Python | Windows 真人验收为 3.14.2；离线 CI 为 3.12 |
-| Node.js 与 npm | Windows 验收为 Node 22.19.0；CI 为 Node 22 |
-| Git | 下方克隆命令需要 |
-
-先安装 [Python](https://www.python.org/downloads/)、[Node.js](https://nodejs.org/en/download) 和 [Git](https://git-scm.com/downloads)。此前声明的 Python 3.10 / Node 18 最低版本没有完成同等验收。
-
-### Windows PowerShell
-
-安装已发布的稳定版本：
+在 PowerShell 中执行：
 
 ```powershell
-git clone --branch v1.0.0 https://github.com/lovewtong/steam-library-toolkit.git
+git clone https://github.com/lovewtong/steam-library-toolkit.git
 cd steam-library-toolkit
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
 npm ci
-.\.venv\Scripts\python.exe -m pip check
 ```
 
-后续命令均在项目根目录运行。显式使用虚拟环境路径可避免混用不同 Python。`requirements-tested.txt` 固定直接依赖，不是覆盖全部平台和传递依赖的完整锁文件。
-
-参与开发时，克隆命令可以省略 `--branch v1.0.0`。尚在 PR 中的功能需切换到对应分支，不包含在稳定标签中，见[功能与版本](#功能与版本)。
+这里安装的是 `main`，包含开发商／发行商筛选。如果要使用已发布的 v1.0.0，在克隆命令中加入 `--branch v1.0.0`；该版本不包含厂商筛选和分类复核清单。
 
 ## 用法
 
-### 采集、补全与浏览
+以下命令都在项目根目录运行，保持 Steam 在线并登录。
 
-保持桌面 Steam 在线并登录，然后执行：
+### 采集与浏览
 
 ```powershell
 .\.venv\Scripts\python.exe steam_collect.py --local-session --no-store --strict-membership -o outputs/library.json
@@ -78,20 +60,28 @@ npm ci
 .\.venv\Scripts\python.exe steam_picker.py --serve --input outputs/enriched.json
 ```
 
-采集会同时生成审计和分类产物。补全请求商店信息，不需要重新登录；大库首次补全可能需要数分钟。最后一条命令会打开本地选游戏页面，在服务终端按 `Ctrl+C` 可停止。
+第一条命令采集游戏库，同时生成审计和分类文件；第二条补全商店信息。大库第一次补全可能需要几分钟，后续会复用缓存。最后一条打开浏览页面，在终端按 `Ctrl+C` 停止服务。
 
-`--strict-membership` 要求实时客户端成员可信，允许辅助来源降级。需要所有已启用的成员来源均成功时，使用 `--strict`。本地凭据不可用时，可将 `--local-session` 替换为 `--login` 进行扫码授权。
+`--strict-membership` 要求取得实时客户端清单。本地认证失败时，把 `--local-session` 换成 `--login`，改用扫码登录。
 
-### 校正分类与导出计划
+### 修改分类
 
-按 [AppID 校正规则说明](CLASSIFICATION_OVERRIDES.md) 创建 `classification_overrides.local.json`，再生成独立的校正运行：
+按[校正规则说明](CLASSIFICATION_OVERRIDES.md)填写 `classification_overrides.local.json`，然后生成新结果：
 
 ```powershell
 .\.venv\Scripts\python.exe steam_reclassify.py --input outputs/enriched.json -o outputs/corrected.json
 .\.venv\Scripts\python.exe steam_picker.py --serve --input outputs/corrected.json
 ```
 
-在另一终端中，将 `YOUR_STEAMID64` 替换为采集所用账号：
+使用 `main` 时，还可以查看需要复核的分类：
+
+```powershell
+.\.venv\Scripts\python.exe steam_review_classification.py --input outputs/corrected.json
+```
+
+### 导出收藏计划
+
+在另一个终端中，填写采集账号的 SteamID64：
 
 ```powershell
 $steamAccount = 'YOUR_STEAMID64'
@@ -99,70 +89,53 @@ $steamAccount = 'YOUR_STEAMID64'
 .\.venv\Scripts\python.exe -B steam_sync_collections.py --input outputs/corrected.json --account $steamAccount --export-only -o outputs/collections.local.json
 ```
 
-Dry-run 只预览，不写计划。导出会核验账号、运行、成员和文件哈希，不写入 Steam，也不重新核验当前所有权。补全与重新分类必须使用独立输出名称。
+`--dry-run` 预览计划，`--export-only` 保存 JSON。导出前会检查保存的账号、游戏库和文件哈希，目前不写入 Steam 收藏。
 
-### 命令行
+在 `main` 中，加入 `--group-by developers publishers` 可按厂商分组；`--developer "NAME"`／`--publisher "NAME"` 按完整名称筛选。
+
+### 帮助
+
+每个脚本都支持 `--help`。遇到依赖问题，可以先运行：
 
 ```powershell
-.\.venv\Scripts\python.exe steam_collect.py --help
 .\.venv\Scripts\python.exe steam_collect.py --diagnose
-.\.venv\Scripts\python.exe steam_enrich.py --help
-.\.venv\Scripts\python.exe steam_picker.py --help
-.\.venv\Scripts\python.exe steam_sync_collections.py --help
 ```
 
-诊断只检查依赖，不读取凭据或探测网络。账号选择、严格模式、快照、缓存、故障排查和产物结构见[进阶用法](USAGE.zh.md)。
+这个检查不需要联网。账号选择、快照、缓存设置和故障排查见[进阶用法](USAGE.zh.md)。备份结果时，请同时保留 `.current.json` 指针及其引用的隐藏运行目录。
 
-## 功能与版本
+## 版本
 
-| 能力 | 可用版本 |
-| --- | --- |
-| 客户端库采集、来源审计、未知值记录 | v1.0.0 |
-| 商店补全、缓存、有界请求和取消 | v1.0.0 |
-| AppID 校正、离线重建、CSV/Markdown、本地浏览 | v1.0.0 |
-| 已核验收藏计划预览与导出 | v1.0.0 |
-| 分类待复核清单、额外六项 AppID 校正 | 已在 main，包含于尚未发布的 v1.1.0 草稿 |
-| 开发商／发行商字段、校正、筛选和计划分组 | 尚未发布，见 [PR #10](https://github.com/lovewtong/steam-library-toolkit/pull/10) |
-| 入库日期分组、首次观察时间记录 | 计划中，尚未实现 |
+[v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0) 是当前已发布版本，包含采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。
 
-当前已发布版本为 [v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0)。[v1.1.0](V1_1_RELEASE_PLAN.md) 仍是草稿，厂商扩展不在其冻结目标内。正式发布状态以 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) 为准。
+`main` 还包含分类复核清单、额外六项 AppID 校正，以及开发商／发行商字段、筛选和计划分组，这些改动尚未发布。[v1.1.0 草稿](V1_1_RELEASE_PLAN.md)包含复核清单与分类校正，厂商功能另行发布。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
-在厂商功能分支中，页面新增开发商和发行商筛选；收藏计划支持 `--group-by developers publishers`，以及按精确名称匹配的 `--developer` / `--publisher`。校正示例和验收结果见[厂商维度说明](MANUFACTURER_FACETS.md)。
+## 已知限制
 
-## 支持范围与限制
-
-- Windows 单账号的采集、补全、校正与撤销、浏览及计划导出已有真实场景验证，见 [Windows 端到端验收](R3_WINDOWS_ACCEPTANCE.md)。
-- Windows、Linux、macOS 均执行离线 CI；这**不等于**三个平台都完成了真实账号认证验收。
-- 客户端清单一致性检查不能证明 Steam 从不遗漏记录。API／快照降级结果标为候选，未知时长不会被当成零。
-- 分类包含启发式规则。样本复核不能证明全库准确率，仍需允许个人校正。
-- 多账号切换、Families、退款、临时权益和长期扫码授权仍需更多真实验收。
-- 旧 Python 写回已停用；独立 Node／LevelDB 工具未完成同等安全与持久化验收，不属于推荐流程。
+- 实时采集已在 Windows 单账号环境测试。Linux 和 macOS 有自动化测试，真实账号登录仍待测试。
+- Steam 各来源可能有差异或遗漏。API 和快照降级数据会标为候选；缺失的时长和元数据保留为未知。
+- 分类规则可能需要人工调整。开发商和发行商名称默认使用商店信息，也可以自行校正。
+- 多账号切换、Steam Families 和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
+- 收藏计划仅支持导出，旧 Node／LevelDB 写回脚本不在支持流程内。
+- 尚未实现按入库日期分组。
 
 ## 文档
 
-README 与进阶用法提供中英文对应版本；下方详细设计及验收报告目前主要使用中文。
+- [进阶用法](USAGE.zh.md) · [Advanced usage](USAGE.md)
+- [分类规则](CLASSIFICATION_RULES.md) · [个人校正](CLASSIFICATION_OVERRIDES.md) · [复核清单](CLASSIFICATION_REVIEW_QUEUE.md)
+- [元数据补全](METADATA_ENRICHMENT.md) · [开发商与发行商](MANUFACTURER_FACETS.md)
+- [收藏计划](STEAM_SYNC_README.md) · [时间字段](TIME_FIELD_CONTRACT.md)
+- [发布说明](RELEASE_NOTES.md) · [稳定版范围](STABLE_RELEASE_SCOPE.md)
+- 测试记录：[性能](R2_PERFORMANCE_BASELINE.md)、[Windows 使用流程](R3_WINDOWS_ACCEPTANCE.md)、[Bug 修复](AUDIT_REMEDIATION.md)
 
-| 主题 | 文档 |
-| --- | --- |
-| 进阶命令、文件与故障排查 | [English](USAGE.md) · [简体中文](USAGE.zh.md) |
-| 稳定版范围与迁移 | [范围](STABLE_RELEASE_SCOPE.md) · [发布说明](RELEASE_NOTES.md) |
-| 元数据补全与字段覆盖 | [补全说明](METADATA_ENRICHMENT.md) |
-| 分类与人工校正 | [规则](CLASSIFICATION_RULES.md) · [校正](CLASSIFICATION_OVERRIDES.md) |
-| 分类待复核与厂商维度 | [复核清单](CLASSIFICATION_REVIEW_QUEUE.md) · [厂商分类](MANUFACTURER_FACETS.md) |
-| 收藏计划验证 | [计划说明](STEAM_SYNC_README.md) |
-| 时间字段语义 | [时间契约](TIME_FIELD_CONTRACT.md) |
-| 性能与真实场景证据 | [R2 基准](R2_PERFORMANCE_BASELINE.md) · [R3 验收](R3_WINDOWS_ACCEPTANCE.md) |
-| 历史审计问题与待验边界 | [整改记录](AUDIT_REMEDIATION.md) |
+详细说明和测试记录目前主要使用中文。
 
 ## 维护者
 
-[@lovewtong](https://github.com/lovewtong)。使用问题和可复现的 Bug 请提交到 [Issues](https://github.com/lovewtong/steam-library-toolkit/issues)。
+[@lovewtong](https://github.com/lovewtong)。问题和建议可以提交到 [Issues](https://github.com/lovewtong/steam-library-toolkit/issues)。
 
 ## 参与贡献
 
-欢迎提交 Issue 和 PR。请说明问题、预期行为及验证方式，区分离线测试与真实 Steam 验证。只提供脱敏诊断，不提交凭据或个人游戏库明细。
-
-修改代码后运行：
+报告问题时，请附上执行的命令、预期结果和错误信息。欢迎提交 PR。修改代码后运行：
 
 ```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py"
@@ -171,7 +144,7 @@ npm test
 git diff --check
 ```
 
-中英文 README 和进阶用法需同步维护。行为发生变化时，更新对应契约或验收文档。合并前需要复审，不把未经测试的账号场景写成已支持。
+修改命令或功能时，请同步中英文 README 和使用说明。
 
 ## 许可证
 

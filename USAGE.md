@@ -59,7 +59,7 @@ Inputs must have a valid run pointer and trusted client membership. Outputs must
 
 Workers range from 1 to 4 and share a request-start interval and cooldown. Missing or invalid metadata retains prior values; an explicit empty array can replace a prior array. A successful request does not imply complete fields. `metadata.state=partial` reports incomplete request coverage without deleting games.
 
-Successful responses are cached for seven days; `not_found` for six hours; temporary failures for shorter periods. A not-found response does not prove permanent delisting. The manufacturer feature branch uses cache v6 and refetches older entries on demand; released versions retain their own cache format. See [metadata semantics](METADATA_ENRICHMENT.md).
+Successful responses are cached for seven days; `not_found` for six hours; temporary failures for shorter periods. A not-found response does not prove permanent delisting. Current `main` uses cache v6 and refetches older entries on demand; released versions retain their own cache format. See [metadata semantics](METADATA_ENRICHMENT.md).
 
 ## Files and backups
 
@@ -98,7 +98,7 @@ The review queue is available on main and in the v1.1.0 draft, not v1.0.0:
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-Developer/publisher filters and plan groups require the unreleased [manufacturer feature](MANUFACTURER_FACETS.md). The root README's collection-plan commands remain the supported preview/export path. Do not pass those plans to legacy Node writers.
+Developer/publisher filters and plan groups are available on `main`, but are not included in v1.0.0 or the v1.1.0 draft. See [manufacturer usage](MANUFACTURER_FACETS.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
 
 ## Evidence and troubleshooting
 

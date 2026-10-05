@@ -59,7 +59,7 @@
 
 并发数为 1–4，共享请求启动间隔与冷却。缺失或非法字段保留旧值，明确空数组可以替换旧数组。请求成功不代表字段齐全；`metadata.state=partial` 表示请求覆盖不完整，不会因此删除游戏。
 
-成功响应缓存七天，`not_found` 缓存六小时，临时错误使用更短有效期。未找到不代表永久下架。厂商功能分支使用缓存 v6，旧条目按需重取；已发布版本使用各自的缓存格式。详见[元数据语义](METADATA_ENRICHMENT.md)。
+成功响应缓存七天，`not_found` 缓存六小时，临时错误使用更短有效期。未找到不代表永久下架。当前 `main` 使用缓存 v6，旧条目按需重取；已发布版本使用各自的缓存格式。详见[元数据语义](METADATA_ENRICHMENT.md)。
 
 ## 数据文件与备份
 
@@ -98,7 +98,7 @@ outputs/
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-开发商／发行商筛选和计划分组需使用尚未发布的[厂商扩展](MANUFACTURER_FACETS.md)。收藏计划仍使用 README 中的预览／导出命令，不要把计划直接交给旧 Node 写回工具。
+开发商／发行商筛选和计划分组已在 `main`，v1.0.0 和 v1.1.0 草稿不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
 
 ## 证据与故障排查
 
