@@ -113,5 +113,6 @@ outputs/
 | 页面拒绝候选库 | 获取可信客户端运行，或显式允许浏览候选 |
 | 元数据未知或补全为 `partial` | 查看逐应用字段状态和来源错误；缺失不等于不支持 |
 | 页面仍显示旧数据 | 核对 `--input`、current 指针并刷新；平面文件不会替换已核验运行 |
+| 家庭共享游戏缺失 | 当前采集未接入 Steam Families 家庭库接口；`--strict-membership` 不保证家庭库覆盖，详见[场景记录](REAL_SCENARIO_VALIDATION.md) |
 
 可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](AUDIT_REMEDIATION.md)、[时间语义](TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。

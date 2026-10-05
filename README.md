@@ -116,7 +116,8 @@ Developer/publisher support is on `main`; first-observation tracking and year/mo
 - Live collection has been tested on Windows with one account. Linux and macOS have automated tests, but live account login still needs testing.
 - Steam sources can disagree or omit entries. API and snapshot fallbacks are marked as candidates; missing playtime and metadata stay unknown.
 - Classification rules sometimes need manual correction. Developer and publisher names follow the store listing unless you override them.
-- Multi-account switching, Steam Families and expiring access need more testing. The browser's classification labels are currently in Chinese.
+- Multi-account switching and expiring access need more testing. The browser's classification labels are currently in Chinese.
+- Steam Families games can be missing. Two shared-only games were confirmed absent in a live check; see the [scenario report](REAL_SCENARIO_VALIDATION.md).
 - Plans are export-only. The older Node/LevelDB writers are not part of the supported workflow.
 - Exact purchase dates are not available. First-observation dates only describe the saved history available to the tool.
 
@@ -128,6 +129,7 @@ Developer/publisher support is on `main`; first-observation tracking and year/mo
 - [Collection plans](STEAM_SYNC_README.md) · [Time fields](TIME_FIELD_CONTRACT.md) · [Time classification](TIME_CLASSIFICATION.md)
 - [Release notes](RELEASE_NOTES.md) · [Stable scope](STABLE_RELEASE_SCOPE.md)
 - Test reports: [performance](R2_PERFORMANCE_BASELINE.md), [Windows workflow](R3_WINDOWS_ACCEPTANCE.md), [bug fixes](AUDIT_REMEDIATION.md)
+- [Current account scenarios](REAL_SCENARIO_VALIDATION.md) · [Next release scope](V1_2_RELEASE_PLAN.md)
 
 The detailed guides and test reports are mostly in Chinese.
 

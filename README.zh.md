@@ -116,7 +116,8 @@ $steamAccount = 'YOUR_STEAMID64'
 - 实时采集已在 Windows 单账号环境测试。Linux 和 macOS 有自动化测试，真实账号登录仍待测试。
 - Steam 各来源可能有差异或遗漏。API 和快照降级数据会标为候选；缺失的时长和元数据保留为未知。
 - 分类规则可能需要人工调整。开发商和发行商名称默认使用商店信息，也可以自行校正。
-- 多账号切换、Steam Families 和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
+- 多账号切换和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
+- Steam Families 游戏可能遗漏。本次真实核对发现两款仅共享游戏未被采集，详见[场景记录](REAL_SCENARIO_VALIDATION.md)。
 - 收藏计划仅支持导出，旧 Node／LevelDB 写回脚本不在支持流程内。
 - 暂时无法提供准确购买日期。首次观察日期只描述工具可取得的历史记录。
 
@@ -128,6 +129,7 @@ $steamAccount = 'YOUR_STEAMID64'
 - [收藏计划](STEAM_SYNC_README.md) · [时间字段](TIME_FIELD_CONTRACT.md) · [时间分类](TIME_CLASSIFICATION.md)
 - [发布说明](RELEASE_NOTES.md) · [稳定版范围](STABLE_RELEASE_SCOPE.md)
 - 测试记录：[性能](R2_PERFORMANCE_BASELINE.md)、[Windows 使用流程](R3_WINDOWS_ACCEPTANCE.md)、[Bug 修复](AUDIT_REMEDIATION.md)
+- [当前账号场景](REAL_SCENARIO_VALIDATION.md) · [下一版本范围](V1_2_RELEASE_PLAN.md)
 
 详细说明和测试记录目前主要使用中文。
 
