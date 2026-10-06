@@ -7,7 +7,7 @@
     "run_id": {"type": "string", "minLength": 1},
     "steam_id": {"type": ["string", "null"], "pattern": "^[0-9]{17}$"},
     "status": {"enum": ["ok", "degraded", "suspicious_change"]},
-    "membership": {"enum": ["client_snapshot", "candidate_union"]},
+    "membership": {"enum": ["client_snapshot", "accessible_snapshot", "candidate_union"]},
     "sources": {"type": "object", "additionalProperties": {"type": "object", "required": ["state", "count"], "properties": {
       "state": {"enum": ["complete", "partial", "unavailable", "invalid", "account_mismatch"]},
       "count": {"type": "integer", "minimum": 0}}}},

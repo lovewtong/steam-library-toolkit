@@ -123,7 +123,7 @@ class FileAndCollectionTests(unittest.TestCase):
                                "license_status": "ok", "playtimes": [{"appid": 10, "playtime_forever": 5}],
                                "playtime_status": "ok"}
         audit = {}
-        rows = steam_collect.collect(fetch_store=False, use_client=True, audit=audit)
+        rows = steam_collect.collect(fetch_store=False, use_client=True, audit=audit, include_family=False)
         self.assertEqual(rows[0]["playtime_minutes"], 5)
         self.assertEqual(audit["status"], "degraded")
         self.assertNotIn("secret", json.dumps(audit))

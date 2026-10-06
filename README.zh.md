@@ -46,7 +46,7 @@ python -m venv .venv
 npm ci
 ```
 
-这里安装的是 `main`，包含开发商／发行商筛选。如果要使用已发布的 v1.1.0，在克隆命令中加入 `--branch v1.1.0`；该版本有复核清单，不包含厂商筛选。首次观察功能当前需使用 `feat/library-observation-time` 分支。
+这里安装的是 `main`，包含开发商／发行商筛选。如果要使用已发布的 v1.1.0，在克隆命令中加入 `--branch v1.1.0`；该版本有复核清单，不包含厂商筛选。首次观察功能当前需使用 `feat/library-observation-time` 分支。家庭采集修复在 `fix/steam-families-membership`，该分支包含首次观察功能。
 
 ## 用法
 
@@ -62,7 +62,7 @@ npm ci
 
 第一条命令采集游戏库，同时生成审计和分类文件；第二条补全商店信息。大库第一次补全可能需要几分钟，后续会复用缓存。最后一条打开浏览页面，在终端按 `Ctrl+C` 停止服务。
 
-`--strict-membership` 要求取得实时客户端清单。本地认证失败时，把 `--local-session` 换成 `--login`，改用扫码登录。
+`--strict-membership` 要求取得实时客户端清单。在家庭修复分支上，还要求家庭来源核验成功；只采集客户端时，使用 `--no-family` 和独立输出路径。本地认证失败时，把 `--local-session` 换成 `--login`，改用扫码登录。
 
 ### 修改分类
 
@@ -117,7 +117,7 @@ $steamAccount = 'YOUR_STEAMID64'
 - Steam 各来源可能有差异或遗漏。API 和快照降级数据会标为候选；缺失的时长和元数据保留为未知。
 - 分类规则可能需要人工调整。开发商和发行商名称默认使用商店信息，也可以自行校正。
 - 多账号切换和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
-- Steam Families 游戏可能遗漏。本次真实核对发现两款仅共享游戏未被采集，详见[场景记录](REAL_SCENARIO_VALIDATION.md)。
+- 已发布版本可能漏掉 Steam Families 游戏。家庭修复分支加入了经过核验的家庭来源，见[家庭采集](STEAM_FAMILIES.md)和[账号场景](REAL_SCENARIO_VALIDATION.md)；仍不保证全家庭游戏完整或当前均可启动。
 - 收藏计划仅支持导出，旧 Node／LevelDB 写回脚本不在支持流程内。
 - 暂时无法提供准确购买日期。首次观察日期只描述工具可取得的历史记录。
 

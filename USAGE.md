@@ -28,8 +28,9 @@ Run commands from the project root. Examples use the Windows virtual environment
 | `--source api` | Select API-only collection, producing candidate membership |
 | `--owned-only` | Apply traditional API filters; not a completeness guarantee |
 | `--no-store` | Skip store metadata requests |
+| `--no-family` | On the family-fix branch, explicitly limit collection to client membership; use a separate output |
 
-Strict membership policies do not require optional metadata or playtime providers to succeed. `--strict` failures leave the previous current pointer intact.
+On `fix/steam-families-membership`, client collection also checks the family source and adds eligible games. Family failure blocks publication; a confirmed non-member is a successful empty source. `--require-source family_library` is available. See [family collection](STEAM_FAMILIES.md). Strict membership policies do not require optional metadata or playtime providers to succeed. `--strict` failures leave the previous current pointer intact.
 
 ## Candidate data and completeness
 
@@ -113,6 +114,6 @@ Types use client, PICS, store/cache and historical evidence, leaving unresolved 
 | Candidate data rejected by the picker | Obtain a verified client run, or explicitly opt into candidate browsing |
 | Unknown metadata or `partial` enrichment | Read per-app field states and source errors; missing does not mean unsupported |
 | Old data still displayed | Check `--input`, the selected current pointer and browser refresh; flat exports do not replace verified generations |
-| Family-shared games missing | The current collector does not read the Steam Families library endpoint; `--strict-membership` does not prove family-library coverage. See the [scenario report](REAL_SCENARIO_VALIDATION.md) |
+| Family-shared games missing | Published versions lack the family source. The family-fix branch checks and merges eligible family games; endpoint success still does not prove full coverage. See [family collection](STEAM_FAMILIES.md) |
 
 `--diagnose` is a credential-free, offline first check. Configured HTTP(S) proxies are used without printing their addresses or passwords. Do not share raw authentication or proxy diagnostics containing secrets. See [audit fixes](AUDIT_REMEDIATION.md), [time semantics](TIME_FIELD_CONTRACT.md) and [release migration](RELEASE_NOTES.md) for details.

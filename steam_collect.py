@@ -3,7 +3,7 @@ Steam 游戏库本地采集脚本
 从 Steam API 获取：游戏名、appid、总时长、最近游玩时间；
 可选从商店 API 获取：类型/标签、是否多人、是否手柄支持。
 默认请求已游玩免费游戏/免费许可及未审核应用，但 Web API 不保证完整。
-在线客户端清单决定本次成员，账号许可用于类型与差异核对；失败时明确降级。
+在线客户端清单与核验通过的家庭游戏决定本次成员，许可用于类型与差异核对。
 扫码授权保存在系统凭据存储；--local-session 显式复用 Windows 本机登录态。
 """
 from __future__ import annotations
@@ -18,6 +18,7 @@ import socket
 from steam_sources import (AccountMismatchError, SourceResult, app_type, atomic_json,
                            read_snapshot, reconcile, utc_now, validate_records)
 from steam_auth import AuthError, collect_client
+from steam_membership import trusted_current_membership, verified_family_source, family_evidence_valid
 from steam_http import get_response, SourceCoolingDown, check_cancel
 from steam_metadata import STORE_GATE, parse_fields, apply_observation, coverage
 
@@ -177,7 +178,7 @@ def valid_store_details(details):
 def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_api=True,
             *, use_client=False, login=False, local_session=False, account=None, machine=None,
             strict=False, audit=None, cache_dir=None, refresh_metadata=False, snapshot_output=None,
-            strict_membership=False, require_sources=(), allow_candidate_membership=False):
+            strict_membership=False, require_sources=(), allow_candidate_membership=False, include_family=True):
     if not include_non_inventory and (apps_file or use_client):
         raise ValueError("--owned-only 只能用于 API 模式，不能同时导入或启用客户端")
     if not use_api and not use_client and apps_file is None:
@@ -197,7 +198,7 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
         try:
             native = collect_client(account, login=login, local_session=local_session,
                                     steam_path=config.get("steam_path"), machine=machine,
-                                    use_api=use_api, expanded=include_non_inventory)
+                                    use_api=use_api, expanded=include_non_inventory, use_family=include_family)
             identity = native.get("steam_id")
             if not isinstance(identity, str) or len(identity) != 17 or not identity.isdigit():
                 raise AccountMismatchError("ACCOUNT_MISMATCH：helper 返回无效账号")
@@ -224,6 +225,13 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
             results.append(native_source("client_last_played_times", {"records": native.get("playtimes", []),
                            "state": "complete" if native.get("playtime_status") == "ok" else "unavailable"}, "personal_playtime"))
             results.append(native_source("client_library", native.get("client"), "current_desktop"))
+            if include_family:
+                family = native_source('family_library', native.get('family'), 'eligible_family_games')
+                if family.state == 'complete' and (not verified_family_source(family.audit())
+                        or not all(family_evidence_valid(r) for r in family.records)):
+                    family.status, family.state, family.error_code = 'failed', 'invalid', 'FAMILY_SOURCE_UNCONFIRMED'
+                    family.records = []
+                results.append(family)
             if use_api:
                 results.append(native_source("web_api", native.get("api"), "api_visible"))
         except AccountMismatchError:
@@ -251,14 +259,18 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
             results.append(SourceResult("web_api", status="failed", error_code="WEB_API_FAILED", error="Web API 不可用或未提供游戏详情", steam_id=account, attempts=api_stats.get("attempts", 0)))
     if audit is not None:
         audit["sources"] = {r.source: r.audit() for r in results}
+    if include_family and any(r.authoritative for r in results) and not any(
+            r.source == 'family_library' and verified_family_source(r.audit()) for r in results):
+        raise RuntimeError('FAMILY_SOURCE_FAILED：家庭来源未成功核验，保留原输出；仅采集客户端请显式使用 --no-family 和独立输出路径')
     raw, report = reconcile(results, account, allow_candidate_membership=allow_candidate_membership)
     report["account_binding"] = {"verified": native is not None, "reason": "authenticated_client" if native else "no_authenticated_client"}
     if audit is not None:
         audit.update(report)
-    if strict_membership and report["membership"] != "client_snapshot":
+    if strict_membership and not trusted_current_membership(report):
         raise RuntimeError("STRICT_MEMBERSHIP_FAILED：缺少可信实时客户端清单；未发布当前库")
     for required in require_sources:
-        if not any(r.source == required and r.state == "complete" and (required != "client_library" or r.authoritative) for r in results):
+        if not any(r.source == required and r.state == "complete" and (required != "client_library" or r.authoritative)
+                   and (required != 'family_library' or verified_family_source(r.audit())) for r in results):
             raise RuntimeError("REQUIRED_SOURCE_FAILED：指定的必要来源未成功；未发布当前库")
     if strict and report["status"] != "ok":
         codes = ", ".join(r.error_code or r.source + ":" + r.state for r in results if r.state != "complete")
@@ -299,7 +311,10 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
     report["metadata"]["coverage_after"] = coverage(library)
     report["summary"]["types"] = dict(Counter(r["app_type"] for r in library))
     report["summary"].update(
-        current_client_apps=len(library) if report["membership"] == "client_snapshot" else None,
+        current_client_apps=next((len(r.records) for r in results if r.authoritative), None),
+        family_eligible_games=next((len(r.records) for r in results if r.source == 'family_library' and r.status == 'ok'), None),
+        family_added_games=sum(r['membership']['source'] == 'family_library' for r in library),
+        ownership=dict(Counter(r['ownership'] for r in library)),
         classifiable_games=sum(r["app_type"] == "game" for r in library),
         web_api_owned_apps=next((len(r.records) for r in results if r.source == "web_api" and r.state == "complete"), None),
         license_candidates=next((len(r.records) for r in results if r.source == "licenses" and r.state == "complete"), None),
@@ -312,13 +327,18 @@ def collect(fetch_store=True, include_non_inventory=True, apps_file=None, use_ap
         raise RuntimeError("SNAPSHOT_SOURCE_UNAVAILABLE：只有经过核验的客户端清单才能导出快照")
     if client:
         apps = [{"appid": r["appid"], "name": r["name"], "app_type": r["app_type"],
+                 'membership': r['membership'], 'ownership': r['ownership'],
+                 **({'family_evidence': r['family_evidence']} if 'family_evidence' in r else {}),
                  **{k: r.get(k) for k in ("playtime_forever", "playtime_2weeks", "rtime_last_played")
                     if r["playtime_evidence"][k]["state"] != "historical"}} for r in raw]
         from steam_sources import records_hash
         report["snapshot"] = {"schema_version": 2, "run_id": report["run_id"], "producer": report["producer"],
-                              "steam_id": account, "generated_at": client.fetched_at, "source": "client_library",
-                              "membership_semantics": "client_library_membership", "complete": True,
-                              "completeness": client.completeness, "record_count": len(apps),
+                              "steam_id": account, "generated_at": report['generated_at'],
+                              "source": 'accessible_library' if include_family else "client_library",
+                              "membership_semantics": report['membership_semantics'], "complete": True,
+                              "completeness": {'verified': True, 'semantic_completeness_proven': False,
+                                               'sources': {r.source: r.completeness for r in results
+                                                           if r.source in ('client_library', 'family_library')}}, "record_count": len(apps),
                               "apps_sha256": records_hash(apps), "apps": apps}
     report["overview_probe"] = {**(native.get("overview_probe", {}) if native else {"state": "unavailable"}),
                                 "unresolved_appids": [r["appid"] for r in library if r["playtime"]["state"] == "unknown"]}
@@ -336,6 +356,7 @@ def main():
     parser.add_argument("--source", choices=("auto", "api", "client"), default="auto")
     parser.add_argument("--no-api", action="store_true")
     parser.add_argument("--no-client", action="store_true")
+    parser.add_argument('--no-family', action='store_true', help='显式仅采集客户端成员；切换范围需独立输出路径')
     parser.add_argument("--apps-file", type=Path, help="带账号的 JSON v2 快照或旧 AppID 名称文本")
     auth = parser.add_mutually_exclusive_group()
     auth.add_argument("--login", action="store_true", help="扫码登录，授权保存在系统凭据存储")
@@ -343,8 +364,8 @@ def main():
     parser.add_argument("--account", help="SteamID64；显式覆盖配置账号")
     parser.add_argument("--machine", help="客户端机器名；默认当前电脑")
     parser.add_argument("--strict", action="store_true", help="来源降级时失败，保留原输出")
-    parser.add_argument("--strict-membership", action="store_true", help="只要求实时客户端成员可信，允许辅助来源降级")
-    parser.add_argument("--require-source", action="append", default=[], choices=("client_library", "web_api", "licenses"), help="指定必须成功的来源，可重复")
+    parser.add_argument("--strict-membership", action="store_true", help="要求实时客户端及已启用家庭成员可信，允许辅助来源降级")
+    parser.add_argument("--require-source", action="append", default=[], choices=("client_library", "web_api", "licenses", "family_library"), help="指定必须成功的来源，可重复")
     parser.add_argument("--allow-candidate-membership", action="store_true", help="显式允许将许可与其他来源并集作为实验性候选成员")
     parser.add_argument("--allow-candidates", action="store_true", help="允许将候选集合导出到指定路径；默认另存 .candidates.json")
     parser.add_argument("--max-unexplained-removal-ratio", type=float, default=.20,
@@ -392,12 +413,12 @@ def main():
                               account=args.account, machine=args.machine, strict=args.strict, audit=report,
                               cache_dir=args.cache_dir, refresh_metadata=args.refresh_metadata, snapshot_output=args.snapshot_out,
                               strict_membership=args.strict_membership, require_sources=args.require_source,
-                              allow_candidate_membership=args.allow_candidate_membership)
-            if not library and report["membership"] != "client_snapshot":
+                              allow_candidate_membership=args.allow_candidate_membership, include_family=not args.no_family)
+            if not library and not trusted_current_membership(report):
                 raise RuntimeError("未确认空库，保留原输出")
             from steam_runs import check_previous, publish_run
             check_previous(args.output, library, report, args.max_unexplained_removal_ratio)
-            if report["membership"] != "client_snapshot" and not args.allow_candidates:
+            if not trusted_current_membership(report) and not args.allow_candidates:
                 check_previous(args.output.with_suffix(".candidates.json"), library, report, args.max_unexplained_removal_ratio)
             if report["status"] == "suspicious_change":
                 raise RuntimeError("SUSPICIOUS_REMOVAL：库成员缩减超过阈值，保留当前运行；核实后可调整 --max-unexplained-removal-ratio")

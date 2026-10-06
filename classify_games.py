@@ -84,6 +84,7 @@ def classify_library(library: list, overrides=None) -> list[dict]:
     from classification_overrides import load_overrides, correction, evidence
     from steam_manufacturers import manufacturer_fields
     from steam_observation import first_seen_fields
+    from steam_membership import membership_fields
     overrides = load_overrides() if overrides is None else overrides
     result = []
     for g in library:
@@ -101,6 +102,7 @@ def classify_library(library: list, overrides=None) -> list[dict]:
             "app_type": g.get("app_type", "unknown"),
             **manufacturers,
             **first_seen_fields(g),
+            **membership_fields(g),
             "playtime_state": g.get("playtime", {}).get("state"),
             **last_played_fields(g),
             "main_category": main,
@@ -162,7 +164,7 @@ def write_csv(classified: list[dict], path: Path) -> None:
     rows = []
     rows.append(["appid", "name", "playtime", "last_played", "main_category", "tags", "multiplayer", "controller", "run_id", "playtime_minutes", "playtime_status",
                  "last_played_at", "last_played_status", "last_played_source", "last_played_observed_at",
-                 "developers", "publishers", "first_seen_at", "first_seen_status", "first_seen_source"])
+                 "developers", "publishers", "first_seen_at", "first_seen_status", "first_seen_source", "ownership", "membership_source"])
     for r in classified:
         tags_str = ";".join(r["tags"]) if r["tags"] else ""
         last = last_played_str(r)
@@ -176,7 +178,8 @@ def write_csv(classified: list[dict], path: Path) -> None:
                      r.get('last_played_at'), r.get('last_played_status', 'unknown'),
                      r.get('last_played_source'), r.get('last_played_observed_at'),
                      json.dumps(r.get('developers'), ensure_ascii=False), json.dumps(r.get('publishers'), ensure_ascii=False),
-                     r.get('first_seen_at'), r.get('first_seen_status', 'unknown'), r.get('first_seen_source')])
+                     r.get('first_seen_at'), r.get('first_seen_status', 'unknown'), r.get('first_seen_source'),
+                     r.get('ownership', 'unknown'), r.get('membership_source')])
     with path.open("w", encoding="utf-8-sig", newline="") as stream:
         csv.writer(stream).writerows(rows)
 
@@ -189,8 +192,8 @@ def write_md_table(classified: list[dict], path: Path, run_id=None) -> None:
         "",
         "基于 `steam_library.json` 自动分类，主分类 + 多标签。维护规则见 `CLASSIFICATION_RULES.md`。",
         "",
-        "| 游戏名 | appid | 总时长 | 最近游玩 | 主分类 | 标签 | 多人 | 手柄 | 最近游玩状态 | 来源 | 观察时间 | 开发商 | 发行商 | 首次观察 UTC | 首次观察状态 |",
-        "|--------|-------|--------|----------|--------|------|------|------|--------------|------|----------|--------|--------|--------------|--------------|",
+        "| 游戏名 | appid | 总时长 | 最近游玩 | 主分类 | 标签 | 多人 | 手柄 | 最近游玩状态 | 来源 | 观察时间 | 开发商 | 发行商 | 首次观察 UTC | 首次观察状态 | 所有权 | 成员来源 |",
+        "|--------|-------|--------|----------|--------|------|------|------|--------------|------|----------|--------|--------|--------------|--------------|--------|----------|",
     ]
     for r in classified:
         last = last_played_str(r)
@@ -205,7 +208,9 @@ def write_md_table(classified: list[dict], path: Path, run_id=None) -> None:
                              .replace('|', '&#124;').replace('\n', ' ').replace('\r', ' ')
                              for k in ('developers', 'publishers')]
         observation = [escape(str(r.get('first_seen_at') or '未知')), escape(str(r.get('first_seen_status', 'unknown')))]
-        lines.append(f"| {name_esc} | {r['appid']} | {playtime_str(r['playtime_minutes'], r.get('playtime_available', True), r.get('playtime_state'))} | {last} | {r['main_category']} | {tags_str} | {multi} | {ctrl} | " + ' | '.join(time_evidence + manufacturer_text + observation) + ' |')
+        membership = [{'account_license': '本账号许可', 'shared': '家庭共享'}.get(r.get('ownership'), '未知'),
+                      {'client_library': '客户端清单', 'family_library': '家庭库清单'}.get(r.get('membership_source'), '未核验')]
+        lines.append(f"| {name_esc} | {r['appid']} | {playtime_str(r['playtime_minutes'], r.get('playtime_available', True), r.get('playtime_state'))} | {last} | {r['main_category']} | {tags_str} | {multi} | {ctrl} | " + ' | '.join(time_evidence + manufacturer_text + observation + membership) + ' |')
     lines.extend(["", f"共 {len(classified)} 条分类记录。", ""])
     path.write_text("\n".join(lines), encoding="utf-8")
 

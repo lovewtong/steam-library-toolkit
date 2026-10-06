@@ -140,7 +140,8 @@ def resolve_playtime(found, providers, field_name):
 
 
 def reconcile(results, expected_account=None, *, allow_candidate_membership=False):
-    """Only validated client responses determine current membership; other sets remain candidates."""
+    """Verified client rows plus eligible, verified family games determine current membership."""
+    from steam_membership import verified_family_source, family_evidence_valid
     accounts = {s.steam_id for s in results if s.steam_id}
     if expected_account:
         accounts.add(expected_account)
@@ -155,10 +156,13 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
     providers = {s.source: s for s in usable}
     by_source = {s.source: {r["appid"]: r for r in s.records} for s in usable}
     client = next((s for s in usable if s.authoritative), None)
+    family = providers.get('family_library')
+    if family and (not verified_family_source(family.audit()) or not all(family_evidence_valid(r) for r in family.records)):
+        raise ValueError('FAMILY_SOURCE_UNCONFIRMED：家庭来源或游戏资格未核验')
     fallback = "license_file" if "license_file" in providers else "web_api" if "web_api" in providers else None
     if not client and not fallback and not allow_candidate_membership:
         raise RuntimeError("NO_MEMBERSHIP_SOURCE：仅有许可/时长证据；使用 --allow-candidate-membership 才能生成实验性候选")
-    ids = (set(by_source["client_library"]) if client else
+    ids = (set(by_source["client_library"]) | set(by_source.get('family_library', {})) if client else
            set().union(*(set(rows) for name, rows in by_source.items() if name in ("web_api", "license_file", "licenses")))
            if allow_candidate_membership else set(by_source[fallback]))
     output = []
@@ -166,8 +170,8 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
         found = {name: rows[appid] for name, rows in by_source.items() if appid in rows}
         row = {"appid": appid, "sources": list(found), "provenance": {},
                "evidence": {name: {"present": appid in rows} for name, rows in by_source.items()}}
-        for field_name, preference in (("name", ("web_api", "client_library", "licenses", "license_file")),
-                                      ("app_type", ("client_library", "licenses", "license_file", "web_api"))):
+        for field_name, preference in (("name", ("web_api", "client_library", "family_library", "licenses", "license_file")),
+                                      ("app_type", ("client_library", "family_library", "licenses", "license_file", "web_api"))):
             row[field_name] = "unknown" if field_name == "app_type" else f"Unknown App {appid}"
             for name in preference:
                 raw = found.get(name, {}).get(field_name)
@@ -185,13 +189,20 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
             row["playtime_evidence"][field_name] = resolved
             if resolved["source"]:
                 row["provenance"][field_name] = resolved["source"]
-        row["membership_source"] = "client_library" if client else "candidate_union" if allow_candidate_membership else fallback
+        member_source = 'client_library' if appid in by_source.get('client_library', {}) else 'family_library'
+        row["membership_source"] = member_source if client else "candidate_union" if allow_candidate_membership else fallback
         row["membership_status"] = "observed" if client else "unverified_completeness"
         row["membership"] = {"state": "present" if client else "candidate", "source": row["membership_source"],
-                             "realtime_verified": bool(client), "observed_at": client.fetched_at if client else None}
+                             "realtime_verified": bool(client), "observed_at": providers[member_source].fetched_at if client else None}
         shared = found.get("licenses", {}).get("shared_only")
         row["ownership"] = "shared" if shared is True else "account_license" if shared is False else "unknown"
         row["license_evidence"] = found.get("licenses", {}).get("license_evidence", {})
+        if 'family_library' in found:
+            row['family_evidence'] = found['family_library']['family_evidence']
+            own = row['family_evidence']['own']
+            conflict = type(shared) is bool and own == shared
+            row['ownership'] = 'unknown' if conflict else 'account_license' if own else 'shared'
+            row['ownership_conflict'] = conflict
         output.append(row)
     api_ids = set(by_source.get("web_api", {}))
     client_ids = set(by_source.get("client_library", {})) if client else set()
@@ -202,14 +213,19 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
                    "api_not_client": sorted(api_ids - client_ids) if comparable else [],
                    "snapshot_not_client": sorted(set(by_source.get("license_file", {})) - client_ids) if client else [],
                    "license_not_client": sorted(set(by_source.get("licenses", {})) - client_ids) if client else []}
+    if client and family:
+        family_ids = set(by_source['family_library'])
+        differences.update(family_not_client=sorted(family_ids - client_ids),
+                           client_not_family=sorted(client_ids - family_ids),
+                           accessible_not_api=sorted(ids - api_ids) if comparable else [])
     types = {r["appid"]: r["app_type"] for r in output}
     for name in ("licenses", "license_file", "web_api"):
         for appid, r in by_source.get(name, {}).items():
             types.setdefault(appid, app_type(r.get("app_type")))
     audit = {
         "schema_version": 2, "generated_at": utc_now(), "steam_id": next(iter(accounts), None),
-        "membership": "client_snapshot" if client else "candidate_union",
-        "membership_semantics": "client_library_membership" if client else "unverified_candidate_union" if allow_candidate_membership else "historical_snapshot" if fallback == "license_file" else "web_api_fallback",
+        "membership": "accessible_snapshot" if client and family else "client_snapshot" if client else "candidate_union",
+        "membership_semantics": "client_and_family_games" if client and family else "client_library_membership" if client else "unverified_candidate_union" if allow_candidate_membership else "historical_snapshot" if fallback == "license_file" else "web_api_fallback",
         "fallback_source": None if client else "candidate_union" if allow_candidate_membership else fallback,
         "status": "ok" if client and all(s.state == "complete" for s in results if s.source != "client_last_played_times") else "degraded",
         "sources": {s.source: s.audit() for s in results},
@@ -221,7 +237,9 @@ def reconcile(results, expected_account=None, *, allow_candidate_membership=Fals
                                for name, values in differences.items()},
         "warnings": [],
     }
-    for name in ('client_not_api', 'api_not_client'):
+    for name in ('client_not_api', 'api_not_client', 'accessible_not_api'):
+        if name not in audit['difference_summary']:
+            continue
         audit['difference_summary'][name]['state'] = comparison['state']
         if not comparable:
             audit['difference_summary'][name]['count'] = None

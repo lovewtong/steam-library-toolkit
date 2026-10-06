@@ -30,6 +30,11 @@ test('first observation year and month intersect and unknown never becomes 1970'
   assert.ok(!context.renderFirstSeen({}).includes('1970'));
   assert.ok(context.renderFirstSeen(game).includes('2026-10-05'));
 });
+test('borrowed games and family observation dates show their actual source', () => {
+  assert.ok(context.renderMembership({ownership: 'shared', membership_source: 'family_library'}).includes('家庭共享 · 家庭库清单'));
+  assert.ok(context.renderFirstSeen({first_seen_at: '2026-10-06T00:00:00Z', first_seen_source: 'family_library'}).includes('家庭库清单'));
+  assert.ok(context.renderMembership({}).includes('所有权未知'));
+});
 
 test('manufacturer filters preserve multiple names and separate unknown from empty and literal names', () => {
   assert.equal(context.matchesManufacturer(['A', 'B'], 'name:B'), true);

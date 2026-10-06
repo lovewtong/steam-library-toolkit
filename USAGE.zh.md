@@ -28,8 +28,9 @@
 | `--source api` | 仅使用 API，生成候选成员 |
 | `--owned-only` | 使用传统 API 过滤，不保证完整性 |
 | `--no-store` | 跳过商店元数据请求 |
+| `--no-family` | 家庭修复分支显式限定为客户端成员，需独立输出路径 |
 
-严格成员策略不要求可选的元数据和时长来源成功。`--strict` 失败不会切换原有 current 指针。
+`fix/steam-families-membership` 的客户端采集还会核验家庭来源，加入符合共享资格的游戏。家庭核验失败会阻止发布；明确未加入家庭属于成功的空来源。可使用 `--require-source family_library`。详见[家庭采集](STEAM_FAMILIES.md)。严格成员策略不要求可选的元数据和时长来源成功。`--strict` 失败不会切换原有 current 指针。
 
 ## 候选数据与完整性
 
@@ -113,6 +114,6 @@ outputs/
 | 页面拒绝候选库 | 获取可信客户端运行，或显式允许浏览候选 |
 | 元数据未知或补全为 `partial` | 查看逐应用字段状态和来源错误；缺失不等于不支持 |
 | 页面仍显示旧数据 | 核对 `--input`、current 指针并刷新；平面文件不会替换已核验运行 |
-| 家庭共享游戏缺失 | 当前采集未接入 Steam Families 家庭库接口；`--strict-membership` 不保证家庭库覆盖，详见[场景记录](REAL_SCENARIO_VALIDATION.md) |
+| 家庭共享游戏缺失 | 已发布版本没有家庭来源；家庭修复分支核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](STEAM_FAMILIES.md) |
 
 可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](AUDIT_REMEDIATION.md)、[时间语义](TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。

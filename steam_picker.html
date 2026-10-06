@@ -93,7 +93,8 @@
     function renderFirstSeen(game) {
       const at = game.first_seen_at;
       const label = at ? at.slice(0, 10) + '（UTC）' : '未知';
-      const source = game.first_seen_status === 'historical' ? '历史客户端快照' : at ? '客户端清单' : '没有观察记录';
+      const source = {saved_client_snapshot: '历史客户端快照', client_library: '客户端清单',
+        family_library: '家庭库清单', saved_family_snapshot: '历史家庭库快照'}[game.first_seen_source] || '没有观察记录';
       return `<div class="meta">首次观察：${escapeHtml(label)} · ${escapeHtml(source)}</div>`;
     }
 
@@ -140,7 +141,7 @@
         const a = g.analysis || {};
         const url = "steam://rungameid/" + g.appid;
         return `<div class="game">
-          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div>${renderManufacturers(g)}${renderFirstSeen(g)}${renderEvidence(g)}</div>
+          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div>${renderMembership(g)}${renderManufacturers(g)}${renderFirstSeen(g)}${renderEvidence(g)}</div>
           <a href="${url}">在 Steam 中打开</a>
         </div>`;
       }).join("");
@@ -150,6 +151,12 @@
       const div = document.createElement("div");
       div.textContent = s;
       return div.innerHTML;
+    }
+
+    function renderMembership(game) {
+      const ownership = {account_license: '本账号许可', shared: '家庭共享', unknown: '所有权未知'}[game.ownership] || '所有权未知';
+      const source = {client_library: '客户端清单', family_library: '家庭库清单'}[game.membership_source] || '来源未核验';
+      return `<div class="meta">${escapeHtml(ownership)} · ${escapeHtml(source)}（采集时观察）</div>`;
     }
 
     function renderEvidence(game) {
