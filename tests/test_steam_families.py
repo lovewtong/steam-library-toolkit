@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 import steam_collect
-from steam_membership import trusted_current_membership
+from steam_membership import trusted_current_membership, verified_source, verified_family_source
 from steam_observation import attach_first_seen
 from steam_picker_server import PickerLibrary
 from steam_reclassify import reclassify
@@ -97,6 +97,40 @@ class FamiliesTests(unittest.TestCase):
         rows, audit = collected(); rows[1]['family_evidence']['exclude_reason'] = 1
         with self.assertRaisesRegex(ValueError, 'SCHEMA_INVALID'):
             validate_artifacts(rows, audit)
+
+    def test_malformed_completeness_is_rejected_without_crashing_or_replacing_output(self):
+        rows, audit = collected()
+        publish_run(self.output, rows, audit)
+        before = manifest_path(self.output).read_bytes()
+        for proof in (None, [], 'complete', True):
+            source = {'status': 'ok', 'state': 'complete', 'count': 0, 'completeness': proof}
+            self.assertFalse(verified_source(source))
+            self.assertFalse(verified_family_source(source))
+            self.assertFalse(SourceResult('client_library', completeness=proof).authoritative)
+            for name in ('client', 'family'):
+                data = payload(); data[name]['completeness'] = proof
+                with patch('steam_collect.load_config', return_value={}), patch('steam_collect.collect_client', return_value=data), \
+                     patch.object(sys, 'argv', ['steam_collect.py', '--local-session', '--no-store', '--strict-membership', '-o', str(self.output)]), \
+                     contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as failure:
+                    steam_collect.main()
+                self.assertEqual(failure.exception.code, 1)
+                self.assertEqual(manifest_path(self.output).read_bytes(), before)
+
+    def test_family_completeness_counts_require_integers(self):
+        _, audit = collected()
+        good = audit['sources']['family_library']
+        self.assertTrue(verified_family_source(good))
+        for value in (None, '3', True, -1):
+            bad = deepcopy(good); bad['count'] = value; bad['completeness']['eligible_games'] = value
+            self.assertFalse(verified_family_source(bad))
+        for field in ('eligible_games', 'returned_apps', 'max_apps'):
+            bad = deepcopy(good); bad['completeness'][field] = True
+            self.assertFalse(verified_family_source(bad))
+        no_family = deepcopy(good); no_family.update(count=0)
+        no_family['completeness'].update(family_state='not_member', returned_apps=0)
+        self.assertTrue(verified_family_source(no_family))
+        no_family['completeness']['returned_apps'] = False
+        self.assertFalse(verified_family_source(no_family))
 
     def test_family_without_client_cannot_turn_into_current_membership(self):
         data = payload(); data['client'] = {'state': 'unavailable', 'error_code': 'HTTP_503'}

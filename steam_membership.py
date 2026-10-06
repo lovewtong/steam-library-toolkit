@@ -2,22 +2,28 @@
 
 
 def verified_source(source):
-    return (isinstance(source, dict) and source.get('status') == 'ok' and source.get('state') == 'complete'
-            and source.get('completeness', {}).get('verified') is True)
+    if not isinstance(source, dict):
+        return False
+    proof = source.get('completeness')
+    return (source.get('status') == 'ok' and source.get('state') == 'complete'
+            and isinstance(proof, dict) and proof.get('verified') is True)
 
 
 def verified_family_source(source):
     if not verified_source(source):
         return False
     proof = source.get('completeness', {})
+    count = source.get('count')
+    if type(count) is not int or count < 0:
+        return False
     if not all(proof.get(k) is True for k in ('account_checked', 'owners_checked', 'group_checked')) or proof.get('reads') != 2:
         return False
     if proof.get('family_state') == 'not_member':
-        return source.get('count') == 0 and proof.get('returned_apps') == 0
+        return count == 0 and type(proof.get('returned_apps')) is int and proof['returned_apps'] == 0
     return (proof.get('family_state') == 'member' and type(proof.get('returned_apps')) is int
             and type(proof.get('max_apps')) is int and 0 <= proof['returned_apps'] < proof['max_apps']
-            and proof.get('eligible_games') == source.get('count')
-            and 0 <= source['count'] <= proof['returned_apps'])
+            and type(proof.get('eligible_games')) is int and proof['eligible_games'] == count
+            and count <= proof['returned_apps'])
 
 
 def family_evidence_valid(row):

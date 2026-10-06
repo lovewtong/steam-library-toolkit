@@ -2,7 +2,7 @@
 
 [English README](README.md) · [简体中文](USAGE.zh.md)
 
-Run commands from the project root. Examples use the Windows virtual environment created in the README. Replace account and machine placeholders before use. Stable commands below work in v1.0.0; later features are marked separately.
+Run commands from the project root. Examples use the Windows virtual environment created in the README and the current `main` branch. Replace account and machine placeholders before use. Features absent from older releases are marked separately.
 
 ## Accounts and sources
 
@@ -21,20 +21,20 @@ Run commands from the project root. Examples use the Windows virtual environment
 
 | Option | Behavior |
 | --- | --- |
-| `--strict-membership` | Require a verified current client list; allow auxiliary-source degradation |
+| `--strict-membership` | Require verified client and enabled family sources; allow auxiliary-source degradation |
 | `--strict` | Require the current client and all enabled membership providers to succeed |
 | `--require-source web_api` | Also require the named auxiliary source; repeatable |
 | `--source client` | Select client collection |
 | `--source api` | Select API-only collection, producing candidate membership |
 | `--owned-only` | Apply traditional API filters; not a completeness guarantee |
 | `--no-store` | Skip store metadata requests |
-| `--no-family` | On the family-fix branch, explicitly limit collection to client membership; use a separate output |
+| `--no-family` | Explicitly limit collection to client membership; use a separate output |
 
-On `fix/steam-families-membership`, client collection also checks the family source and adds eligible games. Family failure blocks publication; a confirmed non-member is a successful empty source. `--require-source family_library` is available. See [family collection](STEAM_FAMILIES.md). Strict membership policies do not require optional metadata or playtime providers to succeed. `--strict` failures leave the previous current pointer intact.
+On `main`, client collection also checks the family source and adds eligible games. Family failure blocks publication; a confirmed non-member is a successful empty source. `--require-source family_library` is available. See [family collection](STEAM_FAMILIES.md). Strict membership policies do not require optional metadata or playtime providers to succeed. `--strict` failures leave the previous current pointer intact.
 
 ## Candidate data and completeness
 
-`GetClientAppList` is checked for response shape, account, machine session and two matching AppID sets. It has no protocol completion marker that proves semantic completeness. An unexplained removal above 20% of the previous same-account client list blocks publication; only adjust `--max-unexplained-removal-ratio` after checking the change.
+`GetClientAppList` is checked for response shape, account, machine session and two matching AppID sets. It has no protocol completion marker that proves semantic completeness. An unexplained removal above 20% of the previous same-account client or client-and-family library blocks publication; only adjust `--max-unexplained-removal-ratio` after checking the change.
 
 When the live client is unavailable, account-matched snapshots or the Web API can supply historical/candidate records. These normally go to a separate `.candidates.json` target and pointer. `--allow-candidates` permits candidate publication at the requested path; `--allow-candidate-membership` separately enables the experimental license-based candidate union. Neither proves current ownership.
 
@@ -99,7 +99,7 @@ The review queue is available on main and in v1.1.0, not v1.0.0:
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-Developer/publisher filters and plan groups are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](MANUFACTURER_FACETS.md). First-observation tracking is under development; see [time classification](TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
+Developer/publisher filters, first-observation dates and family collection are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](MANUFACTURER_FACETS.md) and [time classification](TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
 
 ## Evidence and troubleshooting
 
@@ -114,6 +114,6 @@ Types use client, PICS, store/cache and historical evidence, leaving unresolved 
 | Candidate data rejected by the picker | Obtain a verified client run, or explicitly opt into candidate browsing |
 | Unknown metadata or `partial` enrichment | Read per-app field states and source errors; missing does not mean unsupported |
 | Old data still displayed | Check `--input`, the selected current pointer and browser refresh; flat exports do not replace verified generations |
-| Family-shared games missing | Published versions lack the family source. The family-fix branch checks and merges eligible family games; endpoint success still does not prove full coverage. See [family collection](STEAM_FAMILIES.md) |
+| Family-shared games missing | v1.1.0 lacks the family source. `main` checks and merges eligible family games; endpoint success still does not prove full coverage. See [family collection](STEAM_FAMILIES.md) |
 
 `--diagnose` is a credential-free, offline first check. Configured HTTP(S) proxies are used without printing their addresses or passwords. Do not share raw authentication or proxy diagnostics containing secrets. See [audit fixes](AUDIT_REMEDIATION.md), [time semantics](TIME_FIELD_CONTRACT.md) and [release migration](RELEASE_NOTES.md) for details.

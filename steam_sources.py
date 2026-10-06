@@ -71,8 +71,8 @@ class SourceResult:
 
     @property
     def authoritative(self):
-        return (self.source == "client_library" and self.status == "ok" and self.state == "complete"
-                and self.completeness.get("verified") is True)
+        from steam_membership import verified_source
+        return self.source == "client_library" and verified_source(self.audit())
 
     def audit(self):
         return {"status": self.status, "count": len(self.records), "fetched_at": self.fetched_at,

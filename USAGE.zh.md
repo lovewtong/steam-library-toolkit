@@ -2,7 +2,7 @@
 
 [中文 README](README.zh.md) · [English](USAGE.md)
 
-在项目根目录运行命令。示例使用 README 中创建的 Windows 虚拟环境，账号和机器名占位符需自行替换。下方稳定功能适用于 v1.0.0，后续新增功能另行标注。
+在项目根目录运行命令。示例使用 README 中创建的 Windows 虚拟环境和当前 `main` 分支，账号和机器名占位符需自行替换。旧版本没有的功能另行标注。
 
 ## 账号与来源
 
@@ -21,20 +21,20 @@
 
 | 参数 | 行为 |
 | --- | --- |
-| `--strict-membership` | 要求当前客户端清单可信，允许辅助来源降级 |
+| `--strict-membership` | 要求客户端和已启用家庭来源可信，允许辅助来源降级 |
 | `--strict` | 要求当前客户端和所有已启用的成员来源成功 |
 | `--require-source web_api` | 额外要求指定辅助来源成功，可重复 |
 | `--source client` | 选择客户端采集 |
 | `--source api` | 仅使用 API，生成候选成员 |
 | `--owned-only` | 使用传统 API 过滤，不保证完整性 |
 | `--no-store` | 跳过商店元数据请求 |
-| `--no-family` | 家庭修复分支显式限定为客户端成员，需独立输出路径 |
+| `--no-family` | 显式限定为客户端成员，需独立输出路径 |
 
-`fix/steam-families-membership` 的客户端采集还会核验家庭来源，加入符合共享资格的游戏。家庭核验失败会阻止发布；明确未加入家庭属于成功的空来源。可使用 `--require-source family_library`。详见[家庭采集](STEAM_FAMILIES.md)。严格成员策略不要求可选的元数据和时长来源成功。`--strict` 失败不会切换原有 current 指针。
+`main` 的客户端采集还会核验家庭来源，加入符合共享资格的游戏。家庭核验失败会阻止发布；明确未加入家庭属于成功的空来源。可使用 `--require-source family_library`。详见[家庭采集](STEAM_FAMILIES.md)。严格成员策略不要求可选的元数据和时长来源成功。`--strict` 失败不会切换原有 current 指针。
 
 ## 候选数据与完整性
 
-`GetClientAppList` 会检查响应结构、账号、机器会话和两次相同的 AppID 集合，但没有能证明语义完整性的协议完成标记。相对同账号上次客户端清单，未解释的移除比例超过 20% 会阻止发布；应核对变化后再调整 `--max-unexplained-removal-ratio`。
+`GetClientAppList` 会检查响应结构、账号、机器会话和两次相同的 AppID 集合，但没有能证明语义完整性的协议完成标记。相对同账号上次客户端库或客户端与家庭合并库，未解释的移除比例超过 20% 会阻止发布；应核对变化后再调整 `--max-unexplained-removal-ratio`。
 
 实时客户端不可用时，可由账号匹配快照或 Web API 提供历史／候选记录，默认写入独立 `.candidates.json` 目标和指针。`--allow-candidates` 允许将候选发布到指定路径；`--allow-candidate-membership` 则独立控制实验性的许可候选并集。两者都不能证明当前所有权。
 
@@ -99,7 +99,7 @@ outputs/
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-开发商／发行商筛选和计划分组已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)。首次观察记录正在开发，见[时间分类](TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
+开发商／发行商筛选、首次观察日期和家庭采集已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)和[时间分类](TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
 
 ## 证据与故障排查
 
@@ -114,6 +114,6 @@ outputs/
 | 页面拒绝候选库 | 获取可信客户端运行，或显式允许浏览候选 |
 | 元数据未知或补全为 `partial` | 查看逐应用字段状态和来源错误；缺失不等于不支持 |
 | 页面仍显示旧数据 | 核对 `--input`、current 指针并刷新；平面文件不会替换已核验运行 |
-| 家庭共享游戏缺失 | 已发布版本没有家庭来源；家庭修复分支核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](STEAM_FAMILIES.md) |
+| 家庭共享游戏缺失 | v1.1.0 没有家庭来源；`main` 核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](STEAM_FAMILIES.md) |
 
 可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](AUDIT_REMEDIATION.md)、[时间语义](TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。
