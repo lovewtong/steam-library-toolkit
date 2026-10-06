@@ -92,13 +92,13 @@ outputs/
 
 无论阅读哪种语言的文档，当前页面分类标签都使用中文。发布新运行后刷新浏览器。`--open INDEX` 会在 Steam 中启动游戏，不是预览操作。
 
-分类复核清单已在 main 和 v1.1.0 草稿中，v1.0.0 不包含此命令：
+分类复核清单已在 main 和 v1.1.0 中，v1.0.0 不包含此命令：
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-开发商／发行商筛选和计划分组已在 `main`，v1.0.0 和 v1.1.0 草稿不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
+开发商／发行商筛选和计划分组已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)。首次观察记录正在开发，见[时间分类](TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
 
 ## 证据与故障排查
 
@@ -113,5 +113,6 @@ outputs/
 | 页面拒绝候选库 | 获取可信客户端运行，或显式允许浏览候选 |
 | 元数据未知或补全为 `partial` | 查看逐应用字段状态和来源错误；缺失不等于不支持 |
 | 页面仍显示旧数据 | 核对 `--input`、current 指针并刷新；平面文件不会替换已核验运行 |
+| 家庭共享游戏缺失 | 当前采集未接入 Steam Families 家庭库接口；`--strict-membership` 不保证家庭库覆盖，详见[场景记录](REAL_SCENARIO_VALIDATION.md) |
 
 可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](AUDIT_REMEDIATION.md)、[时间语义](TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。

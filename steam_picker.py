@@ -17,10 +17,14 @@ def load_classified(source=None, allow_candidates=False):
     from steam_picker_server import PickerLibrary
     return PickerLibrary(source, allow_candidates).read()["games"]
 
-def filter_games(games, primary=None, sub=None, vibe=None, intensity=None, name_contains=None):
+def filter_games(games, primary=None, sub=None, vibe=None, intensity=None, name_contains=None,
+                 first_seen_year=None, first_seen_month=None):
     """按维度筛选，空表示不限制。"""
     out = []
+    from steam_observation import matches_first_seen
     for g in games:
+        if not matches_first_seen(g, first_seen_year, first_seen_month):
+            continue
         a = g.get("analysis") or {}
         if primary and primary not in a.get("primary", ""):
             continue
@@ -44,6 +48,9 @@ def main():
     parser.add_argument("--vibe", "-v", type=str, help="氛围关键词，如：解压、黑暗、赛博朋克")
     parser.add_argument("--intensity", "-i", type=str, choices=["低", "中", "高"], help="游玩强度")
     parser.add_argument("--name", "-n", type=str, help="游戏名称包含")
+    from steam_observation import year_option
+    parser.add_argument('--first-seen-year', type=year_option, help='首次观察年份（UTC），或 unknown')
+    parser.add_argument('--first-seen-month', choices=[f'{m:02d}' for m in range(1, 13)], help='首次观察月份 01..12（UTC）')
     parser.add_argument("--open", "-o", type=int, metavar="INDEX", help="用 Steam 启动筛选结果中的第 N 个（从 0 开始）")
     parser.add_argument("--serve", action="store_true", help="启动本地选游戏页面（浏览器 + 简单 HTTP 服务）")
     parser.add_argument("--input", help="采集库或 .current.json 指针；默认 steam_library.json")
@@ -67,6 +74,8 @@ def main():
         vibe=args.vibe,
         intensity=args.intensity,
         name_contains=args.name,
+        first_seen_year=args.first_seen_year,
+        first_seen_month=args.first_seen_month,
     )
 
     if args.export_collections:

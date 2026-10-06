@@ -27,6 +27,15 @@ def validate_artifacts(rows, audit, snapshot=None):
                 or {r["appid"] for r in snapshot["apps"]} != {r["appid"] for r in rows}):
             raise ValueError("SCHEMA_INVALID：快照成员或校验和不一致")
     for row in rows:
+        if 'first_seen_at' in row or 'first_seen_evidence' in row:
+            from steam_observation import first_seen_fields
+            evidence = row.get('first_seen_evidence', {})
+            fields = first_seen_fields(row)
+            if ((row.get('first_seen_at') is not None and fields['first_seen_at'] is None)
+                    or (evidence.get('state') != 'unknown' and (fields['first_seen_at'] is None
+                        or evidence.get('steam_id') != audit['steam_id'] or not evidence.get('run_id')))
+                    or (evidence.get('state') == 'unknown' and row.get('first_seen_at') is not None)):
+                raise ValueError('SCHEMA_INVALID：首次观察时间与证据不一致')
         if row.get("playtime") is not None:
             evidence = row["playtime_evidence"]["playtime_forever"]
             if (row["playtime"].get("minutes") != evidence["value"]

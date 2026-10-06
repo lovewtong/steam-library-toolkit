@@ -92,13 +92,13 @@ The classifiers select explicit `game` types by default. `--include-type all` in
 
 The picker uses Chinese classification labels in both documentation modes. Refresh the browser after publishing a new run. `--open INDEX` launches a game in Steam; it is not a preview operation.
 
-The review queue is available on main and in the v1.1.0 draft, not v1.0.0:
+The review queue is available on main and in v1.1.0, not v1.0.0:
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-Developer/publisher filters and plan groups are available on `main`, but are not included in v1.0.0 or the v1.1.0 draft. See [manufacturer usage](MANUFACTURER_FACETS.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
+Developer/publisher filters and plan groups are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](MANUFACTURER_FACETS.md). First-observation tracking is under development; see [time classification](TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
 
 ## Evidence and troubleshooting
 
@@ -113,5 +113,6 @@ Types use client, PICS, store/cache and historical evidence, leaving unresolved 
 | Candidate data rejected by the picker | Obtain a verified client run, or explicitly opt into candidate browsing |
 | Unknown metadata or `partial` enrichment | Read per-app field states and source errors; missing does not mean unsupported |
 | Old data still displayed | Check `--input`, the selected current pointer and browser refresh; flat exports do not replace verified generations |
+| Family-shared games missing | The current collector does not read the Steam Families library endpoint; `--strict-membership` does not prove family-library coverage. See the [scenario report](REAL_SCENARIO_VALIDATION.md) |
 
 `--diagnose` is a credential-free, offline first check. Configured HTTP(S) proxies are used without printing their addresses or passwords. Do not share raw authentication or proxy diagnostics containing secrets. See [audit fixes](AUDIT_REMEDIATION.md), [time semantics](TIME_FIELD_CONTRACT.md) and [release migration](RELEASE_NOTES.md) for details.

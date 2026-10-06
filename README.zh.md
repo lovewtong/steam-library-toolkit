@@ -46,7 +46,7 @@ python -m venv .venv
 npm ci
 ```
 
-这里安装的是 `main`，包含开发商／发行商筛选。如果要使用已发布的 v1.0.0，在克隆命令中加入 `--branch v1.0.0`；该版本不包含厂商筛选和分类复核清单。
+这里安装的是 `main`，包含开发商／发行商筛选。如果要使用已发布的 v1.1.0，在克隆命令中加入 `--branch v1.1.0`；该版本有复核清单，不包含厂商筛选。首次观察功能当前需使用 `feat/library-observation-time` 分支。
 
 ## 用法
 
@@ -93,6 +93,8 @@ $steamAccount = 'YOUR_STEAMID64'
 
 在 `main` 中，加入 `--group-by developers publishers` 可按厂商分组；`--developer "NAME"`／`--publisher "NAME"` 按完整名称筛选。
 
+在首次观察功能分支中，可以用 `--first-seen-year 2026 --first-seen-month 10` 按年月筛选，计划支持 `first_seen_year`／`first_seen_month` 分组。这是客户端记录的首次观察时间，不是购买日期。历史继承和未知值说明见[时间分类](TIME_CLASSIFICATION.md)。
+
 ### 帮助
 
 每个脚本都支持 `--help`。遇到依赖问题，可以先运行：
@@ -105,27 +107,29 @@ $steamAccount = 'YOUR_STEAMID64'
 
 ## 版本
 
-[v1.0.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.0.0) 是当前已发布版本，包含采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。
+[v1.1.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.1.0) 是当前已发布版本，在 v1.0.0 的采集、审计、补全、校正、浏览和计划导出流程上，增加分类复核清单与六项 AppID 校正。
 
-`main` 还包含分类复核清单、额外六项 AppID 校正，以及开发商／发行商字段、筛选和计划分组，这些改动尚未发布。[v1.1.0 草稿](V1_1_RELEASE_PLAN.md)包含复核清单与分类校正，厂商功能另行发布。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
+厂商功能已在 `main`；首次观察记录和年月筛选正在开发，计划放入后续版本。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
 ## 已知限制
 
 - 实时采集已在 Windows 单账号环境测试。Linux 和 macOS 有自动化测试，真实账号登录仍待测试。
 - Steam 各来源可能有差异或遗漏。API 和快照降级数据会标为候选；缺失的时长和元数据保留为未知。
 - 分类规则可能需要人工调整。开发商和发行商名称默认使用商店信息，也可以自行校正。
-- 多账号切换、Steam Families 和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
+- 多账号切换和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
+- Steam Families 游戏可能遗漏。本次真实核对发现两款仅共享游戏未被采集，详见[场景记录](REAL_SCENARIO_VALIDATION.md)。
 - 收藏计划仅支持导出，旧 Node／LevelDB 写回脚本不在支持流程内。
-- 尚未实现按入库日期分组。
+- 暂时无法提供准确购买日期。首次观察日期只描述工具可取得的历史记录。
 
 ## 文档
 
 - [进阶用法](USAGE.zh.md) · [Advanced usage](USAGE.md)
 - [分类规则](CLASSIFICATION_RULES.md) · [个人校正](CLASSIFICATION_OVERRIDES.md) · [复核清单](CLASSIFICATION_REVIEW_QUEUE.md)
 - [元数据补全](METADATA_ENRICHMENT.md) · [开发商与发行商](MANUFACTURER_FACETS.md)
-- [收藏计划](STEAM_SYNC_README.md) · [时间字段](TIME_FIELD_CONTRACT.md)
+- [收藏计划](STEAM_SYNC_README.md) · [时间字段](TIME_FIELD_CONTRACT.md) · [时间分类](TIME_CLASSIFICATION.md)
 - [发布说明](RELEASE_NOTES.md) · [稳定版范围](STABLE_RELEASE_SCOPE.md)
 - 测试记录：[性能](R2_PERFORMANCE_BASELINE.md)、[Windows 使用流程](R3_WINDOWS_ACCEPTANCE.md)、[Bug 修复](AUDIT_REMEDIATION.md)
+- [当前账号场景](REAL_SCENARIO_VALIDATION.md) · [下一版本范围](V1_2_RELEASE_PLAN.md)
 
 详细说明和测试记录目前主要使用中文。
 

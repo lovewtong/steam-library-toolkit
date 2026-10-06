@@ -19,7 +19,8 @@ RESULT_JSON = SCRIPT_DIR / 'steam_collections_result.json'
 LIBRARY_FILE = SCRIPT_DIR / 'steam_library.json'
 EXPORT_JSON = SCRIPT_DIR / 'steam_collections_export.json'
 GROUP_FIELDS = {'intensity': '强度', 'primary': '核心玩法', 'sub': '细分', 'vibe': '氛围',
-                'developers': '开发商', 'publishers': '发行商'}
+                'developers': '开发商', 'publishers': '发行商',
+                'first_seen_year': '首次观察年份', 'first_seen_month': '首次观察年月'}
 DEFAULT_GROUPS = ('intensity', 'primary', 'sub', 'vibe')
 
 
@@ -94,6 +95,8 @@ def build_collections(games, owned_appids=None, group_by=DEFAULT_GROUPS):
             if field in ('developers', 'publishers'):
                 names = game[field]
                 labels = ['未知'] if names is None else ['商店或校正明确未列出'] if not names else ['名称-' + n for n in names]
+            elif field in ('first_seen_year', 'first_seen_month'):
+                labels = [game[field] or '未知']
             else:
                 labels = [game['analysis'][field] or '未分类']
             for label in labels:
@@ -105,7 +108,8 @@ def load_classified_and_build_collections(owned_appids=None):
     return build_collections(json.loads(CLASSIFIED_FILE.read_text(encoding='utf-8')), owned_appids)
 
 
-def build_plan(source, account, *, group_by=DEFAULT_GROUPS, developer=None, publisher=None):
+def build_plan(source, account, *, group_by=DEFAULT_GROUPS, developer=None, publisher=None,
+               first_seen_year=None, first_seen_month=None):
     if (not isinstance(account, str) or not re.fullmatch(r'[0-9]{17}', account)
             or not 76561197960265728 < int(account) <= 76561197960265728 + 0xffffffff):
         raise CollectionError('COLLECTION_ACCOUNT_INVALID')
@@ -141,14 +145,17 @@ def build_plan(source, account, *, group_by=DEFAULT_GROUPS, developer=None, publ
         raise CollectionError('COLLECTION_MEMBERSHIP_MISMATCH')
     if pointer.read_bytes() != before:
         raise CollectionError('COLLECTION_GENERATION_CHANGED')
+    from steam_observation import matches_first_seen
     selected = [g for g in games if (developer is None or developer in (g['developers'] or []))
-                and (publisher is None or publisher in (g['publishers'] or []))]
+                and (publisher is None or publisher in (g['publishers'] or []))
+                and matches_first_seen(g, first_seen_year, first_seen_month)]
     plan = {'schema_version': 1, 'kind': 'steam_collection_plan', 'steam_id': account, 'run_id': run,
             'membership_observed_at': client.get('fetched_at'), 'source_manifest_sha256': hashlib.sha256(before).hexdigest(),
             'membership_count': len(rows), 'eligible_appids': sorted(eligible),
             'ownership_revalidated': False, 'write_supported': False,
             'group_by': list(dict.fromkeys(group_by)),
-            'filters': {'developer': developer, 'publisher': publisher},
+            'filters': {'developer': developer, 'publisher': publisher,
+                        'first_seen_year': first_seen_year, 'first_seen_month': first_seen_month},
             'selected_appids': sorted(appid(g['appid']) for g in selected),
             'collections': build_collections(selected, eligible, group_by)}
     return plan, pointer, before, directory
@@ -183,6 +190,9 @@ def main(argv=None):
                         help='收藏分组维度；developers/publishers 支持一款游戏属于多个厂商')
     parser.add_argument('--developer', help='按开发商名称精确筛选，与发行商条件取交集')
     parser.add_argument('--publisher', help='按发行商名称精确筛选')
+    from steam_observation import year_option
+    parser.add_argument('--first-seen-year', type=year_option, help='首次观察年份（UTC），或 unknown')
+    parser.add_argument('--first-seen-month', choices=[f'{m:02d}' for m in range(1, 13)], help='首次观察月份 01..12（UTC）')
     parser.add_argument('--from-result', action='store_true', help='已停用：平面分类文件没有账号和运行绑定')
     parser.add_argument('--use-api', action='store_true', help='已停用：API 列表不能替代可信客户端成员')
     args = parser.parse_args(argv)
@@ -190,7 +200,8 @@ def main(argv=None):
         if args.from_result or args.use_api:
             raise CollectionError('COLLECTION_LEGACY_SOURCE_DISABLED')
         plan, pointer, before, directory = build_plan(args.input, args.account, group_by=args.group_by,
-                                                     developer=args.developer, publisher=args.publisher)
+                                                     developer=args.developer, publisher=args.publisher,
+                                                     first_seen_year=args.first_seen_year, first_seen_month=args.first_seen_month)
         if args.write and not args.dry_run:
             raise CollectionError('COLLECTION_WRITE_DISABLED')
         print(f"计划：{len(plan['collections'])} 个收藏，{len(plan['eligible_appids'])} 个 game；运行 {plan['run_id']}")

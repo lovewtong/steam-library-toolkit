@@ -35,6 +35,8 @@
     <label>名称 <input type="text" id="name" placeholder="搜索名称" /></label>
     <label>开发商 <select id="developers"><option value="">全部</option></select></label>
     <label>发行商 <select id="publishers"><option value="">全部</option></select></label>
+    <label>首次观察年份 <select id="firstSeenYear"><option value="">全部</option></select></label>
+    <label>月份（UTC） <select id="firstSeenMonth"><option value="">全部</option></select></label>
     <span class="count" id="count">0 款</span>
   </div>
   <div class="list" id="list"></div>
@@ -49,6 +51,8 @@
     const nameEl = document.getElementById("name");
     const developersEl = document.getElementById('developers');
     const publishersEl = document.getElementById('publishers');
+    const firstSeenYearEl = document.getElementById('firstSeenYear');
+    const firstSeenMonthEl = document.getElementById('firstSeenMonth');
     const countEl = document.getElementById("count");
     const listEl = document.getElementById("list");
 
@@ -72,6 +76,25 @@
           const o = document.createElement('option'); o.value = value; o.textContent = label; el.appendChild(o);
         });
       }
+      [['unknown', '未知'], ...distinct(data.map(g => g.first_seen_year)).map(y => [y, y])].forEach(([value, label]) => {
+        const o = document.createElement('option'); o.value = value; o.textContent = label; firstSeenYearEl.appendChild(o);
+      });
+      for (let month = 1; month <= 12; month++) {
+        const o = document.createElement('option'); o.value = String(month).padStart(2, '0');
+        o.textContent = month + '月'; firstSeenMonthEl.appendChild(o);
+      }
+    }
+
+    function matchesFirstSeen(game, year, month) {
+      return (!year || (game.first_seen_year || 'unknown') === year)
+        && (!month || (game.first_seen_month || '').slice(5, 7) === month);
+    }
+
+    function renderFirstSeen(game) {
+      const at = game.first_seen_at;
+      const label = at ? at.slice(0, 10) + '（UTC）' : '未知';
+      const source = game.first_seen_status === 'historical' ? '历史客户端快照' : at ? '客户端清单' : '没有观察记录';
+      return `<div class="meta">首次观察：${escapeHtml(label)} · ${escapeHtml(source)}</div>`;
     }
 
     function matchesManufacturer(names, selected) {
@@ -103,6 +126,7 @@
       const name = nameEl.value.trim().toLowerCase();
       const filtered = data.filter(g => {
         const a = g.analysis || {};
+        if (!matchesFirstSeen(g, firstSeenYearEl.value, firstSeenMonthEl.value)) return false;
         if (!matchesManufacturer(g.developers, developersEl.value) || !matchesManufacturer(g.publishers, publishersEl.value)) return false;
         if (primary && (a.primary || '').trim() !== primary) return false;
         if (sub && (a.sub || '').trim() !== sub) return false;
@@ -116,7 +140,7 @@
         const a = g.analysis || {};
         const url = "steam://rungameid/" + g.appid;
         return `<div class="game">
-          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div>${renderManufacturers(g)}${renderEvidence(g)}</div>
+          <div><span class="name">${escapeHtml(g.name)}</span><div class="meta">${escapeHtml(a.primary || "")} · ${escapeHtml(a.sub || "")} · ${escapeHtml(a.vibe || "")} · ${escapeHtml(a.intensity || "")}</div><div class="slogan">${escapeHtml(a.slogan || "")}</div>${renderManufacturers(g)}${renderFirstSeen(g)}${renderEvidence(g)}</div>
           <a href="${url}">在 Steam 中打开</a>
         </div>`;
       }).join("");
@@ -152,6 +176,8 @@
     nameEl.addEventListener("input", filter);
     developersEl.addEventListener('change', filter);
     publishersEl.addEventListener('change', filter);
+    firstSeenYearEl.addEventListener('change', filter);
+    firstSeenMonthEl.addEventListener('change', filter);
 
     fetch("/api/library", {cache: "no-store"})
       .then(r => { if (!r.ok) throw new Error('library unavailable'); return r.json(); })
