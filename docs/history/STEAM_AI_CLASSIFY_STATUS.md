@@ -20,7 +20,7 @@
 | **文档与流程** | `README.md`（采集→分类→选游戏）、`STEAM_SYNC_README.md`、`STEAM_COLLECTIONS.md`、`CLASSIFICATION_RULES.md` |
 
 **当前分类方式**：**无 AI**。完全依赖  
-1）手写 KNOWN 表（名称启发式；不能确认 AppID 身份，当前 AppID 校正优先）；  
+1）手写 KNOWN 表（名称启发式；不能确认 AppID 身份，当前 AppID 校正优先）；
 2）`steam_library.json` 里的 `genres` 等字段做关键词规则推断。  
 未在 KNOWN 里、且规则覆盖不到的游戏，会得到较泛的默认值（如「多种元素」「风格各异」「中」等）。
 

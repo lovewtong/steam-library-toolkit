@@ -12,6 +12,7 @@ Start with [README](../README.md) or [中文 README](../README.zh.md). Commands 
 Useful references / 常用文档：
 
 - [Architecture / 仓库结构](ARCHITECTURE.md)
+- [Layout regression / 结构整理验收](validation/REPOSITORY_LAYOUT.md)
 - [Classification rules / 分类规则](guides/CLASSIFICATION_RULES.md) · [Corrections / 人工校正](guides/CLASSIFICATION_OVERRIDES.md) · [Review queue / 复核清单](guides/CLASSIFICATION_REVIEW_QUEUE.md)
 - [Metadata / 元数据补全](guides/METADATA_ENRICHMENT.md) · [Manufacturers / 厂商](guides/MANUFACTURER_FACETS.md)
 - [Time / 首次观察时间](guides/TIME_CLASSIFICATION.md) · [Families / 家庭来源](guides/STEAM_FAMILIES.md)
