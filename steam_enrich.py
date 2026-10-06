@@ -6,20 +6,14 @@ import time
 import threading
 from pathlib import Path
 
-from steam_collect import cached_store_details, OUTPUT_FILE
+from steam_library_toolkit.store import cached_store_details
+from steam_library_toolkit.paths import CACHE_DIR, library_target
 from steam_lock import collection_lock
 from steam_runs import (check_previous, manifest_path, new_run_metadata, publish_run,
                         resolve_artifact)
 from steam_schema import validate_artifacts
 from steam_sources import utc_now
 from steam_metadata import apply_observation, coverage
-
-
-def library_target(path):
-    path = Path(path).resolve()
-    if path.name.endswith('.current.json'):
-        path = path.with_name(path.name[:-len('.current.json')] + '.json')
-    return path
 
 
 def enrich(source, output, *, cache_dir=None, refresh=False, appids=(), workers=2):
@@ -74,7 +68,7 @@ def enrich(source, output, *, cache_dir=None, refresh=False, appids=(), workers=
 
         def fetch(row):
             stats, observation = {}, {}
-            details = cached_store_details(row['appid'], cache_dir or OUTPUT_FILE.parent / '.steam_cache',
+            details = cached_store_details(row['appid'], cache_dir or CACHE_DIR,
                                            refresh, stats, cancel_event=cancel, observation=observation)
             return details, stats, observation
         selected_rows = [row for row in rows if row['appid'] in selected]

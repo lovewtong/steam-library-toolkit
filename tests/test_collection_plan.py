@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 
 import steam_sync_collections as sync
 from steam_runs import publish_run, manifest_path, resolve_artifact
-from test_phase_two import ACCOUNT, run_bundle
+from support import ACCOUNT, run_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 

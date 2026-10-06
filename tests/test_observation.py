@@ -13,7 +13,7 @@ from steam_sync_collections import build_plan
 from steam_reclassify import reclassify
 from steam_enrich import enrich
 from steam_metadata import parse_fields
-from test_phase_two import run_bundle, ACCOUNT
+from support import run_bundle, ACCOUNT
 
 
 def bundle(run, ids, at):

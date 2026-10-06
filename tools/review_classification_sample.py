@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from classification_overrides import read_rules
-from classify_games import classify_library
-from classify_steam_games import classify_one
+from steam_library_toolkit.tables import classify_library
+from steam_library_toolkit.classification import classify_one
 from steam_sources import atomic_json
 
 FIXTURE = ROOT / 'tests/fixtures/classification-r1.json'

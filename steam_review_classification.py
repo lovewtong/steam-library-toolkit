@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 
 from classification_overrides import MAIN_TO_PRIMARY, read_rules
-from steam_picker_server import normalized_games
+from steam_library_toolkit.view_model import normalized_games
 from steam_runs import manifest_path, resolve_artifact
 from steam_schema import validate_artifacts
 from steam_sources import select_for_classification

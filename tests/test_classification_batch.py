@@ -13,7 +13,7 @@ from steam_reclassify import reclassify
 from steam_review_classification import build_review
 from steam_runs import publish_run, resolve_artifact
 from steam_sync_collections import build_plan
-from test_phase_two import ACCOUNT, run_bundle
+from support import ACCOUNT, run_bundle
 from tools.review_classification_sample import evaluate, FIXTURES, ROOT
 
 
