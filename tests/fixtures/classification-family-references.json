@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "8c5350f7ff1761c375f8b26500b9c15853b0d363",
+  "reviewed_at": "2026-10-06",
+  "scope": "Two family acceptance references; primary and sub only, not full-library accuracy",
+  "samples": [
+    {
+      "appid": 3017860,
+      "name": "DOOM: The Dark Ages",
+      "genres": ["Action", "Adventure"],
+      "evidence_status": "refreshed",
+      "expected": {"main_category": "射击", "primary": "射击 (FPS/TPS)", "sub": "动作FPS"},
+      "reference": "https://slayersclub.bethesda.net/en-EU/news/doom-the-dark-ages-revealed"
+    },
+    {
+      "appid": 2183900,
+      "name": "Warhammer 40,000: 星际战士2",
+      "genres": ["Action", "Adventure", "RPG"],
+      "evidence_status": "refreshed",
+      "expected": {"main_category": "射击", "primary": "射击 (FPS/TPS)", "sub": "第三人称射击"},
+      "reference": "https://www.focus-entmt.com/en/news/warhammer-40000-space-marine-2-launches-today-prepare-for-war-with-the-launch-trailer"
+    }
+  ]
+}
