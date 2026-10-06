@@ -13,7 +13,7 @@
 | 最终主线 CI | [37471394949](https://github.com/lovewtong/steam-library-toolkit/actions/runs/37471394949)，精确 SHA 已核对 |
 | 回归 | Windows、Linux、macOS 各 168 项 Python／36 项 Node，通过 |
 | 源码清单 | 119 个受 Git 管理的文件；本地候选归档逐文件匹配该提交 |
-| 机器可读记录 | [v1.2.0-candidate.json](releases/v1.2.0-candidate.json) |
+| 机器可读记录 | [v1.2.0-candidate.json](../../releases/v1.2.0-candidate.json) |
 
 发布目标使用完整 SHA，不使用会继续前进的 `main` 或文档分支 HEAD。本冻结记录是候选之后的独立文档提交，不在上述 119 个文件中；合并它不会自动改变候选。准备标签和 Release 时必须显式绑定该 SHA。
 
@@ -41,10 +41,10 @@ Windows、本机、单个明确账号的本地授权路径是当前真人验证�
 
 ## 已有证据与适用范围
 
-- [整合复审](PR12_PR13_REVIEW.md)：最终候选树与复审头 `522160c` 相同；已核对主线 CI、源码凭据模式和双语命令。
-- [厂商](MANUFACTURER_FACETS.md)：保存的单账号数据、公开商店补全、精确筛选与计划一致性；开发期网络耗时带有 dirty 标记，不能冒充干净候选基准。
-- [时间](TIME_CLASSIFICATION.md)：干净 `83e6183` 的 388 条历史继承及页面年月筛选；`582b5d2` 的厂商＋时间组合验证。证据描述这些提交，不表示本轮重新认证。
-- [家庭](REAL_SCENARIO_VALIDATION.md)：干净 `8c5350f` 的生产采集为 829 条，保留旧 388 条，新增 441 条家庭游戏；`b2aeacc` 上保存的分类、页面和计划一致。DOOM: The Dark Ages 与 Space Marine 2 均为家庭共享来源，个人时长来自 `client_last_played_times`；缺个人时长的 460 条保持未知。本轮只读核验保存产物及哈希，没有重新启动游戏或认证。
+- [整合复审](../validation/PR12_PR13_REVIEW.md)：最终候选树与复审头 `522160c` 相同；已核对主线 CI、源码凭据模式和双语命令。
+- [厂商](../guides/MANUFACTURER_FACETS.md)：保存的单账号数据、公开商店补全、精确筛选与计划一致性；开发期网络耗时带有 dirty 标记，不能冒充干净候选基准。
+- [时间](../guides/TIME_CLASSIFICATION.md)：干净 `83e6183` 的 388 条历史继承及页面年月筛选；`582b5d2` 的厂商＋时间组合验证。证据描述这些提交，不表示本轮重新认证。
+- [家庭](../validation/REAL_SCENARIO_VALIDATION.md)：干净 `8c5350f` 的生产采集为 829 条，保留旧 388 条，新增 441 条家庭游戏；`b2aeacc` 上保存的分类、页面和计划一致。DOOM: The Dark Ages 与 Space Marine 2 均为家庭共享来源，个人时长来自 `client_last_played_times`；缺个人时长的 460 条保持未知。本轮只读核验保存产物及哈希，没有重新启动游戏或认证。
 - 候选的本地 Git 源码归档 119 个文件全部与 Git blob 一致，未包含本地账号配置、凭据、输出、缓存或依赖目录。这不是尚未生成的 GitHub 标签归档验收。
 
 ## 升级与回退约定
@@ -53,7 +53,7 @@ Windows、本机、单个明确账号的本地授权路径是当前真人验证�
 
 旧运行缺厂商或首次观察字段时保持未知；离线重分类不凭空补日期。需要将已核验旧记录作为首次观察历史时，在新采集中显式使用 `--history-from`，只接受同账号的完整运行。商店缓存为 v6，旧缓存按需重新抓取；首次补全可能较慢。
 
-家庭运行扩展了 schema v2 的成员枚举和证据字段，旧软件可能拒绝。回退使用旧软件、旧配置和旧运行；不保证旧版能读取新家庭产物。独立导入家庭快照仍为历史候选，不能升级为实时成员证明。详细操作见 [用法](USAGE.zh.md)、[时间历史](TIME_CLASSIFICATION.md)和[家庭兼容性](STEAM_FAMILIES.md#兼容性)。
+家庭运行扩展了 schema v2 的成员枚举和证据字段，旧软件可能拒绝。回退使用旧软件、旧配置和旧运行；不保证旧版能读取新家庭产物。独立导入家庭快照仍为历史候选，不能升级为实时成员证明。详细操作见 [用法](../../USAGE.zh.md)、[时间历史](../guides/TIME_CLASSIFICATION.md)和[家庭兼容性](../guides/STEAM_FAMILIES.md#兼容性)。
 
 ## 发布前门槛与变更规则
 

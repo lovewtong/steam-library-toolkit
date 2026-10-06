@@ -4,9 +4,9 @@
   "description": "Collect, audit and organize your Steam library with local browsing and collection-plan exports.",
   "scripts": {
     "test": "node --test tests/test_steam_client.cjs tests/test_steam_web_sources.cjs tests/test_steam_families.cjs tests/test_picker_evidence.cjs",
-    "classify": "node classify_steam.js",
-    "sync-leveldb": "node steam_sync_leveldb.js",
-    "sync-leveldb:dry": "node steam_sync_leveldb.js --dry-run"
+    "legacy:classify": "node legacy/classify_steam.js",
+    "legacy:sync-leveldb": "node legacy/steam_sync_leveldb.js",
+    "legacy:sync-leveldb:dry": "node legacy/steam_sync_leveldb.js --dry-run"
   },
   "dependencies": {
     "classic-level": "^1.2.0",

@@ -1,5 +1,7 @@
 # Steam 游戏库「AI 智能分类」进度与差距
 
+> 历史记录：本页保留早期方案，不是当前操作指南。采集、分类与导出请使用[中文用法](../../USAGE.zh.md)；收藏写回未纳入支持范围。旧 Node 脚本已移至 `legacy/`，相关 npm 命令使用 `legacy:` 前缀。
+
 ## 终极目标
 
 **通过 AI 智能对 Steam 游戏库进行分类**：自动为每款游戏打上「核心玩法 / 细分流派 / 氛围 / 强度 / 一句话安利」等标签，并能在本地按分类选游戏、启动。
@@ -14,15 +16,15 @@
 | **规则+已知列表分类** | `classify_steam_games.py`：基于 **KNOWN 手写字典**（约 200+ 款）+ **关键词/类型规则**，生成五维分类 → `steam_library_classified.json` |
 | **本地按分类使用** | `steam_picker.py`：命令行按维度筛选、`--serve` 网页选游戏、`steam://rungameid/` 启动；`run_steam_picker.bat` 一键打开选游戏页 |
 | **导出清单** | `steam_picker.py --export-collections` → `steam_collections_guide.md`（按分类分组的游戏清单，可手动在 Steam 里建收藏） |
-| **写回 Steam 尝试** | `steam_sync_collections.py`：写 `cloud-storage-namespace-1.json`（已证明易被覆盖/解析失败，**不推荐**，见 STEAM_SYNC_README.md） |
+| **写回 Steam 尝试** | 早期曾尝试修改 Steam 存储；当前 `steam_sync_collections.py` 已停用写回，仅校验、预览和导出计划 |
 | **文档与流程** | `README.md`（采集→分类→选游戏）、`STEAM_SYNC_README.md`、`STEAM_COLLECTIONS.md`、`CLASSIFICATION_RULES.md` |
 
 **当前分类方式**：**无 AI**。完全依赖  
-1）手写 KNOWN 表（精准匹配游戏名）；  
+1）手写 KNOWN 表（名称启发式；不能确认 AppID 身份，当前 AppID 校正优先）；  
 2）`steam_library.json` 里的 `genres` 等字段做关键词规则推断。  
 未在 KNOWN 里、且规则覆盖不到的游戏，会得到较泛的默认值（如「多种元素」「风格各异」「中」等）。
 
-2026-09-12 已通过 Windows 本机登录态严格模式实测：客户端 388 条、API 358 条，补回 30 条，默认分类选择 377 个 game。361 条有明确时长，27 条仍未知；这只验证本次账号的采集链路，不能证明任何账号的绝对全集。两个分类入口已统一类型选择与运行校验；picker 已支持通过 `--input 文件名` 核验并读取对应 current 运行，刷新页面可跟随新结果；默认无指针时才兼容旧平铺分类。详见 [README.md](README.md)。
+2026-09-12 已通过 Windows 本机登录态严格模式实测：客户端 388 条、API 358 条，补回 30 条，默认分类选择 377 个 game。361 条有明确时长，27 条仍未知；这只验证本次账号的采集链路，不能证明任何账号的绝对全集。两个分类入口已统一类型选择与运行校验；picker 已支持通过 `--input 文件名` 核验并读取对应 current 运行，刷新页面可跟随新结果；默认无指针时才兼容旧平铺分类。详见 [README.md](../../README.md)。
 
 ---
 

@@ -30,7 +30,7 @@ Run commands from the project root. Examples use the Windows virtual environment
 | `--no-store` | Skip store metadata requests |
 | `--no-family` | Explicitly limit collection to client membership; use a separate output |
 
-On `main`, client collection also checks the family source and adds eligible games. Family failure blocks publication; a confirmed non-member is a successful empty source. `--require-source family_library` is available. See [family collection](STEAM_FAMILIES.md). Strict membership policies do not require optional metadata or playtime providers to succeed. `--strict` failures leave the previous current pointer intact.
+On `main`, client collection also checks the family source and adds eligible games. Family failure blocks publication; a confirmed non-member is a successful empty source. `--require-source family_library` is available. See [family collection](docs/guides/STEAM_FAMILIES.md). Strict membership policies do not require optional metadata or playtime providers to succeed. `--strict` failures leave the previous current pointer intact.
 
 ## Candidate data and completeness
 
@@ -60,7 +60,7 @@ Inputs must have a valid run pointer and trusted client membership. Outputs must
 
 Workers range from 1 to 4 and share a request-start interval and cooldown. Missing or invalid metadata retains prior values; an explicit empty array can replace a prior array. A successful request does not imply complete fields. `metadata.state=partial` reports incomplete request coverage without deleting games.
 
-Successful responses are cached for seven days; `not_found` for six hours; temporary failures for shorter periods. A not-found response does not prove permanent delisting. Current `main` uses cache v6 and refetches older entries on demand; released versions retain their own cache format. See [metadata semantics](METADATA_ENRICHMENT.md).
+Successful responses are cached for seven days; `not_found` for six hours; temporary failures for shorter periods. A not-found response does not prove permanent delisting. Current `main` uses cache v6 and refetches older entries on demand; released versions retain their own cache format. See [metadata semantics](docs/guides/METADATA_ENRICHMENT.md).
 
 ## Files and backups
 
@@ -99,7 +99,7 @@ The review queue is available on main and in v1.1.0, not v1.0.0:
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-Developer/publisher filters, first-observation dates and family collection are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](MANUFACTURER_FACETS.md) and [time classification](TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
+Developer/publisher filters, first-observation dates and family collection are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](docs/guides/MANUFACTURER_FACETS.md) and [time classification](docs/guides/TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
 
 ## Evidence and troubleshooting
 
@@ -114,6 +114,6 @@ Types use client, PICS, store/cache and historical evidence, leaving unresolved 
 | Candidate data rejected by the picker | Obtain a verified client run, or explicitly opt into candidate browsing |
 | Unknown metadata or `partial` enrichment | Read per-app field states and source errors; missing does not mean unsupported |
 | Old data still displayed | Check `--input`, the selected current pointer and browser refresh; flat exports do not replace verified generations |
-| Family-shared games missing | v1.1.0 lacks the family source. `main` checks and merges eligible family games; endpoint success still does not prove full coverage. See [family collection](STEAM_FAMILIES.md) |
+| Family-shared games missing | v1.1.0 lacks the family source. `main` checks and merges eligible family games; endpoint success still does not prove full coverage. See [family collection](docs/guides/STEAM_FAMILIES.md) |
 
-`--diagnose` is a credential-free, offline first check. Configured HTTP(S) proxies are used without printing their addresses or passwords. Do not share raw authentication or proxy diagnostics containing secrets. See [audit fixes](AUDIT_REMEDIATION.md), [time semantics](TIME_FIELD_CONTRACT.md) and [release migration](RELEASE_NOTES.md) for details.
+`--diagnose` is a credential-free, offline first check. Configured HTTP(S) proxies are used without printing their addresses or passwords. Do not share raw authentication or proxy diagnostics containing secrets. See [audit fixes](docs/validation/AUDIT_REMEDIATION.md), [time semantics](docs/guides/TIME_FIELD_CONTRACT.md) and [release migration](RELEASE_NOTES.md) for details.

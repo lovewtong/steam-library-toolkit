@@ -194,7 +194,7 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
     node = shutil.which("node")
     if not node:
         raise AuthError("NODE_NOT_FOUND", "客户端采集需要 Node.js 和 npm ci")
-    helper = Path(__file__).parent / "tools/steam_client_collect.cjs"
+    helper = Path(__file__).parent / "node_bridge/steam_client_collect.cjs"
     on_progress("Steam 客户端：本地凭据已读取，准备连接（尚未完成服务器认证）" if local_session
                 else "Steam 客户端：准备启动认证与采集")
     events = queue.Queue()

@@ -69,7 +69,7 @@ python -B tools/review_classification_sample.py -o outputs/r1-classification/rep
 python -B -m unittest discover -s tests -p "test_classification*.py"
 ```
 
-[固定样本](tests/fixtures/classification-r1.json) 与 [检查工具](tools/review_classification_sample.py) 可离线运行，不联网、不认证。报告保存 actual/expected/baseline、逐字段依据和来源状态；比较失败返回非零退出码。新增 6 项测试覆盖固定分层、独立编辑预期、全部规则改名、无关同名 AppID、Simulation 反例，以及不可变发布→表格→picker→收藏计划链路。
+[固定样本](../../tests/fixtures/classification-r1.json) 与 [检查工具](../../tools/review_classification_sample.py) 可离线运行，不联网、不认证。报告保存 actual/expected/baseline、逐字段依据和来源状态；比较失败返回非零退出码。新增 6 项测试覆盖固定分层、独立编辑预期、全部规则改名、无关同名 AppID、Simulation 反例，以及不可变发布→表格→picker→收藏计划链路。
 
 ## 全库影响与验收边界
 

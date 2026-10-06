@@ -16,7 +16,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT = SCRIPT_DIR / "steam_library.json"
 DEFAULT_TABLE_CSV = SCRIPT_DIR / "game_library_classified.csv"
 DEFAULT_TABLE_MD = SCRIPT_DIR / "game_library_classified.md"
-RULES_FILE = SCRIPT_DIR / "CLASSIFICATION_RULES.md"
+RULES_FILE = SCRIPT_DIR / "docs/guides/CLASSIFICATION_RULES.md"
 
 
 # 主分类映射由 classification_rules.py 统一维护。
@@ -190,7 +190,7 @@ def write_md_table(classified: list[dict], path: Path, run_id=None) -> None:
         "# 游戏库分类结果",
         "<!-- run_id: " + (run_id or (classified[0].get("run_id") if classified else None) or "legacy") + " -->",
         "",
-        "基于 `steam_library.json` 自动分类，主分类 + 多标签。维护规则见 `CLASSIFICATION_RULES.md`。",
+        "基于 `steam_library.json` 自动分类，主分类 + 多标签。维护规则见 `docs/guides/CLASSIFICATION_RULES.md`。",
         "",
         "| 游戏名 | appid | 总时长 | 最近游玩 | 主分类 | 标签 | 多人 | 手柄 | 最近游玩状态 | 来源 | 观察时间 | 开发商 | 发行商 | 首次观察 UTC | 首次观察状态 | 所有权 | 成员来源 |",
         "|--------|-------|--------|----------|--------|------|------|------|--------------|------|----------|--------|--------|--------------|--------------|--------|----------|",

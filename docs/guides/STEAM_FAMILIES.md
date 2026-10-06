@@ -1,6 +1,6 @@
 # Steam Families：采集范围与来源
 
-`main` 的客户端采集默认加入家庭来源。此功能尚未包含在已发布的 v1.1.0 中，该版本标签保持 `88ce73b`。首次观察与家庭两个 PR 的复审记录见 [整合复审](PR12_PR13_REVIEW.md)。
+`main` 的客户端采集默认加入家庭来源。此功能尚未包含在已发布的 v1.1.0 中，该版本标签保持 `88ce73b`。首次观察与家庭两个 PR 的复审记录见 [整合复审](../validation/PR12_PR13_REVIEW.md)。
 
 ## 使用
 
@@ -37,6 +37,6 @@
 
 公开商店补全仅请求两个参照 AppID，两项成功。`b2aeacc74580a52e68764cef4909fb14cbe0ceb8` 干净提交上离线重分类、表格、picker、复核清单和收藏计划一致；页面两款均显示家庭共享、实际家庭来源和 UTC 首次观察日期。参考游戏的主类与子类按第一方依据校正，其他字段仍保持未知或生成状态，不作全库人工准确率声明。
 
-完整记录及局限见[账号场景](REAL_SCENARIO_VALIDATION.md)。离线回归覆盖未知时长、错误账号、家庭/所有者变化、排除、截断、长冷却、截止、失败保留指针、范围缩窄保护、历史继承和各输出一致性；这些模拟故障不能代替真人权益变更验收。
+完整记录及局限见[账号场景](../validation/REAL_SCENARIO_VALIDATION.md)。离线回归覆盖未知时长、错误账号、家庭/所有者变化、排除、截断、长冷却、截止、失败保留指针、范围缩窄保护、历史继承和各输出一致性；这些模拟故障不能代替真人权益变更验收。
 
 协议依据是[公开 FamilyGroups 定义](https://github.com/SteamDatabase/Protobufs/blob/master/steam/steammessages_familygroups.steamclient.proto)，不属于 Steam 对第三方工具的稳定接口承诺。[Steam Families FAQ](https://help.steampowered.com/en/faqs/view/054C-3167-DD7F-49D4)说明可共享范围以及使用限制。

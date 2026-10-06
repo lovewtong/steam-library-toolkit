@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 const {EventEmitter} = require('node:events');
-const code = fs.readFileSync(path.join(__dirname, '../tools/steam_client_collect.cjs'), 'utf8');
+const code = fs.readFileSync(path.join(__dirname, '../node_bridge/steam_client_collect.cjs'), 'utf8');
 
 async function run(mode, request = {}) {
   const events = [], options = [], loginOptions = [], timers = [];
@@ -51,7 +51,7 @@ async function run(mode, request = {}) {
   };
   const dependencies = {'./steam_licenses.cjs': {licenseEvidence: () => ({byApp: new Map(), complete: true})},
     './steam_web_sources.cjs': {collectWebSources: async () => ({client: {state: 'complete', records: []}, api: null})},
-    './steam_playtime.cjs': require('../tools/steam_playtime.cjs'), 'steam-user': User,
+    './steam_playtime.cjs': require('../node_bridge/steam_playtime.cjs'), 'steam-user': User,
     'steam-session': {LoginSession, EAuthTokenPlatformType: {SteamClient: 1}},
     'qrcode-terminal': {generate: (url, opts, callback) => callback('qr')},
     crypto: require('node:crypto'), 'steam-user/protobufs/generated/_load.js': schema,

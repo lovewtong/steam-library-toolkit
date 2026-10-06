@@ -4,14 +4,14 @@
  * 启动 Steam 后应能看到新收藏。
  *
  * 依赖: npm install classic-level
- * 使用: node steam_sync_leveldb.js [--dry-run]
+ * 使用: node legacy/steam_sync_leveldb.js [--dry-run]
  */
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const SCRIPT_DIR = __dirname;
+const SCRIPT_DIR = path.resolve(__dirname, '..');
 const CONFIG_PATH = path.join(SCRIPT_DIR, 'config_local.json');
 const RESULT_JSON = path.join(SCRIPT_DIR, 'steam_collections_result.json');
 const STEAM_LOOPBACK = 'https://steamloopback.host';
@@ -49,7 +49,7 @@ function findLevelDBPath(steamPath, steamId) {
 
 function loadCollections() {
   if (!fs.existsSync(RESULT_JSON)) {
-    throw new Error('未找到 steam_collections_result.json，请先运行 node classify_steam.js');
+    throw new Error('未找到 steam_collections_result.json，请先运行 node legacy/classify_steam.js');
   }
   const data = JSON.parse(fs.readFileSync(RESULT_JSON, 'utf8'));
   if (typeof data !== 'object' || data === null) throw new Error('steam_collections_result.json 格式应为 分类名 -> [appid]');
@@ -137,7 +137,7 @@ async function main() {
   }
 
   if (dryRun) {
-    console.log('\n--dry-run：未打开 LevelDB，未写入。若要实际写入，请先完全关闭 Steam 后运行: node steam_sync_leveldb.js');
+    console.log('\n--dry-run：未打开 LevelDB，未写入。若要实际写入，请先完全关闭 Steam 后运行: node legacy/steam_sync_leveldb.js');
     return;
   }
 
