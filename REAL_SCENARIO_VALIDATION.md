@@ -1,5 +1,7 @@
 # 真实账号场景：2026-10-05
 
+最新状态：2026-10-06 已完成生产家庭来源修复、两款参照真实复测及[整合复审](PR12_PR13_REVIEW.md)。当前 `main` 包含修复，已发布的 v1.1.0 不包含；下述 2026-10-05 失败记录保留为修复前证据。
+
 本次使用 Windows 上已登录的账号，只读采集和查询。功能基线为干净提交 `83e6183536e9e230659520df506662091f57cf83`。未切换账号、退出家庭、制造退款、启动游戏或写入 Steam 收藏。
 
 ## 已验证的部分
@@ -49,3 +51,36 @@
 | 家庭库完整性 | 两款遗漏已复现，尚未修复 | 完成 FAM-01–05 后重测 |
 
 完整个人产物和临时探测脚本保留在本机 `outputs/observations`，不提交到仓库。当前测试不代替其他系统真人认证或加入新来源后的性能验收。
+
+
+## 家庭修复真实复测：2026-10-06
+
+采集基线 `8c5350f7ff1761c375f8b26500b9c15853b0d363`，`producer.dirty=false`。使用生产 helper、Windows `--local-session --no-store --strict --strict-membership --require-source family_library`，继承同账号历史，输出独立库与快照；没有临时适配器或 `NODE_OPTIONS` 注入。未切换账号、退出家庭、启动游戏或写入 Steam 收藏。
+
+| 数量口径 | 结果 |
+| --- | --- |
+| 原客户端成员 | 388，全部保留 |
+| 家庭原始响应 | 1073，包含排除项和非游戏，不直接作为库数量 |
+| 共享资格和 game 类型通过核验 | 779，其中 338 与客户端重叠 |
+| 新增家庭来源游戏 | 441 |
+| 合并输出 | 829：818 game、5 application、2 demo、4 beta |
+| 所有权观察 | 388 本账号许可、441 共享，本次无证据冲突 |
+| 本账号总时长 | 369 已知、460 未知，0 历史 |
+| Web API / CM 许可候选 | 358 / 2435，未作为成员全集 |
+
+两次家庭清单及前后家庭成员/角色核验通过；原始 AppID、类型、所有者和排除资格稳定。请求上限 100000，本次未达到，仍记录 `semantic_completeness_proven=false`。829 条不是完整 Steam 界面库的逐项人工核对结果。
+
+| 参照 | 修复后成员与所有权 | 本账号时长 | 首次观察与校正 |
+| --- | --- | --- | --- |
+| DOOM: The Dark Ages，3017860 | present / family_library / shared，own=false，排除原因 0 | 111 分钟，client_last_played_times | 2026-10-06 UTC；射击 / 动作FPS |
+| 星际战士2，2183900 | present / family_library / shared，own=false，排除原因 0 | 163 分钟，client_last_played_times | 2026-10-06 UTC；射击 / 第三人称射击 |
+
+个人时长已有独立客户端依据；共享资格不代表时长必须未知。没有个人依据时仍为 null，没有从家庭所有者的 `rt_playtime` 或 `rt_time_acquired` 推断购买时间或分钟数。
+
+仅对两款参照调用公开商店补全，两项成功，没有执行新增全库冷缓存性能基准。随后在干净 `b2aeacc74580a52e68764cef4909fb14cbe0ceb8` 上离线重分类。复测发现《星际战士2》被泛 RPG 标签错误归类；根据 [Focus 发售公告](https://www.focus-entmt.com/en/news/warhammer-40000-space-marine-2-launches-today-prepare-for-war-with-the-launch-trailer)及 [Bethesda 揭晓文章](https://slayersclub.bethesda.net/en-EU/news/doom-the-dark-ages-revealed)，仅为这两个 AppID 校正主类与子类，并新增独立编辑 fixture。氛围、强度和推荐语不冒充人工确认。
+
+818 条分类成员在表格、picker、复核清单与计划一致。10 月计划包含 441 个新观察游戏，两款参照均在其中；页面名称与 2026 年/10 月组合各返回一款，展示共享及家庭来源。元数据补全与离线重分类保留成员、所有权、个人时长和首次观察历史。旧 live/combined/offline 指针及全部 manifest 文件、采集源指针均未变，所有新 manifest 哈希通过。旧 388 条的名称、类型、三个时间值与首次观察证据保持。新产物不含 token、家庭 ID 或其他成员账号字段。
+
+FAM-01–05 实现与两款参照验收通过，修复已进入 `main`，尚未发布。家庭核验失败拒绝发布较小客户端子集；`--no-family` 必须使用独立范围，不能覆盖家庭库。故障和家庭变化保护来自离线回归，未制造自然权益变化。多账号、Steam 自身离线恢复、实际启动与全家庭逐项核对仍未验收。
+
+个人结果、哈希记录、验证脚本和两张页面截图在本机 `outputs/observations/family-*`；不提交完整个人库。采集及发布共 32.075 秒，只是本次观测，不能当作网络性能承诺。详见 [Steam Families 契约](STEAM_FAMILIES.md)。

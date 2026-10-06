@@ -11,6 +11,7 @@ import uuid
 import platform
 
 from steam_sources import AccountMismatchError, atomic_json, select_for_classification, utc_now
+from steam_membership import trusted_current_membership
 
 
 def new_run_metadata():
@@ -38,7 +39,7 @@ def save_failed_run(output, audit, code):
     failed = {"schema_version": 1, **metadata, "status": "failed", "error_code": code,
               "finished_at": utc_now(), "sources": {}}
     for name, source in audit.get("sources", {}).items():
-        if name not in {"client_library", "licenses", "web_api", "license_file", "client_last_played_times"}:
+        if name not in {"client_library", "family_library", "licenses", "web_api", "license_file", "client_last_played_times"}:
             continue
         state = source.get("state")
         error = source.get("error_code")
@@ -112,7 +113,9 @@ def check_previous(output, rows, audit, max_removal_ratio=.20):
     old_audit = json.loads(previous_audit.read_text(encoding="utf-8"))
     if old_audit.get("steam_id") != audit.get("steam_id"):
         raise AccountMismatchError("ACCOUNT_MISMATCH：现有输出属于其他账号，请使用独立输出路径")
-    if old_audit.get("membership") != "client_snapshot" or audit.get("membership") != "client_snapshot":
+    if old_audit.get('membership') == 'accessible_snapshot' and audit.get('membership') == 'client_snapshot':
+        raise ValueError('MEMBERSHIP_SCOPE_CHANGED：家庭库不能被客户端限定结果覆盖，请使用独立输出路径')
+    if not trusted_current_membership(old_audit) or not trusted_current_membership(audit):
         return
     previous = {r["appid"] for r in load_library(output)}
     current = {r["appid"] for r in rows}
@@ -121,7 +124,8 @@ def check_previous(output, rows, audit, max_removal_ratio=.20):
                              "current_count": len(current), "added": sorted(current - previous), "removed": removed,
                              "removal_ratio": len(removed) / len(previous) if previous else 0,
                              "max_unexplained_removal_ratio": max_removal_ratio,
-                             "removal_evidence": "absence_in_repeated_rpc_snapshot"}
+                             "removal_evidence": 'absence_in_repeated_client_and_family_snapshot'
+                             if audit.get('membership') == 'accessible_snapshot' else "absence_in_repeated_rpc_snapshot"}
     if previous and len(removed) / len(previous) > max_removal_ratio:
         audit["status"] = "suspicious_change"
         audit["warnings"].append("SUSPICIOUS_REMOVAL：库成员缩减超过保护阈值；未切换当前运行")
@@ -132,7 +136,7 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     from classify_games import classify_library, write_csv, write_md_table
     from classify_steam_games import classify_one
     output = Path(output)
-    candidate = audit["membership"] != "client_snapshot"
+    candidate = not trusted_current_membership(audit)
     if candidate and not allow_candidates:
         output = output.with_suffix(".candidates.json")
     run_id = audit["run_id"]
@@ -162,17 +166,19 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     atomic_json(directory / "classified.json", table)
     atomic_json(directory / "classification_overrides.json", {'schema_version': 1, 'apps': applied})
     atomic_json(directory / "summary.json", {"run_id": run_id, "producer": audit["producer"], **audit["summary"]})
-    absent = set(audit.get("difference", {}).get("client_not_api", []))
+    absent = set(audit.get("difference", {}).get('accessible_not_api', audit.get("difference", {}).get("client_not_api", [])))
     comparison = audit.get('web_api_comparison', {'state': 'complete' if
         audit.get('sources', {}).get('web_api', {}).get('state') == 'complete'
-        and audit.get('membership') == 'client_snapshot' else 'unavailable'})
+        and trusted_current_membership(audit) else 'unavailable'})
     comparable = comparison['state'] == 'complete'
     atomic_json(directory / "missing_from_web_api.json", {"run_id": run_id, 'comparison': comparison, "apps": [
         {"appid": r["appid"], "name": r["name"], "app_type": r["app_type"],
-         "present_in_client": True, "present_in_web_api": False if comparable else None,
+         "present_in_client": r.get('membership', {}).get('source') == 'client_library',
+         'present_in_family': bool(r.get('family_evidence', {}).get('verified')),
+         'present_in_library': True, "present_in_web_api": False if comparable else None,
          "license_evidence": r.get("license_evidence", {}),
          "classification": {"cause": "web_api_absent" if comparable else 'comparison_unavailable', "cause_confirmed": False}}
-        for r in rows if (r["appid"] in absent if comparable else audit.get('membership') == 'client_snapshot')]})
+        for r in rows if (r["appid"] in absent if comparable else trusted_current_membership(audit))]})
     atomic_json(directory / "playtime_probe.json", {"run_id": run_id, **audit.get("overview_probe", {})})
     if snapshot:
         atomic_json(directory / "client.snapshot.json", snapshot)

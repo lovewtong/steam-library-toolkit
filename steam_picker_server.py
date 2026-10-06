@@ -9,6 +9,7 @@ from steam_runs import manifest_path, resolve_artifact, load_library
 from steam_sources import select_for_classification
 from steam_manufacturers import manufacturer_fields
 from steam_observation import first_seen_fields
+from steam_membership import trusted_current_membership, membership_fields
 
 ROOT = Path(__file__).resolve().parent
 
@@ -48,6 +49,7 @@ def normalized_games(games):
         result.append({"appid": str(value), "name": game["name"], "run_id": game.get("run_id"),
                        **manufacturer_fields(game),
                        **observation,
+                       **membership_fields(game),
                        'first_seen_evidence': {'state': observation['first_seen_status'],
                                                'source': observation['first_seen_source']},
                        "classification_evidence": field_evidence(game),
@@ -68,10 +70,12 @@ class PickerLibrary:
             path = resolve_artifact(pointer)
             directory = path.parent
             audit = json.loads((directory / "steam_library.audit.json").read_text(encoding="utf-8"))
-            if audit.get("membership") != "client_snapshot" and not self.allow_candidates:
+            if not trusted_current_membership(audit) and not self.allow_candidates:
                 raise ValueError("CANDIDATE_LIBRARY")
             games = normalized_games(json.loads((directory / "steam_library_classified.json").read_text(encoding="utf-8")))
             rows = json.loads(path.read_text(encoding="utf-8"))
+            from steam_schema import validate_artifacts
+            validate_artifacts(rows, audit)
             if ({int(g["appid"]) for g in games} != {r["appid"] for r in select_for_classification(rows)}
                     or any(g["run_id"] != audit.get("run_id") for g in games)):
                 raise ValueError("GENERATION_MISMATCH")

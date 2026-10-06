@@ -396,6 +396,8 @@ def classify_one(game, overrides=None):
     result.update(manufacturer_fields(game, rule))
     from steam_observation import first_seen_fields
     result.update(first_seen_fields(game))
+    from steam_membership import membership_fields
+    result.update(membership_fields(game))
     # Preserve the evidence so normalized readers can validate the saved date.
     if isinstance(game.get('first_seen_evidence'), dict):
         result['first_seen_evidence'] = dict(game['first_seen_evidence'])

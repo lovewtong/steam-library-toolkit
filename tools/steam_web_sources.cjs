@@ -7,9 +7,10 @@ const failed = e => ({state: e instanceof SourceError ? e.state : 'unavailable',
   error_code: e instanceof SourceError ? e.code : 'NETWORK_UNAVAILABLE', records: []});
 async function call(service, method, token, params, fetcher = fetch, policy = {}) {
   const sleep = policy.sleep || (ms => new Promise(resolve => setTimeout(resolve, ms)));
-  const deadline = Date.now() + 35000;
+  const deadline = Math.min(Date.now() + 35000, policy.deadline ?? Infinity);
   let response, error;
   for (let attempt = 1; attempt <= 3; attempt++) {
+    if (Date.now() >= deadline) throw new SourceError('SOURCE_DEADLINE_EXCEEDED');
     if (policy.stats) policy.stats.attempts++;
     let retryAfter = 0;
     try {
@@ -112,13 +113,14 @@ async function collectWebSources(token, request, account, fetcher) {
   try {
     const shapes = request.capture_protocol_shapes ? [] : null;
     const safe = async fn => { const policy = {stats: {attempts: 0}, shapes}; let result; try { result = await fn(policy); } catch (e) { result = failed(e); } return {...result, attempts: policy.stats.attempts}; };
-    const [client, api] = await Promise.all([
+    const [client, api, family] = await Promise.all([
       safe(policy => clientLibrary(token, account, request.machine, fetcher, policy)),
       request.use_api === false ? Promise.resolve(null) : safe(policy => ownedGames(token, account, request.expanded !== false, fetcher, policy)),
+      request.use_family === false ? Promise.resolve(null) : safe(policy => require('./steam_families.cjs').familyLibrary(token, account, fetcher, policy)),
     ]);
-    if (client.error_code === 'ACCOUNT_MISMATCH') throw new SourceError('ACCOUNT_MISMATCH', 'account_mismatch');
-    return {client, api, ...(shapes ? {protocol_shapes: {schema_version: 1,
+    if ([client, family].some(s => s?.error_code === 'ACCOUNT_MISMATCH')) throw new SourceError('ACCOUNT_MISMATCH', 'account_mismatch');
+    return {client, api, family, ...(shapes ? {protocol_shapes: {schema_version: 1,
       scope: 'allowlisted_field_types_only', observations: shapes}} : {})};
   } finally { if (proxy) await proxy.close(); }
 }
-module.exports = {SourceError, clientLibrary, ownedGames, collectWebSources};
+module.exports = {SourceError, call, clientLibrary, ownedGames, collectWebSources};

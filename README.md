@@ -46,7 +46,7 @@ python -m venv .venv
 npm ci
 ```
 
-This installs `main`, including developer/publisher filters. For the published v1.1.0 release, add `--branch v1.1.0` to the clone command; that release includes the review queue but does not include those filters. First-observation features currently require the `feat/library-observation-time` branch.
+This installs `main`, including developer/publisher filters, first-observation dates and family collection. For the published v1.1.0 release, add `--branch v1.1.0` to the clone command; that release includes the review queue but does not include these newer features.
 
 ## Usage
 
@@ -62,7 +62,7 @@ Run these commands from the project root, with Steam online and signed in.
 
 The first command collects the library and creates its audit and classification files. The second adds store metadata. A large library can take several minutes on the first pass; later runs reuse the cache. The last command opens the browser interface. Press `Ctrl+C` in the terminal to stop the server.
 
-`--strict-membership` requires a live client list. If local authentication fails, use `--login` instead of `--local-session` to sign in with a QR code.
+`--strict-membership` requires a live client list and a checked family source. Use `--no-family` with a separate output for client-only collection. If local authentication fails, use `--login` instead of `--local-session` to sign in with a QR code.
 
 ### Adjust classifications
 
@@ -93,7 +93,7 @@ $steamAccount = 'YOUR_STEAMID64'
 
 On `main`, add `--group-by developers publishers` for manufacturer groups, or `--developer "NAME"` / `--publisher "NAME"` to filter by an exact name.
 
-On the first-observation branch, filter by `--first-seen-year 2026 --first-seen-month 10` and group plans by `first_seen_year` / `first_seen_month`. These dates refer to the first recorded client observation, not the purchase date. See [time classification](TIME_CLASSIFICATION.md) for history and unknown values.
+Filter by `--first-seen-year 2026 --first-seen-month 10` and group plans by `first_seen_year` / `first_seen_month`. These dates refer to the first saved observation of a client or family member, not the purchase date. See [time classification](TIME_CLASSIFICATION.md) for history and unknown values.
 
 ### Help
 
@@ -109,7 +109,7 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 [v1.1.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.1.0) is the latest published release. It adds the classification review queue and six AppID corrections to v1.0.0's collection, audit, enrichment, correction, browsing and plan-export workflow.
 
-Developer/publisher support is on `main`; first-observation tracking and year/month filters are being developed for a later release. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
+Developer/publisher filters, first-observation dates and family collection are on `main`, awaiting the next release. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
 ## Limitations
 
@@ -117,7 +117,7 @@ Developer/publisher support is on `main`; first-observation tracking and year/mo
 - Steam sources can disagree or omit entries. API and snapshot fallbacks are marked as candidates; missing playtime and metadata stay unknown.
 - Classification rules sometimes need manual correction. Developer and publisher names follow the store listing unless you override them.
 - Multi-account switching and expiring access need more testing. The browser's classification labels are currently in Chinese.
-- Steam Families games can be missing. Two shared-only games were confirmed absent in a live check; see the [scenario report](REAL_SCENARIO_VALIDATION.md).
+- v1.1.0 can miss Steam Families games. `main` adds a checked family source; see [family collection](STEAM_FAMILIES.md) and the [scenario report](REAL_SCENARIO_VALIDATION.md). This does not guarantee that every family game is collected or playable.
 - Plans are export-only. The older Node/LevelDB writers are not part of the supported workflow.
 - Exact purchase dates are not available. First-observation dates only describe the saved history available to the tool.
 

@@ -131,10 +131,9 @@ def build_plan(source, account, *, group_by=DEFAULT_GROUPS, developer=None, publ
     if manifest.get('steam_id') != account or audit.get('steam_id') != account:
         raise CollectionError('COLLECTION_ACCOUNT_MISMATCH')
     client = audit.get('sources', {}).get('client_library', {})
-    if (audit.get('membership') != 'client_snapshot' or audit.get('status') not in ('ok', 'degraded')
-            or client.get('status') != 'ok' or client.get('state') != 'complete'
-            or client.get('completeness', {}).get('verified') is not True
-            or any(r['membership'].get('state') != 'present' or r['membership'].get('source') != 'client_library' for r in rows)):
+    from steam_membership import trusted_current_membership, verified_membership_row
+    if (not trusted_current_membership(audit) or audit.get('status') not in ('ok', 'degraded')
+            or any(not verified_membership_row(r, audit) for r in rows)):
         raise CollectionError('COLLECTION_UNVERIFIED_MEMBERSHIP')
     games = normalized_games(games)
     run = manifest['run_id']
@@ -152,6 +151,10 @@ def build_plan(source, account, *, group_by=DEFAULT_GROUPS, developer=None, publ
     plan = {'schema_version': 1, 'kind': 'steam_collection_plan', 'steam_id': account, 'run_id': run,
             'membership_observed_at': client.get('fetched_at'), 'source_manifest_sha256': hashlib.sha256(before).hexdigest(),
             'membership_count': len(rows), 'eligible_appids': sorted(eligible),
+            'membership': audit.get('membership'),
+            'membership_sources': {name: s.get('fetched_at') for name, s in audit.get('sources', {}).items()
+                                   if name in ('client_library', 'family_library')},
+            'shared_appids': sorted(r['appid'] for r in rows if r.get('ownership') == 'shared'),
             'ownership_revalidated': False, 'write_supported': False,
             'group_by': list(dict.fromkeys(group_by)),
             'filters': {'developer': developer, 'publisher': publisher,

@@ -149,9 +149,9 @@ test('shape collection is explicit and does not change source reconciliation', a
       url.includes('GetClientAppList') ? list([10]) : {game_count: 0, games: []};
     return {status: 200, headers: {get: () => null}, json: async () => ({response})};
   };
-  const regular = await collectWebSources('private-token-canary', {machine: 'desktop'}, account, fetcher);
+  const regular = await collectWebSources('private-token-canary', {machine: 'desktop', use_family: false}, account, fetcher);
   assert.equal(Object.hasOwn(regular, 'protocol_shapes'), false);
-  const captured = await collectWebSources('private-token-canary', {machine: 'desktop', capture_protocol_shapes: true}, account, fetcher);
+  const captured = await collectWebSources('private-token-canary', {machine: 'desktop', use_family: false, capture_protocol_shapes: true}, account, fetcher);
   assert.deepEqual(captured.client, regular.client);
   assert.deepEqual(captured.api, regular.api);
   assert.equal(captured.protocol_shapes.observations.length, 5);

@@ -181,7 +181,7 @@ def local_credentials(steam_path=None, account=None):
 
 def collect_client(account=None, *, login=False, local_session=False, steam_path=None,
                    machine=None, timeout=300, on_progress=print, use_api=True, expanded=True,
-                   capture_protocol_shapes=False):
+                   capture_protocol_shapes=False, use_family=True):
     credentials = local_credentials(steam_path, account) if local_session else (None if login else saved_credentials(account))
     if login:
         secret_store()  # Fail before asking the user to scan if secure persistence is unavailable.
@@ -215,7 +215,7 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
         proxy = None if urllib.request.proxy_bypass("api.steampowered.com") else urllib.request.getproxies().get("https")
         on_progress("Steam 网络：使用已配置的 HTTP(S) 代理" if proxy else "Steam 网络：直连（未检测到适用的 HTTP(S) 代理）")
         process.stdin.write(json.dumps({"refresh_token": token, "steam_id": account, "login": login,
-                                       "use_api": use_api, "expanded": expanded,
+                                       "use_api": use_api, "expanded": expanded, "use_family": use_family,
                                        "capture_protocol_shapes": capture_protocol_shapes,
                                        "https_proxy": proxy,
                                        "machine": machine or os.environ.get("COMPUTERNAME") or __import__("socket").gethostname()}))

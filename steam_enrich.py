@@ -38,7 +38,8 @@ def enrich(source, output, *, cache_dir=None, refresh=False, appids=(), workers=
         rows = json.loads(library_path.read_text(encoding='utf-8'))
         audit = json.loads(audit_path.read_text(encoding='utf-8'))
         validate_artifacts(rows, audit)
-        if (audit['membership'] != 'client_snapshot' or audit['status'] == 'suspicious_change'
+        from steam_membership import trusted_current_membership
+        if (not trusted_current_membership(audit) or audit['status'] == 'suspicious_change'
                 or any(r.get('run_id') != audit['run_id'] for r in rows)):
             raise ValueError('ENRICH_SOURCE_INVALID：需要可信客户端成员运行')
         selected = set(appids) if appids else {r['appid'] for r in rows}

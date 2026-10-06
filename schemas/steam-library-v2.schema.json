@@ -13,10 +13,16 @@
       "first_seen_at": {"type": ["string", "null"], "format": "date-time"},
       "first_seen_evidence": {"type": "object", "required": ["state"], "properties": {
         "state": {"enum": ["observed", "historical", "unknown"]},
-        "source": {"enum": ["client_library", "saved_client_snapshot"]},
+        "source": {"enum": ["client_library", "saved_client_snapshot", "family_library", "saved_family_snapshot"]},
         "steam_id": {"type": "string", "pattern": "^[0-9]{17}$"},
         "run_id": {"type": "string", "minLength": 1}}},
       "app_type": {"type": "string"},
+      "ownership": {"enum": ["account_license", "shared", "unknown"]},
+      "family_evidence": {"type": "object", "required": ["source", "verified", "own", "shared", "owner_count", "exclude_reason"],
+        "properties": {"source": {"const": "family_library"}, "verified": {"const": true},
+          "own": {"type": "boolean"}, "shared": {"type": "boolean"},
+          "owner_count": {"type": "integer", "minimum": 1, "maximum": 6}, "exclude_reason": {"const": 0}},
+        "additionalProperties": false},
       "run_id": {"type": "string", "minLength": 1},
       "membership": {"type": "object", "required": ["state", "source"], "properties": {
         "state": {"enum": ["present", "candidate"]}, "source": {"type": "string"}}},

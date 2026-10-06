@@ -58,11 +58,9 @@ def build_review(source):
     rules = read_rules(directory / 'classification_overrides.json')
     validate_artifacts(rows, audit)
     client = audit.get('sources', {}).get('client_library', {})
-    if (audit.get('membership') != 'client_snapshot' or audit.get('status') not in ('ok', 'degraded')
-            or client.get('status') != 'ok' or client.get('state') != 'complete'
-            or client.get('completeness', {}).get('verified') is not True
-            or any(r['membership'].get('state') != 'present'
-                   or r['membership'].get('source') != 'client_library' for r in rows)):
+    from steam_membership import trusted_current_membership, verified_membership_row
+    if (not trusted_current_membership(audit) or audit.get('status') not in ('ok', 'degraded')
+            or any(not verified_membership_row(r, audit) for r in rows)):
         raise ValueError('REVIEW_UNVERIFIED_MEMBERSHIP')
     if manifest.get('steam_id') != audit.get('steam_id'):
         raise ValueError('REVIEW_ACCOUNT_MISMATCH')
@@ -113,6 +111,9 @@ def build_review(source):
     report = {'schema_version': 1, 'kind': 'classification_review_queue', 'scope': 'primary_classification',
               'run_id': run, 'source_manifest_sha256': hashlib.sha256(before).hexdigest(),
               'source_producer': audit.get('producer'), 'membership_observed_at': client.get('fetched_at'),
+              'membership': audit.get('membership'),
+              'membership_sources': {name: s.get('fetched_at') for name, s in audit.get('sources', {}).items()
+                                     if name in ('client_library', 'family_library')},
               'summary': {'games': len(games), 'queued': len(items), 'not_queued': len(games) - len(items),
                           'reason_counts': dict(Counter(r for item in items for r in item['reasons']))},
               'reason_labels': REASONS.copy(), 'items': items}

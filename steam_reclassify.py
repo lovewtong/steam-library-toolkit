@@ -19,7 +19,8 @@ def reclassify(source, output):
         rows = json.loads(path.read_text(encoding='utf-8'))
         audit = json.loads(resolve_artifact(source, 'steam_library.audit.json').read_text(encoding='utf-8'))
         validate_artifacts(rows, audit)
-        if (audit['membership'] != 'client_snapshot' or audit['status'] == 'suspicious_change'
+        from steam_membership import trusted_current_membership
+        if (not trusted_current_membership(audit) or audit['status'] == 'suspicious_change'
                 or any(r.get('run_id') != audit['run_id'] for r in rows)):
             raise ValueError('RECLASSIFY_SOURCE_INVALID：需要可信客户端成员运行')
         parent = {'run_id': audit['run_id'], 'producer': audit.get('producer'), 'generated_at': audit.get('generated_at')}

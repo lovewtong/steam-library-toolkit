@@ -1,6 +1,18 @@
 {
   "schema_version": 1,
   "apps": {
+    "3017860": {
+      "main_category": "射击",
+      "sub": "动作FPS",
+      "reason": "2026-10-06 家庭复测样本编辑核对；仅确认主类与子类。Bethesda 官方揭晓文章将本作定义为单人动作 FPS，Steam 链接对应 AppID 3017860；不从宽泛 Action/Adventure 标签决定主类。",
+      "reference": "https://slayersclub.bethesda.net/en-EU/news/doom-the-dark-ages-revealed"
+    },
+    "2183900": {
+      "main_category": "射击",
+      "sub": "第三人称射击",
+      "reason": "2026-10-06 家庭复测样本编辑核对；仅确认主类与子类。Focus 官方发售公告明确第三人称射击、近战与枪械战斗，标题及 PC/Steam 版本对应本作；不因商店 RPG 标签优先级改判为 RPG。",
+      "reference": "https://www.focus-entmt.com/en/news/warhammer-40000-space-marine-2-launches-today-prepare-for-war-with-the-launch-trailer"
+    },
     "205930": {
       "main_category": "射击",
       "sub": "狙击",

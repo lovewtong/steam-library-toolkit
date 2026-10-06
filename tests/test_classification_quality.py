@@ -13,6 +13,21 @@ from test_phase_two import run_bundle
 
 
 class ClassificationQualityTests(unittest.TestCase):
+    def test_family_reference_appids_have_reviewed_shooter_primary_and_sub_only(self):
+        rules = load_overrides(Path('nonexistent-local-rules.json'))
+        for appid, sub in ((3017860, '动作FPS'), (2183900, '第三人称射击')):
+            game = {'appid': appid, 'name': '本地化名称', 'genres': ['Action', 'RPG']}
+            table = classify_library([game], rules)[0]
+            picker = classify_one(game, rules)
+            self.assertEqual(table['main_category'], '射击')
+            self.assertEqual(picker['analysis']['primary'], '射击 (FPS/TPS)')
+            self.assertEqual(picker['analysis']['sub'], sub)
+            for key in ('primary', 'sub'):
+                self.assertEqual(picker['classification_evidence']['fields'][key]['state'], 'reviewed')
+                self.assertIn('reference', picker['classification_evidence']['fields'][key])
+            for key in ('vibe', 'intensity', 'slogan'):
+                self.assertNotEqual(picker['classification_evidence']['fields'][key]['state'], 'reviewed')
+
     def test_reviewed_appids_ignore_localized_names(self):
         rules = load_overrides(Path('nonexistent-local-rules.json'))
         for appid, main, primary, sub in (

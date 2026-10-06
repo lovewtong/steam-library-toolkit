@@ -15,7 +15,8 @@ from classify_steam_games import classify_one
 from steam_sources import atomic_json
 
 FIXTURE = ROOT / 'tests/fixtures/classification-r1.json'
-FIXTURES = {'r1': FIXTURE, 'batch-01': ROOT / 'tests/fixtures/classification-batch-01.json'}
+FIXTURES = {'r1': FIXTURE, 'batch-01': ROOT / 'tests/fixtures/classification-batch-01.json',
+            'family-references': ROOT / 'tests/fixtures/classification-family-references.json'}
 
 
 def evaluate(fixture_path=FIXTURE):

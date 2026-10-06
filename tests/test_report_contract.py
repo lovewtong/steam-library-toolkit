@@ -32,7 +32,10 @@ def client_payload():
     types = ['game'] * 377 + ['application'] * 5 + ['demo'] * 2 + ['beta'] * 4
     apps = [{'appid': i, 'name': f'Fixture App {i}', 'app_type': kind} for i, kind in enumerate(types, 1)]
     missing = set(range(1, 28)) | {378, 383, 384}
-    return {'steam_id': ACCOUNT, 'client': {'state': 'complete', 'completeness': {'verified': True, 'semantic_completeness_proven': False}, 'records': apps},
+    return {'steam_id': ACCOUNT, 'family': {'state': 'complete', 'records': [], 'completeness': {
+                'verified': True, 'account_checked': True, 'owners_checked': True, 'group_checked': True,
+                'reads': 2, 'family_state': 'not_member', 'returned_apps': 0}},
+            'client': {'state': 'complete', 'completeness': {'verified': True, 'semantic_completeness_proven': False}, 'records': apps},
             'api': {'state': 'complete', 'records': [{**r, 'playtime_forever': 0} for r in apps if r['appid'] not in missing]},
             'licenses': [{'appid': i, 'app_type': 'tool'} for i in range(1, 2420)], 'license_status': 'ok',
             'playtimes': [{'appid': i, 'playtime_forever': i} for i in list(range(28, 229)) + [1, 2, 3]], 'playtime_status': 'ok'}
