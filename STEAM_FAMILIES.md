@@ -33,6 +33,10 @@
 
 ## 验证
 
-离线回归覆盖两款共享成员入库、未知时长、错误账号、家庭与所有者变化、排除、截断、失败保留指针、范围缩窄保护、历史继承以及各输出一致性。真实复测记录见[账号场景](REAL_SCENARIO_VALIDATION.md)。截至本实现提交，真实修复复测尚待执行；此前临时探测不计作生产修复验收。
+2026-10-06 在干净采集提交 `8c5350f7ff1761c375f8b26500b9c15853b0d363` 上完成真实本地登录采集，没有使用临时探测适配器。得到 829 条（818 game），保留原 388 条，新增 441 条家庭游戏。两款参照均为 `family_library` / `shared`，本账号个人时长分别为 111、163 分钟，来源为 `client_last_played_times`，没有采用家庭接口时长；460 条缺少个人总时长的记录保持未知。
+
+公开商店补全仅请求两个参照 AppID，两项成功。`b2aeacc74580a52e68764cef4909fb14cbe0ceb8` 干净提交上离线重分类、表格、picker、复核清单和收藏计划一致；页面两款均显示家庭共享、实际家庭来源和 UTC 首次观察日期。参考游戏的主类与子类按第一方依据校正，其他字段仍保持未知或生成状态，不作全库人工准确率声明。
+
+完整记录及局限见[账号场景](REAL_SCENARIO_VALIDATION.md)。离线回归覆盖未知时长、错误账号、家庭/所有者变化、排除、截断、长冷却、截止、失败保留指针、范围缩窄保护、历史继承和各输出一致性；这些模拟故障不能代替真人权益变更验收。
 
 协议依据是[公开 FamilyGroups 定义](https://github.com/SteamDatabase/Protobufs/blob/master/steam/steammessages_familygroups.steamclient.proto)，不属于 Steam 对第三方工具的稳定接口承诺。[Steam Families FAQ](https://help.steampowered.com/en/faqs/view/054C-3167-DD7F-49D4)说明可共享范围以及使用限制。
