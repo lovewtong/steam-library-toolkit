@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "version": "v1.3.0",
+  "state": "scope_and_commit_frozen",
+  "freeze_date": "2026-10-07",
+  "repository": "https://github.com/lovewtong/steam-library-toolkit",
+  "candidate": {
+    "commit": "09b6d4aaf645c54a83b6c5fa132eb1378954319c",
+    "tree": "9a8064783a21011c4bc846ffa906d55f7c2086c1",
+    "main_ci": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37647055981",
+    "source_file_count": 162,
+    "python_tests_per_platform": 180,
+    "node_tests_per_platform": 36,
+    "ci_mode": "offline",
+    "platforms": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ],
+    "package_version": "1.3.0"
+  },
+  "build": {
+    "wheel": "steam_library_toolkit-1.3.0-py3-none-any.whl",
+    "wheel_sha256": "475e71b2b7009b9d09be294312fc5408bd2fdac0b58bc98516b42b73ac9fcf29",
+    "build_id": "sha256:c2c0c21db5e4e1d3bf99c7d160ca5fd0b72b652715c7a7e2bcc088a3343de8c8",
+    "package_files": 54,
+    "sdist_direct_wheel_parity": true,
+    "git_archive_blob_match": true
+  },
+  "previous_release": {
+    "version": "v1.2.0",
+    "commit": "044a435a27023034071ac460965b5013fe37df3d",
+    "tag_must_not_move": true
+  },
+  "scope": [
+    "source_resource_package_layout",
+    "wheel_sdist_installed_commands",
+    "eight_source_compatibility_entries",
+    "separate_user_data_and_explicit_node_setup",
+    "package_build_provenance",
+    "inherited_collect_audit_enrich_correct_browse_export_manufacturer_time_family"
+  ],
+  "superseded_candidate": {
+    "commit": "90be1bddfad05e729eb74ded683668c868258332",
+    "reason": "Installed picker footer used a source-only command; PR 20 fixes the packaged instruction.",
+    "tag_or_release_created": false,
+    "old_evidence_retained": true
+  },
+  "windows_acceptance": {
+    "python": "3.14.2",
+    "node": "22.19.0",
+    "fresh_wheel_install": true,
+    "actual_v1_2_software_and_old_run_rollback": true,
+    "personal_choice_applied_and_revoked": true,
+    "live_local_session": true,
+    "records": 829,
+    "games": 818,
+    "shared": 441,
+    "unknown_playtime": 460,
+    "first_seen_dates_preserved": 829,
+    "reference_appids": [
+      3017860,
+      2183900
+    ],
+    "real_store_requests": 2,
+    "store_cache_hits": 0,
+    "table_page_api_and_plan_consistent": true,
+    "dry_run_creates_no_files": true,
+    "old_runs_and_configuration_unchanged": true,
+    "steam_writes": false,
+    "browser_filters_and_empty_states": true
+  },
+  "not_live_validated": [
+    "multiple_accounts",
+    "offline_online_recovery",
+    "natural_entitlement_changes",
+    "Linux_macOS_authentication",
+    "game_launches",
+    "exhaustive_family_ui_enumeration"
+  ],
+  "excluded": [
+    "automatic_steam_writes",
+    "purchase_date_inference",
+    "installer_auto_update",
+    "pypi_publication",
+    "full_library_or_classification_accuracy_guarantee"
+  ],
+  "freeze_policy": {
+    "target_is_full_sha_not_branch_head": true,
+    "changes_require_explicit_new_candidate": true,
+    "documentation_record_is_separate_from_candidate": true
+  },
+  "release": {
+    "publicly_published": false,
+    "intended_state": "verified_draft",
+    "public_release_page_and_asset_downloads": "pending_publication",
+    "anonymous_tag_source_download": "passed",
+    "draft_verified": true,
+    "asset_count": 6,
+    "all_assets_roundtrip_match": true,
+    "verification_date": "2026-10-08",
+    "assets_sha256": {
+      "RELEASE_NOTES-v1.3.0.md": "4030f3894a1ed1e5bea5a89f2264d92746f35801967fbc506389f03efdc6bf9d",
+      "release-verification-v1.3.0.json": "9cdb94dd7f5bd7223aed66f9787d4e7839fc129132363bd440985fb645552c8e",
+      "steam-library-toolkit-v1.3.0-source.zip": "1bd5bd96755def15e30b2c03285604841935dd8293b626ebfbf9823381bf2b29",
+      "steam_library_toolkit-1.3.0-py3-none-any.whl": "475e71b2b7009b9d09be294312fc5408bd2fdac0b58bc98516b42b73ac9fcf29",
+      "steam_library_toolkit-1.3.0.tar.gz": "272d6866f1c784a8a663dae521b16f2ce24c719405fd1e3cab56d5f156e37b39",
+      "SHA256SUMS.txt": "aee6989d3decbabd4719689a702990bf510e9e4328e009b9829c93e31016c552"
+    }
+  },
+  "tag": {
+    "name": "v1.3.0",
+    "object": "5fd2e72040f202441681a2083c0ad17e591179ed",
+    "target": "09b6d4aaf645c54a83b6c5fa132eb1378954319c",
+    "ci": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37648932017"
+  }
+}

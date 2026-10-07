@@ -18,6 +18,7 @@ Useful references / 常用文档：
 - [Metadata / 元数据补全](guides/METADATA_ENRICHMENT.md) · [Manufacturers / 厂商](guides/MANUFACTURER_FACETS.md)
 - [Time / 首次观察时间](guides/TIME_CLASSIFICATION.md) · [Families / 家庭来源](guides/STEAM_FAMILIES.md)
 - [Collection plans / 收藏计划](guides/STEAM_SYNC_README.md)
+- [v1.3.0 prepublication acceptance / 发布前验收](validation/V1_3_RELEASE_ACCEPTANCE.md)
 - [Build provenance / 构建追溯](guides/BUILD_PROVENANCE.md) · [v1.3.0 scope / 版本范围](releases/V1_3_RELEASE_PLAN.md)
 - [Scenario evidence / 真实场景证据](validation/REAL_SCENARIO_VALIDATION.md) · [v1.2.0 candidate / 冻结候选](releases/V1_2_RELEASE_PLAN.md)
 
