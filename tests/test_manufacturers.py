@@ -11,14 +11,14 @@ from unittest.mock import patch
 from classification_overrides import read_rules
 from classify_games import classify_library
 from classify_steam_games import classify_one
-from steam_collect import cached_store_details
+from steam_library_toolkit.store import cached_store_details
 from steam_enrich import enrich
 from steam_metadata import apply_observation, coverage, parse_fields
 from steam_picker_server import PickerLibrary
 from steam_reclassify import reclassify
 from steam_runs import load_library, manifest_path, publish_run, resolve_artifact
 from steam_sync_collections import build_plan
-from test_phase_two import run_bundle, ACCOUNT, ROOT
+from support import run_bundle, ACCOUNT, ROOT
 
 
 class ManufacturerTests(unittest.TestCase):
@@ -59,7 +59,7 @@ class ManufacturerTests(unittest.TestCase):
             path.write_text(json.dumps({'schema_version': 5, 'fetched_at': 1000,
                                        'status': 'success', 'details': parse_fields({})}))
             response = {'status': 'success', 'details': parse_fields({'developers': ['Studio'], 'publishers': []})}
-            with patch('steam_collect.time.time', return_value=1001), patch('steam_collect.get_store_result', return_value=response) as fetch:
+            with patch('steam_library_toolkit.store.time.time', return_value=1001), patch('steam_library_toolkit.store.get_store_result', return_value=response) as fetch:
                 direct, warm = {}, {}
                 details = cached_store_details(1, d, observation=direct)
                 again = cached_store_details(1, d, observation=warm)

@@ -30,7 +30,7 @@
 | `--no-store` | 跳过商店元数据请求 |
 | `--no-family` | 显式限定为客户端成员，需独立输出路径 |
 
-`main` 的客户端采集还会核验家庭来源，加入符合共享资格的游戏。家庭核验失败会阻止发布；明确未加入家庭属于成功的空来源。可使用 `--require-source family_library`。详见[家庭采集](STEAM_FAMILIES.md)。严格成员策略不要求可选的元数据和时长来源成功。`--strict` 失败不会切换原有 current 指针。
+`main` 的客户端采集还会核验家庭来源，加入符合共享资格的游戏。家庭核验失败会阻止发布；明确未加入家庭属于成功的空来源。可使用 `--require-source family_library`。详见[家庭采集](docs/guides/STEAM_FAMILIES.md)。严格成员策略不要求可选的元数据和时长来源成功。`--strict` 失败不会切换原有 current 指针。
 
 ## 候选数据与完整性
 
@@ -60,7 +60,7 @@
 
 并发数为 1–4，共享请求启动间隔与冷却。缺失或非法字段保留旧值，明确空数组可以替换旧数组。请求成功不代表字段齐全；`metadata.state=partial` 表示请求覆盖不完整，不会因此删除游戏。
 
-成功响应缓存七天，`not_found` 缓存六小时，临时错误使用更短有效期。未找到不代表永久下架。当前 `main` 使用缓存 v6，旧条目按需重取；已发布版本使用各自的缓存格式。详见[元数据语义](METADATA_ENRICHMENT.md)。
+成功响应缓存七天，`not_found` 缓存六小时，临时错误使用更短有效期。未找到不代表永久下架。当前 `main` 使用缓存 v6，旧条目按需重取；已发布版本使用各自的缓存格式。详见[元数据语义](docs/guides/METADATA_ENRICHMENT.md)。
 
 ## 数据文件与备份
 
@@ -99,7 +99,7 @@ outputs/
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-开发商／发行商筛选、首次观察日期和家庭采集已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](MANUFACTURER_FACETS.md)和[时间分类](TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
+开发商／发行商筛选、首次观察日期和家庭采集已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](docs/guides/MANUFACTURER_FACETS.md)和[时间分类](docs/guides/TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
 
 ## 证据与故障排查
 
@@ -114,6 +114,6 @@ outputs/
 | 页面拒绝候选库 | 获取可信客户端运行，或显式允许浏览候选 |
 | 元数据未知或补全为 `partial` | 查看逐应用字段状态和来源错误；缺失不等于不支持 |
 | 页面仍显示旧数据 | 核对 `--input`、current 指针并刷新；平面文件不会替换已核验运行 |
-| 家庭共享游戏缺失 | v1.1.0 没有家庭来源；`main` 核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](STEAM_FAMILIES.md) |
+| 家庭共享游戏缺失 | v1.1.0 没有家庭来源；`main` 核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](docs/guides/STEAM_FAMILIES.md) |
 
-可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](AUDIT_REMEDIATION.md)、[时间语义](TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。
+可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](docs/validation/AUDIT_REMEDIATION.md)、[时间语义](docs/guides/TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。

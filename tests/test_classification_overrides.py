@@ -9,7 +9,7 @@ from classification_overrides import load_overrides, read_rules
 from classify_games import classify_library
 from classify_steam_games import classify_one, find_known
 from steam_runs import publish_run, load_library, resolve_artifact, manifest_path
-from test_phase_two import run_bundle
+from support import run_bundle
 
 
 class ClassificationOverridesTests(unittest.TestCase):

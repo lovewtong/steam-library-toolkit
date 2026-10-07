@@ -11,18 +11,7 @@ from unittest.mock import patch
 from steam_runs import publish_run, load_library, manifest_path
 from steam_sources import SourceResult, reconcile
 
-ROOT = Path(__file__).resolve().parents[1]
-ACCOUNT = '76561198000000001'
-
-
-def run_bundle(run, ids=(1, 2)):
-    rows, audit = reconcile([SourceResult('client_library',
-        [{'appid': i, 'name': 'Fixture', 'app_type': 'game'} for i in ids],
-        steam_id=ACCOUNT, completeness={'verified': True})])
-    audit.update(run_id=run, producer={'git_commit': 'fixture', 'dirty': False})
-    for row in rows:
-        row.update(run_id=run, playtime_minutes=None)
-    return rows, audit
+from support import ROOT, ACCOUNT, run_bundle
 
 
 class FailureAndScaleTests(unittest.TestCase):
@@ -83,7 +72,7 @@ class FailureAndScaleTests(unittest.TestCase):
 import sys
 from pathlib import Path
 from unittest.mock import patch
-from test_phase_two import run_bundle
+from support import run_bundle
 from steam_lock import collection_lock
 from steam_runs import publish_run, manifest_path, atomic_json
 target=Path(sys.argv[1])

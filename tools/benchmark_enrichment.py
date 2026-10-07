@@ -44,9 +44,10 @@ def main():
     parser.add_argument('--phase', choices=('prepare', 'cold', 'warm1', 'warm2', 'warm3', 'subset1', 'subset2', 'subset4', 'summary'), required=True)
     args = parser.parse_args()
     sys.path.insert(0, str(args.repo.resolve()))
-    import steam_collect
+    from steam_library_toolkit import store
     import steam_http
-    from steam_enrich import enrich, library_target
+    from steam_enrich import enrich
+    from steam_library_toolkit.paths import library_target
     from steam_runs import new_run_metadata, load_library, manifest_path, resolve_artifact
     from steam_sources import atomic_json
     from classification_overrides import load_overrides, read_rules
@@ -67,7 +68,7 @@ def main():
                  'script_sha256': digest(Path(__file__).read_bytes()),
                  'source_run_id': audit['run_id'], 'records': len(rows),
                  'ordered_appids': [r['appid'] for r in rows], 'subset': subset,
-                 'gate_interval_seconds': steam_collect.STORE_GATE.interval}
+                 'gate_interval_seconds': store.STORE_GATE.interval}
     if args.phase == 'prepare':
         assert not frozen_path.exists(), 'Use a new output directory'
         assert set(subset) <= {r['appid'] for r in rows}
@@ -113,7 +114,7 @@ def main():
     attempts, grants, defers = [], [], []
     trace_lock = threading.Lock()
     original_request = steam_http.request_once
-    gate = steam_collect.STORE_GATE
+    gate = store.STORE_GATE
     original_wait, original_defer = gate.wait, gate.defer
     origin = time.monotonic()
 

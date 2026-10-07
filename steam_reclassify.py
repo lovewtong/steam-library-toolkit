@@ -5,7 +5,7 @@ from pathlib import Path
 from steam_lock import collection_lock
 from steam_runs import resolve_artifact, manifest_path, new_run_metadata, publish_run, check_previous
 from steam_schema import validate_artifacts
-from steam_enrich import library_target
+from steam_library_toolkit.paths import library_target
 
 
 def reclassify(source, output):

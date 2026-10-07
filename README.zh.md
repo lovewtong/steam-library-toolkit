@@ -66,7 +66,7 @@ npm ci
 
 ### 修改分类
 
-按[校正规则说明](CLASSIFICATION_OVERRIDES.md)填写 `classification_overrides.local.json`，然后生成新结果：
+按[校正规则说明](docs/guides/CLASSIFICATION_OVERRIDES.md)填写 `classification_overrides.local.json`，然后生成新结果：
 
 ```powershell
 .\.venv\Scripts\python.exe steam_reclassify.py --input outputs/enriched.json -o outputs/corrected.json
@@ -93,7 +93,7 @@ $steamAccount = 'YOUR_STEAMID64'
 
 在 `main` 中，加入 `--group-by developers publishers` 可按厂商分组；`--developer "NAME"`／`--publisher "NAME"` 按完整名称筛选。
 
-可以用 `--first-seen-year 2026 --first-seen-month 10` 按年月筛选，计划支持 `first_seen_year`／`first_seen_month` 分组。这是保存记录中首次观察到客户端或家庭成员的时间，不是购买日期。历史继承和未知值说明见[时间分类](TIME_CLASSIFICATION.md)。
+可以用 `--first-seen-year 2026 --first-seen-month 10` 按年月筛选，计划支持 `first_seen_year`／`first_seen_month` 分组。这是保存记录中首次观察到客户端或家庭成员的时间，不是购买日期。历史继承和未知值说明见[时间分类](docs/guides/TIME_CLASSIFICATION.md)。
 
 ### 帮助
 
@@ -111,7 +111,7 @@ $steamAccount = 'YOUR_STEAMID64'
 
 厂商筛选、首次观察日期和家庭采集已在 `main`，等待下一次发布。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
-v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](V1_2_RELEASE_PLAN.md)。候选尚未正式发布。
+v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](docs/releases/V1_2_RELEASE_PLAN.md)。候选尚未正式发布。
 
 ## 已知限制
 
@@ -119,19 +119,20 @@ v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](V1_2_RELE
 - Steam 各来源可能有差异或遗漏。API 和快照降级数据会标为候选；缺失的时长和元数据保留为未知。
 - 分类规则可能需要人工调整。开发商和发行商名称默认使用商店信息，也可以自行校正。
 - 多账号切换和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
-- v1.1.0 可能漏掉 Steam Families 游戏。`main` 加入了经过核验的家庭来源，见[家庭采集](STEAM_FAMILIES.md)和[账号场景](REAL_SCENARIO_VALIDATION.md)；仍不保证全家庭游戏完整或当前均可启动。
+- v1.1.0 可能漏掉 Steam Families 游戏。`main` 加入了经过核验的家庭来源，见[家庭采集](docs/guides/STEAM_FAMILIES.md)和[账号场景](docs/validation/REAL_SCENARIO_VALIDATION.md)；仍不保证全家庭游戏完整或当前均可启动。
 - 收藏计划仅支持导出，旧 Node／LevelDB 写回脚本不在支持流程内。
 - 暂时无法提供准确购买日期。首次观察日期只描述工具可取得的历史记录。
 
 ## 文档
 
+- [文档索引](docs/README.md)
 - [进阶用法](USAGE.zh.md) · [Advanced usage](USAGE.md)
-- [分类规则](CLASSIFICATION_RULES.md) · [个人校正](CLASSIFICATION_OVERRIDES.md) · [复核清单](CLASSIFICATION_REVIEW_QUEUE.md)
-- [元数据补全](METADATA_ENRICHMENT.md) · [开发商与发行商](MANUFACTURER_FACETS.md)
-- [收藏计划](STEAM_SYNC_README.md) · [时间字段](TIME_FIELD_CONTRACT.md) · [时间分类](TIME_CLASSIFICATION.md)
-- [发布说明](RELEASE_NOTES.md) · [稳定版范围](STABLE_RELEASE_SCOPE.md)
-- 测试记录：[性能](R2_PERFORMANCE_BASELINE.md)、[Windows 使用流程](R3_WINDOWS_ACCEPTANCE.md)、[Bug 修复](AUDIT_REMEDIATION.md)
-- [当前账号场景](REAL_SCENARIO_VALIDATION.md) · [下一版本范围](V1_2_RELEASE_PLAN.md)
+- [分类规则](docs/guides/CLASSIFICATION_RULES.md) · [个人校正](docs/guides/CLASSIFICATION_OVERRIDES.md) · [复核清单](docs/guides/CLASSIFICATION_REVIEW_QUEUE.md)
+- [元数据补全](docs/guides/METADATA_ENRICHMENT.md) · [开发商与发行商](docs/guides/MANUFACTURER_FACETS.md)
+- [收藏计划](docs/guides/STEAM_SYNC_README.md) · [时间字段](docs/guides/TIME_FIELD_CONTRACT.md) · [时间分类](docs/guides/TIME_CLASSIFICATION.md)
+- [发布说明](RELEASE_NOTES.md) · [稳定版范围](docs/releases/STABLE_RELEASE_SCOPE.md)
+- 测试记录：[性能](docs/validation/R2_PERFORMANCE_BASELINE.md)、[Windows 使用流程](docs/validation/R3_WINDOWS_ACCEPTANCE.md)、[Bug 修复](docs/validation/AUDIT_REMEDIATION.md)
+- [当前账号场景](docs/validation/REAL_SCENARIO_VALIDATION.md) · [下一版本范围](docs/releases/V1_2_RELEASE_PLAN.md)
 
 详细说明和测试记录目前主要使用中文。
 
@@ -147,10 +148,13 @@ v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](V1_2_RELE
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py"
 npm test
 .\.venv\Scripts\python.exe tools/check_secrets.py
+.\.venv\Scripts\python.exe tools/check_docs.py
 git diff --check
 ```
 
 修改命令或功能时，请同步中英文 README 和使用说明。
+
+根目录 Python 脚本保留为命令入口。运行所需的 Node 代码位于 `node_bridge/`，开发脚本位于 `tools/`，旧实验工具位于 `legacy/`。
 
 ## 许可证
 

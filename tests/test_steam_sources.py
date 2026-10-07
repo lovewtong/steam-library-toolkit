@@ -135,7 +135,7 @@ class FileAndCollectionTests(unittest.TestCase):
         self.assertEqual(output.read_text(), "old")
 
     @patch("steam_collect.time.sleep")
-    @patch("steam_collect.get_store_result")
+    @patch("steam_library_toolkit.store.get_store_result")
     def test_metadata_cache_reuses_and_refreshes_without_losing_delisted_app(self, store, sleep):
         from steam_metadata import parse_fields
         details = {"app_type": "game", **parse_fields({'genres': [], 'categories': []})}
@@ -159,15 +159,15 @@ class FileAndCollectionTests(unittest.TestCase):
                 self.assertIsNone(steam_collect.get_store_details(10))
 
     @patch("steam_collect.time.sleep")
-    @patch("steam_collect.get_store_result", return_value={"status": "rate_limited", "details": None})
+    @patch("steam_library_toolkit.store.get_store_result", return_value={"status": "rate_limited", "details": None})
     def test_rate_limit_cache_expires_quickly_and_does_not_become_not_found(self, store, sleep):
-        with patch("steam_collect.time.time", return_value=1000):
+        with patch("steam_library_toolkit.store.time.time", return_value=1000):
             self.assertIsNone(steam_collect.cached_store_details(10, self.path))
-        with patch("steam_collect.time.time", return_value=1020):
+        with patch("steam_library_toolkit.store.time.time", return_value=1020):
             self.assertIsNone(steam_collect.cached_store_details(10, self.path))
         self.assertEqual(store.call_count, 1)
         self.assertEqual(json.loads((self.path/"10.json").read_text())["status"], "rate_limited")
-        with patch("steam_collect.time.time", return_value=1061):
+        with patch("steam_library_toolkit.store.time.time", return_value=1061):
             steam_collect.cached_store_details(10, self.path)
         self.assertEqual(store.call_count, 2)
 

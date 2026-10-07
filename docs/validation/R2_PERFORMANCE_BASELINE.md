@@ -31,7 +31,7 @@ wall 为整个 `enrich()` 调用时间，包含源校验及发布；内部时间
 - 外部脚本包装真实 `request_once` 与原 gate，仅记录状态和时间，不改变 URL、参数、限速、超时、重试、缓存、解析及发布逻辑。尝试数表示父进程调用真实 worker，不证明远端已收到请求；时间为父进程边界，不是精确网络发包时刻。生产审计仍不提供尝试/重试计数，不能以 cache_misses 代替。
 - 第一轮中断仅留下 165 条缓存，无完整报告，已排除；正式矩阵使用新的空目录。模拟 not_found 的脚本自检也不计入性能数据。没有重新登录、读取 Steam 凭据或执行收藏写回。
 
-[测量脚本](tools/benchmark_enrichment.py) 与本次外部脚本逐字节相同，SHA-256 为 `6f6e692b69af3ac8795c25d6f4c77134db7d0b5fd8e665979529099ba5095735`。[脱敏统计](R2_PERFORMANCE_RESULTS.json) 保存环境、源指针/库文件摘要、各轮统计与结果摘要；完整个人运行、transport 记录及逐轮 report/summary 保留本机 `outputs/r2-performance/baseline-1662c7a-retry1`。文件哈希用于一致性核对，不是独立证明测试真实性的数字签名。
+[测量脚本](../../tools/benchmark_enrichment.py) 与本次外部脚本逐字节相同，SHA-256 为 `6f6e692b69af3ac8795c25d6f4c77134db7d0b5fd8e665979529099ba5095735`。[脱敏统计](../../R2_PERFORMANCE_RESULTS.json) 保存环境、源指针/库文件摘要、各轮统计与结果摘要；完整个人运行、transport 记录及逐轮 report/summary 保留本机 `outputs/r2-performance/baseline-1662c7a-retry1`。文件哈希用于一致性核对，不是独立证明测试真实性的数字签名。
 
 在干净 checkout 中、准备相同已核验输入与网络环境后，按下列顺序执行。脚本固定使用上述 8 个 AppID，输入必须包含它们；输出应位于被 Git 排除的本地目录。不要使用 `python -O`，检查依赖正常启用的断言。复现测得的是运行时提交与网络状态，不保证与此次数值一致。
 

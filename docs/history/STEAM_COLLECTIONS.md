@@ -1,6 +1,8 @@
 # 在 Steam 应用里给游戏分类（收藏）
 
-未发布开发扩展支持开发商／发行商分组：使用 `steam_sync_collections.py --group-by developers publishers` 预览，显式 `--export-only` 导出绑定账号与运行的计划，详见 [厂商维度说明](MANUFACTURER_FACETS.md)。下文旧 Markdown 对照清单仍只覆盖原四个分组维度。
+> 历史记录：本页保留早期方案，不是当前操作指南。采集、分类与导出请使用[中文用法](../../USAGE.zh.md)；收藏写回未纳入支持范围。旧 Node 脚本已移至 `legacy/`，相关 npm 命令使用 `legacy:` 前缀。
+
+未发布开发扩展支持开发商／发行商分组：使用 `steam_sync_collections.py --group-by developers publishers` 预览，显式 `--export-only` 导出绑定账号与运行的计划，详见 [厂商维度说明](../guides/MANUFACTURER_FACETS.md)。下文旧 Markdown 对照清单仍只覆盖原四个分组维度。
 
 Steam 客户端**不支持**从外部批量写入我们的五维分类，只能通过 **收藏（Collections）** 在库内手动分组。
 

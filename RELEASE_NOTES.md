@@ -1,6 +1,6 @@
 # v1.0.0 发布说明
 
-首个稳定版本面向 **Windows、本机、单个明确账号**，提供采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。发布目标及检查约定见 [R5 发布准备](R5_RELEASE_PREPARATION.md)；正式发布时间和提交以 GitHub Release/标签为准。
+首个稳定版本面向 **Windows、本机、单个明确账号**，提供采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。发布目标及检查约定见 [R5 发布准备](docs/validation/R5_RELEASE_PREPARATION.md)；正式发布时间和提交以 GitHub Release/标签为准。
 
 ## 本版本交付
 
@@ -51,13 +51,13 @@ $steamAccount = 'YOUR_STEAMID64'
 
 R2 的 388 项冷缓存 582.236 秒、暖缓存中位 0.843 秒只描述指定环境，不保证所有网络/规模性能。多账号/多设备、Families、退款/撤销/免费周末变化、跨系统真人认证、自动收藏写回和旧 Node 写回工具尚未完成验收。哈希用于完整性检查，不是数字签名。源码凭据模式检查不等同于 Git 历史或全面安全审计。
 
-证据见 [R1](R1_CLASSIFICATION_REVIEW.md)、[R2](R2_PERFORMANCE_BASELINE.md)、[R3](R3_WINDOWS_ACCEPTANCE.md)、[R4](R4_FINAL_REVIEW.md)。下方保留早期记录，其版本、计数和“待验证”状态属于当时，不覆盖本节的首发范围。
+证据见 [R1](docs/validation/R1_CLASSIFICATION_REVIEW.md)、[R2](docs/validation/R2_PERFORMANCE_BASELINE.md)、[R3](docs/validation/R3_WINDOWS_ACCEPTANCE.md)、[R4](docs/validation/R4_FINAL_REVIEW.md)。下方保留早期记录，其版本、计数和“待验证”状态属于当时，不覆盖本节的首发范围。
 
 ---
 
 # 历史记录：报告落地、采集契约与 picker 修复
 
-基线为 `a28e4de`。修复分支已推送至 PR #2；第一阶段验收、全库补全与分类覆盖结果见 [PHASE_ONE_ACCEPTANCE.md](PHASE_ONE_ACCEPTANCE.md)，合并状态以 GitHub 为准。
+基线为 `a28e4de`。修复分支已推送至 PR #2；第一阶段验收、全库补全与分类覆盖结果见 [PHASE_ONE_ACCEPTANCE.md](docs/validation/PHASE_ONE_ACCEPTANCE.md)，合并状态以 GitHub 为准。
 
 ## 行为变化
 
@@ -104,14 +104,14 @@ Windows/Linux/macOS 离线 CI 已运行通过，不访问真实 Steam 账号。`
 - 第一阶段回归为 63 项 Python、17 项 Node 测试通过；独立 clone 与全新虚拟环境也已通过。全库补全 388 条，376 条详情成功、12 条未取得，耗时约 13 分钟；输出仍为 388 条成员、377 game，原库及成员/类型/时长证据保持不变。
 - 账号许可 owner_account_ids 只在实际许可证据有数值时保留；不根据游戏名字/免费属性或数量差推断缺失原因。
 - 仍保留原来的客户端类型优先和 Web API 时长优先策略。报告示例中的不同优先级不是足以推翻当前实测契约的新证据，冲突值继续进入审计。
-- 独立补全命令 `steam_enrich.py` 已加入：读取已核验运行、使用独立输出，保留成员/类型/时长和采集时间；可按 AppID 补全，失败保留旧元数据并逐条记录。2026-09-13 增加 `--workers 1–4`、共享请求间隔、字段状态/覆盖率，以及类别 ID 支持能力判断；缓存 v4 会按需重新获取旧缓存。详见 [METADATA_ENRICHMENT.md](METADATA_ENRICHMENT.md)。完整 auth 统一别名、自动扫码回退仍是后续产品设计。
+- 独立补全命令 `steam_enrich.py` 已加入：读取已核验运行、使用独立输出，保留成员/类型/时长和采集时间；可按 AppID 补全，失败保留旧元数据并逐条记录。2026-09-13 增加 `--workers 1–4`、共享请求间隔、字段状态/覆盖率，以及类别 ID 支持能力判断；缓存 v4 会按需重新获取旧缓存。详见 [METADATA_ENRICHMENT.md](docs/guides/METADATA_ENRICHMENT.md)。完整 auth 统一别名、自动扫码回退仍是后续产品设计。
 - 家庭共享前后、退款/撤销/免费周末、跨平台长期 QR、同名机器、多账号真实切换和绝对完整性协议仍待相应真实环境验收。没有为测试改变账号权益。
 - 27 条未知时长仍未恢复。不能填 0，`semantic_completeness_proven` 仍为 false。
 - 收藏写回路径仍需独立治理，本次不进行账号/收藏写操作。
 
 ## 后续真人验收清单
 
-第二阶段已增加协议字段类型采样、真实进程中断/刷盘失败/万级库测试，并修复非有限令牌时间校验及历史时长摘要。当前本地回归为 69 项 Python、20 项 Node；真人场景的完成范围见 [PHASE_TWO_VALIDATION.md](PHASE_TWO_VALIDATION.md)，不能将模拟测试视为跨环境真人验收。
+第二阶段已增加协议字段类型采样、真实进程中断/刷盘失败/万级库测试，并修复非有限令牌时间校验及历史时长摘要。当前本地回归为 69 项 Python、20 项 Node；真人场景的完成范围见 [PHASE_TWO_VALIDATION.md](docs/validation/PHASE_TWO_VALIDATION.md)，不能将模拟测试视为跨环境真人验收。
 
 - [ ] 现有合法家庭环境的 self/shared 对照与 owner evidence。
 - [ ] 自然发生的退款/撤销前后快照，旧快照不复活移除成员。

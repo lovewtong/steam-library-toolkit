@@ -10,7 +10,7 @@ import re
 from steam_runs import manifest_path, resolve_artifact, load_library
 from steam_schema import validate_artifacts
 from steam_sources import atomic_json, select_for_classification
-from steam_picker_server import normalized_games
+from steam_library_toolkit.view_model import normalized_games
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CONFIG_PATH = SCRIPT_DIR / 'config_local.json'

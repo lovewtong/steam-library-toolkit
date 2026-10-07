@@ -11,7 +11,7 @@ from classify_steam_games import classify_one, find_known
 from steam_picker_server import PickerLibrary
 from steam_runs import publish_run, resolve_artifact
 from steam_sync_collections import build_plan
-from test_phase_two import run_bundle, ACCOUNT
+from support import run_bundle, ACCOUNT
 from tools.review_classification_sample import evaluate, FIXTURE, FIXTURES, ROOT
 
 

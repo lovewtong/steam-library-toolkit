@@ -11,10 +11,10 @@ import requests
 
 from steam_http import get_response, RequestCancelled, SourceCoolingDown
 from steam_metadata import RequestGate, parse_fields, merge_fields, apply_observation
-from steam_collect import cached_store_details
+from steam_library_toolkit.store import cached_store_details
 from steam_sources import SourceResult, reconcile
 from steam_runs import publish_run, resolve_artifact, manifest_path
-from test_phase_two import run_bundle
+from support import run_bundle
 
 
 class HTTPDeadlineTests(unittest.TestCase):
@@ -124,7 +124,7 @@ class AuditFixTests(unittest.TestCase):
             source = Path(directory) / 'apps.txt'
             source.write_text('1 Example\n', encoding='utf-8')
             result = {'status': 'success', 'details': {'app_type': 'game', **parse_fields({})}}
-            with patch('steam_collect.get_store_result', return_value=result) as fetch:
+            with patch('steam_library_toolkit.store.get_store_result', return_value=result) as fetch:
                 for expected in ('store_api', 'store_cache'):
                     audit = {}
                     rows = collect(apps_file=source, use_api=False, use_client=False, audit=audit,
@@ -149,7 +149,7 @@ class AuditFixTests(unittest.TestCase):
             states = []
             for index, data in enumerate(({}, {'genres': []})):
                 audit = {}
-                with patch('steam_collect.get_store_result', return_value={'status': 'success', 'details': parse_fields(data)}):
+                with patch('steam_library_toolkit.store.get_store_result', return_value={'status': 'success', 'details': parse_fields(data)}):
                     rows = collect(apps_file=source, use_api=False, use_client=False, audit=audit,
                                    cache_dir=Path(directory) / str(index))
                 target = Path(directory) / f'library{index}.json'
@@ -167,7 +167,7 @@ class AuditFixTests(unittest.TestCase):
         gate = RequestGate(1.5)
         response = Mock(status_code=429, headers={'Retry-After': '120'})
         with tempfile.TemporaryDirectory() as directory, \
-                patch('steam_collect.STORE_GATE', gate), \
+                patch('steam_library_toolkit.store.STORE_GATE', gate), \
                 patch('steam_http.request_once', return_value=response) as request:
             cached_store_details(1, directory)
             for appid in (2, 3):
@@ -193,10 +193,10 @@ class AuditFixTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             observation = {}
             result = {'status': 'success', 'details': parse_fields({})}
-            with patch('steam_collect.get_store_result', return_value=result), patch('steam_collect.time.time', return_value=100):
+            with patch('steam_library_toolkit.store.get_store_result', return_value=result), patch('steam_library_toolkit.store.time.time', return_value=100):
                 cached_store_details(1, directory)
-            with patch('steam_collect.get_store_result', side_effect=AssertionError('cache expected')), \
-                    patch('steam_collect.time.time', return_value=200):
+            with patch('steam_library_toolkit.store.get_store_result', side_effect=AssertionError('cache expected')), \
+                    patch('steam_library_toolkit.store.time.time', return_value=200):
                 stats = {}
                 details = cached_store_details(1, directory, audit_meta=stats, observation=observation)
             self.assertEqual(observation, {'source': 'store_cache', 'fetched_at': 100, 'read_at': 200})

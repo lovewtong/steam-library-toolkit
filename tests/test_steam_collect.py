@@ -98,7 +98,7 @@ class CollectionTests(unittest.TestCase):
         self.assertEqual(len(games), 3)
 
     @patch("steam_collect.time.sleep")
-    @patch("steam_collect.get_store_result", return_value={"status": "not_found", "details": None})
+    @patch("steam_library_toolkit.store.get_store_result", return_value={"status": "not_found", "details": None})
     @patch("steam_collect.load_config", side_effect=AssertionError("must not read credentials"))
     def test_no_api_and_unavailable_store_keep_license_entries(self, config, store, sleep):
         with contextlib.redirect_stdout(io.StringIO()):

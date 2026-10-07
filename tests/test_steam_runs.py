@@ -36,7 +36,7 @@ class GenerationTests(unittest.TestCase):
     def test_failed_render_or_manifest_commit_preserves_entire_previous_generation(self):
         self.publish("first")
         pointer = manifest_path(self.output).read_bytes()
-        with patch("classify_games.write_csv", side_effect=OSError("disk full")), self.assertRaises(OSError):
+        with patch("steam_library_toolkit.tables.write_csv", side_effect=OSError("disk full")), self.assertRaises(OSError):
             self.publish("render_failed", ids=(30,))
         self.assertEqual(manifest_path(self.output).read_bytes(), pointer)
         from steam_runs import atomic_json
@@ -63,7 +63,7 @@ class GenerationTests(unittest.TestCase):
         pointer = manifest_path(self.output).read_bytes()
         def truncate(rows, path):
             path.write_text("appid,run_id\n", encoding="utf-8")
-        with patch("classify_games.write_csv", side_effect=truncate), self.assertRaises(RuntimeError):
+        with patch("steam_library_toolkit.tables.write_csv", side_effect=truncate), self.assertRaises(RuntimeError):
             self.publish("broken_csv")
         self.assertEqual(manifest_path(self.output).read_bytes(), pointer)
 

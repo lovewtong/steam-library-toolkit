@@ -66,7 +66,7 @@ The first command collects the library and creates its audit and classification 
 
 ### Adjust classifications
 
-Add your rules to `classification_overrides.local.json`, following the [correction guide](CLASSIFICATION_OVERRIDES.md), then rebuild to a new output:
+Add your rules to `classification_overrides.local.json`, following the [correction guide](docs/guides/CLASSIFICATION_OVERRIDES.md), then rebuild to a new output:
 
 ```powershell
 .\.venv\Scripts\python.exe steam_reclassify.py --input outputs/enriched.json -o outputs/corrected.json
@@ -93,7 +93,7 @@ $steamAccount = 'YOUR_STEAMID64'
 
 On `main`, add `--group-by developers publishers` for manufacturer groups, or `--developer "NAME"` / `--publisher "NAME"` to filter by an exact name.
 
-Filter by `--first-seen-year 2026 --first-seen-month 10` and group plans by `first_seen_year` / `first_seen_month`. These dates refer to the first saved observation of a client or family member, not the purchase date. See [time classification](TIME_CLASSIFICATION.md) for history and unknown values.
+Filter by `--first-seen-year 2026 --first-seen-month 10` and group plans by `first_seen_year` / `first_seen_month`. These dates refer to the first saved observation of a client or family member, not the purchase date. See [time classification](docs/guides/TIME_CLASSIFICATION.md) for history and unknown values.
 
 ### Help
 
@@ -111,7 +111,7 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 Developer/publisher filters, first-observation dates and family collection are on `main`, awaiting the next release. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
-The v1.2.0 scope and candidate are frozen at `044a435`; see the [release plan](V1_2_RELEASE_PLAN.md). The candidate has not been published.
+The v1.2.0 scope and candidate are frozen at `044a435`; see the [release plan](docs/releases/V1_2_RELEASE_PLAN.md). The candidate has not been published.
 
 ## Limitations
 
@@ -119,19 +119,20 @@ The v1.2.0 scope and candidate are frozen at `044a435`; see the [release plan](V
 - Steam sources can disagree or omit entries. API and snapshot fallbacks are marked as candidates; missing playtime and metadata stay unknown.
 - Classification rules sometimes need manual correction. Developer and publisher names follow the store listing unless you override them.
 - Multi-account switching and expiring access need more testing. The browser's classification labels are currently in Chinese.
-- v1.1.0 can miss Steam Families games. `main` adds a checked family source; see [family collection](STEAM_FAMILIES.md) and the [scenario report](REAL_SCENARIO_VALIDATION.md). This does not guarantee that every family game is collected or playable.
+- v1.1.0 can miss Steam Families games. `main` adds a checked family source; see [family collection](docs/guides/STEAM_FAMILIES.md) and the [scenario report](docs/validation/REAL_SCENARIO_VALIDATION.md). This does not guarantee that every family game is collected or playable.
 - Plans are export-only. The older Node/LevelDB writers are not part of the supported workflow.
 - Exact purchase dates are not available. First-observation dates only describe the saved history available to the tool.
 
 ## Documentation
 
+- [Document index](docs/README.md)
 - [Advanced usage](USAGE.md) · [进阶用法](USAGE.zh.md)
-- [Classification rules](CLASSIFICATION_RULES.md) · [Personal corrections](CLASSIFICATION_OVERRIDES.md) · [Review queue](CLASSIFICATION_REVIEW_QUEUE.md)
-- [Metadata enrichment](METADATA_ENRICHMENT.md) · [Developers and publishers](MANUFACTURER_FACETS.md)
-- [Collection plans](STEAM_SYNC_README.md) · [Time fields](TIME_FIELD_CONTRACT.md) · [Time classification](TIME_CLASSIFICATION.md)
-- [Release notes](RELEASE_NOTES.md) · [Stable scope](STABLE_RELEASE_SCOPE.md)
-- Test reports: [performance](R2_PERFORMANCE_BASELINE.md), [Windows workflow](R3_WINDOWS_ACCEPTANCE.md), [bug fixes](AUDIT_REMEDIATION.md)
-- [Current account scenarios](REAL_SCENARIO_VALIDATION.md) · [Next release scope](V1_2_RELEASE_PLAN.md)
+- [Classification rules](docs/guides/CLASSIFICATION_RULES.md) · [Personal corrections](docs/guides/CLASSIFICATION_OVERRIDES.md) · [Review queue](docs/guides/CLASSIFICATION_REVIEW_QUEUE.md)
+- [Metadata enrichment](docs/guides/METADATA_ENRICHMENT.md) · [Developers and publishers](docs/guides/MANUFACTURER_FACETS.md)
+- [Collection plans](docs/guides/STEAM_SYNC_README.md) · [Time fields](docs/guides/TIME_FIELD_CONTRACT.md) · [Time classification](docs/guides/TIME_CLASSIFICATION.md)
+- [Release notes](RELEASE_NOTES.md) · [Stable scope](docs/releases/STABLE_RELEASE_SCOPE.md)
+- Test reports: [performance](docs/validation/R2_PERFORMANCE_BASELINE.md), [Windows workflow](docs/validation/R3_WINDOWS_ACCEPTANCE.md), [bug fixes](docs/validation/AUDIT_REMEDIATION.md)
+- [Current account scenarios](docs/validation/REAL_SCENARIO_VALIDATION.md) · [Next release scope](docs/releases/V1_2_RELEASE_PLAN.md)
 
 The detailed guides and test reports are mostly in Chinese.
 
@@ -147,10 +148,13 @@ Please include the command you ran, the expected result and the error message wh
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py"
 npm test
 .\.venv\Scripts\python.exe tools/check_secrets.py
+.\.venv\Scripts\python.exe tools/check_docs.py
 git diff --check
 ```
 
 Keep the English and Chinese README and usage guides in sync when changing commands or behavior.
+
+Root Python scripts remain the command entry points. Runtime Node code is in `node_bridge/`, developer scripts in `tools/`, and retired experiments in `legacy/`.
 
 ## License
 

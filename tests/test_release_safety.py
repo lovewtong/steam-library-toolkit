@@ -9,7 +9,7 @@ class ImportAccountGuardTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         for value in ('', 'not-an-account', '0', str(2**32), str(2**56)):
             with self.subTest(value=value):
-                result = subprocess.run(['node', 'import_script.js'], cwd=root,
+                result = subprocess.run(['node', 'legacy/import_script.js'], cwd=root,
                                         env={**os.environ, 'STEAM_ID_32': value},
                                         capture_output=True, encoding='utf-8', timeout=10)
                 self.assertEqual(result.returncode, 1)

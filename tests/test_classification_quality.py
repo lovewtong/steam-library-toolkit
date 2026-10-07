@@ -9,7 +9,7 @@ from classify_games import classify_library
 from classify_steam_games import classify_one
 from classification_overrides import load_overrides
 from steam_runs import publish_run, resolve_artifact
-from test_phase_two import run_bundle
+from support import run_bundle
 
 
 class ClassificationQualityTests(unittest.TestCase):

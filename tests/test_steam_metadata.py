@@ -60,7 +60,7 @@ class MetadataFieldsTests(unittest.TestCase):
         self.assertEqual(gate.wait.call_count, 2)
 
     def test_old_cache_cannot_keep_incorrect_controller_result(self):
-        from steam_collect import cached_store_details
+        from steam_library_toolkit.store import cached_store_details
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / '1.json'
             old = {'schema_version': 4, 'fetched_at': 1000, 'status': 'success',
@@ -68,8 +68,8 @@ class MetadataFieldsTests(unittest.TestCase):
                                'is_controller': False, 'is_multiplayer': False}}
             path.write_text(json.dumps(old), encoding='utf-8')
             result = {'status': 'success', 'details': parse_fields({'categories': [{'id': 28, 'description': '完全支持控制器'}]})}
-            with patch('steam_collect.time.time', return_value=1001), \
-                    patch('steam_collect.get_store_result', return_value=result) as fetch:
+            with patch('steam_library_toolkit.store.time.time', return_value=1001), \
+                    patch('steam_library_toolkit.store.get_store_result', return_value=result) as fetch:
                 self.assertTrue(cached_store_details(1, directory)['is_controller'])
                 self.assertTrue(cached_store_details(1, directory)['is_controller'])
                 self.assertEqual(fetch.call_count, 1)

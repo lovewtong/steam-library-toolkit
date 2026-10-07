@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {familyLibrary, MAX_APPS} = require('../tools/steam_families.cjs');
-const {collectWebSources} = require('../tools/steam_web_sources.cjs');
+const {familyLibrary, MAX_APPS} = require('../node_bridge/steam_families.cjs');
+const {collectWebSources} = require('../node_bridge/steam_web_sources.cjs');
 const account = '76561198000000001', other = '76561198000000002';
 const group = () => ({family_groupid: '123', family_group: {members: [{steamid: account, role: 1}, {steamid: other, role: 2}]}});
 const app = (appid = 3017860, owners = [other]) => ({appid, name: 'Game', app_type: 1, exclude_reason: 0,

@@ -133,8 +133,8 @@ def check_previous(output, rows, audit, max_removal_ratio=.20):
 
 def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None, allow_candidates=False):
     """Write and validate all files first. current.json is the sole authoritative commit point."""
-    from classify_games import classify_library, write_csv, write_md_table
-    from classify_steam_games import classify_one
+    from steam_library_toolkit.tables import classify_library, write_csv, write_md_table
+    from steam_library_toolkit.classification import classify_one
     output = Path(output)
     candidate = not trusted_current_membership(audit)
     if candidate and not allow_candidates:

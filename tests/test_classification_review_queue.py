@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 import steam_review_classification as review
 from steam_runs import manifest_path, publish_run, resolve_artifact
-from test_phase_two import run_bundle
+from support import run_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -49,7 +49,7 @@ class ClassificationReviewQueueTests(unittest.TestCase):
     def test_priorities_overlap_and_saved_values_without_reclassification(self):
         before = self.snapshot()
         with patch('classification_overrides.load_overrides', side_effect=AssertionError('Current rules forbidden')), \
-             patch('classify_steam_games.classify_one', side_effect=AssertionError('Reclassification forbidden')):
+             patch('steam_library_toolkit.classification.classify_one', side_effect=AssertionError('Reclassification forbidden')):
             report, *_ = review.build_review(self.source)
         self.assertEqual(self.snapshot(), before)
         self.assertEqual(report['summary']['games'], 5)
