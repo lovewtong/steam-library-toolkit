@@ -126,13 +126,13 @@ The classifiers select explicit `game` types by default. `--include-type all` in
 
 The picker uses Chinese classification labels in both documentation modes. Refresh the browser after publishing a new run. `--open INDEX` launches a game in Steam; it is not a preview operation.
 
-The review queue is available on main and in v1.1.0, not v1.0.0:
+The review queue is available on main and in v1.1.0 or later, not v1.0.0:
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-Developer/publisher filters, first-observation dates and family collection are available on `main`, but are not included in v1.0.0 or v1.1.0. See [manufacturer usage](docs/guides/MANUFACTURER_FACETS.md) and [time classification](docs/guides/TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
+Developer/publisher filters, first-observation dates and family collection are available in v1.2.0 and on `main`, but are not included in v1.0.0 or v1.1.0. The package-installation commands above are development features after v1.2.0; use root scripts on that release tag. See [manufacturer usage](docs/guides/MANUFACTURER_FACETS.md) and [time classification](docs/guides/TIME_CLASSIFICATION.md). Use the README's commands to preview and export plans; do not pass them to legacy Node writers.
 
 ## Evidence and troubleshooting
 
@@ -147,6 +147,6 @@ Types use client, PICS, store/cache and historical evidence, leaving unresolved 
 | Candidate data rejected by the picker | Obtain a verified client run, or explicitly opt into candidate browsing |
 | Unknown metadata or `partial` enrichment | Read per-app field states and source errors; missing does not mean unsupported |
 | Old data still displayed | Check `--input`, the selected current pointer and browser refresh; flat exports do not replace verified generations |
-| Family-shared games missing | v1.1.0 lacks the family source. `main` checks and merges eligible family games; endpoint success still does not prove full coverage. See [family collection](docs/guides/STEAM_FAMILIES.md) |
+| Family-shared games missing | v1.1.0 lacks the family source. v1.2.0 and `main` check and merge eligible family games; endpoint success still does not prove full coverage. See [family collection](docs/guides/STEAM_FAMILIES.md) |
 
 `--diagnose` is a credential-free, offline first check. Configured HTTP(S) proxies are used without printing their addresses or passwords. Do not share raw authentication or proxy diagnostics containing secrets. See [audit fixes](docs/validation/AUDIT_REMEDIATION.md), [time semantics](docs/guides/TIME_FIELD_CONTRACT.md) and [release migration](RELEASE_NOTES.md) for details.

@@ -1,3 +1,93 @@
+# v1.2.0 — 厂商、首次观察时间与 Steam 家庭库
+
+[中文](#中文) · [English](#english)
+
+发布提交：`044a435a27023034071ac460965b5013fe37df3d`。这是已冻结的候选，交付方式仍为源码和根目录脚本。后续 PR #15／#16 的目录整理、Python 包安装和 `steam-library` 命令不包含在本版本；主线上的 `1.3.0.dev0` 不是正式发行版本。
+
+## 中文
+
+### 相对 v1.1.0 的变化
+
+- 保存开发商、发行商名称及字段来源，支持按 AppID 人工校正、页面精确名称筛选和收藏计划分组。名称缺失保持未知；不会自动合并公司别名。
+- 记录同账号的首次观察时间，支持 UTC 年／月筛选和分组。已有历史可以显式继承，游戏移除后再次出现会保留日期。这个时间不是购买、激活或加入家庭日期。
+- 默认核验客户端与 Steam Families 来源，将符合资格的家庭游戏并入库，区分实际成员来源、自有和共享证据。家庭验证失败时保留旧结果；`--no-family` 需要独立输出，不能覆盖家庭库。
+- 修正 DOOM: The Dark Ages（3017860）和 Warhammer 40,000: Space Marine 2（2183900）的主类／子类，内置 AppID 规则从 34 条增至 36 条。其他分类字段继续显示人工确认、推断、生成或未知。
+- 拒绝无效的来源完整性字段和计数，保护旧运行指针。采集、审计、补全、分类校正、本地浏览和收藏计划导出继续使用一致的成员规则。
+
+### 安装与升级
+
+下载本 Release 的源码包并解压，在项目根目录执行；也可以克隆该标签：
+
+```powershell
+git clone --branch v1.2.0 https://github.com/lovewtong/steam-library-toolkit.git
+cd steam-library-toolkit
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
+npm ci
+.\.venv\Scripts\python.exe -m pip check
+```
+
+Windows 真人流程已在 Python 3.14.2、Node 22.19.0 验证；三平台离线 CI 使用 Python 3.12、Node 22。本标签没有 `pyproject.toml`，请使用根目录脚本。
+
+升级前备份旧源码、个人配置、`classification_overrides.local.json` 和完整运行目录，尤其是 `.current.json` 与它引用的隐藏 `.runs` 目录。首次运行使用独立输出。以下路径和账号均为示例：
+
+```powershell
+$steamAccount = 'YOUR_STEAMID64'
+.\.venv\Scripts\python.exe steam_collect.py --local-session --account $steamAccount --no-store --strict-membership --history-from outputs/v1_1/library.json -o outputs/v1_2/library.json
+.\.venv\Scripts\python.exe steam_enrich.py --input outputs/v1_2/library.json -o outputs/v1_2/enriched.json
+.\.venv\Scripts\python.exe steam_picker.py --serve --input outputs/v1_2/enriched.json
+# 另一终端预览厂商与时间分组
+.\.venv\Scripts\python.exe steam_sync_collections.py --input outputs/v1_2/enriched.json --account $steamAccount --group-by publishers first_seen_month --dry-run
+```
+
+只有同账号的完整可信运行可作为 `--history-from`；没有这样的历史时省略该参数。离线重分类不补日期或厂商，旧记录缺字段时保持未知。商店缓存升级为 v6，旧缓存按需重新抓取。
+
+回退使用备份的旧软件、旧配置和旧运行。新家庭数据扩展了 schema v2，旧软件可能拒绝读取；本版本不保证旧程序能读取新家庭运行。个人条目整体优先于内置条目，撤销后需要重建到新目标。
+
+### 验证与限制
+
+- 冻结提交的[三平台主线 CI](https://github.com/lovewtong/steam-library-toolkit/actions/runs/37471394949) 全部通过，每平台 168 Python／36 Node；发布前在 Windows 独立候选目录重跑，同样通过，依赖检查和源码凭据模式检查通过。
+- 候选上的离线升级验收使用保存的真实单账号数据：388 条旧记录重分类时字段不变、缺日期和厂商仍未知；个人覆盖与撤销、同账号历史继承、表格／页面／计划一致，以及 v1.1.0 软件读取备份旧运行均通过。原指针和产物哈希未变。
+- 保存的家庭库为 829 条、818 个 game，其中 441 条共享、460 条个人总时长未知。本轮重放保存的来源证据，继承 388 条旧历史并检查两个参照的暖缓存补全；没有重新认证、启动游戏或进行全库冷缓存计时。
+- 此前干净 `8c5350f` 已完成 Windows 本地登录的家庭生产采集，两个参照都作为家庭共享进入结果。这不证明全家庭逐项覆盖或当前可启动性。多账号切换、Steam 离线恢复、自然权益变化和 Linux/macOS 真实认证仍待验收。
+- 收藏计划只导出，`write_supported=false`、`ownership_revalidated=false`。全库分类准确率、准确购买日期、安装器和自动更新不在本版承诺内。源码包只包含该提交的 119 个受 Git 管理文件，不附账号、凭据、缓存或个人库。
+
+冻结前的专题说明：[厂商](https://github.com/lovewtong/steam-library-toolkit/blob/044a435a27023034071ac460965b5013fe37df3d/MANUFACTURER_FACETS.md)、[首次观察](https://github.com/lovewtong/steam-library-toolkit/blob/044a435a27023034071ac460965b5013fe37df3d/TIME_CLASSIFICATION.md)、[Steam Families](https://github.com/lovewtong/steam-library-toolkit/blob/044a435a27023034071ac460965b5013fe37df3d/STEAM_FAMILIES.md)。源码中的版本状态描述当时的开发检查点，正式发布状态以本 Release 和标签为准。
+
+- 标签推送后额外触发的[发布标签 CI](https://github.com/lovewtong/steam-library-toolkit/actions/runs/37576350841) 也已通过，仍为同一 `044a435`，三平台各 168 Python／36 Node。GitHub 实际标签源码归档可匿名下载，119 个文件全部匹配该提交。
+
+## English
+
+### Changes since v1.1.0
+
+- Developer and publisher names now retain field provenance and support per-AppID corrections, exact-name browser filters and collection-plan groups. Missing names remain unknown; company aliases are not merged automatically.
+- Account-scoped first-observation history supports UTC year/month filters and groups. Explicitly inherited history survives removal and reappearance. These dates are observations, not purchase, activation or family-join dates.
+- Collection checks both the client and Steam Families sources and includes eligible shared family games. It preserves membership and ownership evidence. Failed family checks preserve the previous run; client-only `--no-family` output must use a separate target.
+- Corrected the primary genre and subgenre of DOOM: The Dark Ages (3017860) and Warhammer 40,000: Space Marine 2 (2183900). Built-in AppID rules increase from 34 to 36; other fields retain their actual reviewed, inferred, generated or unknown status.
+- Invalid completeness values and counts are rejected without replacing the previous pointer. Collection, auditing, enrichment, corrections, browsing and plan exports continue to share membership rules.
+
+### Install, upgrade and rollback
+
+Use the source archive or clone tag `v1.2.0`. Run the installation commands above from the source root. This release uses the root Python scripts and has no `pyproject.toml`. The later PR #15/#16 package layout and installed `steam-library` commands are outside this release; `1.3.0.dev0` on main is development metadata.
+
+Back up the old software, private settings, personal corrections and complete run directory, including both `.current.json` and the hidden `.runs` directory it references. Use a new output target on upgrade. `--history-from` requires a complete trusted run for the same account; omit it when no suitable history exists. Reclassification alone does not invent manufacturer names or dates. Store cache v6 refreshes older entries as needed.
+
+Rollback uses the preserved old software, old configuration and old run together. Older software may reject the extended family schema. A personal AppID entry replaces the whole built-in entry; applying or revoking it requires rebuilding to a new target.
+
+### Validation and limits
+
+The exact candidate passed Windows, Linux and macOS offline CI with 168 Python and 36 Node tests per platform. A separate Windows candidate checkout passed the same regressions, dependency checks and source credential-pattern scan before release. Live validation is limited to Windows, one explicit account and local-session authentication; the tested live environment used Python 3.14.2 and Node 22.19.0, while offline CI used Python 3.12 and Node 22.
+
+Candidate-specific offline acceptance preserved all 388 old records, kept absent dates/manufacturers unknown, applied and revoked a personal correction, inherited saved same-account history, and verified table/browser/plan agreement. Actual v1.1.0 source reopened the backed-up old run successfully. Source pointers and artifact hashes were unchanged.
+
+Saved family evidence contains 829 records, 818 games, 441 shared records and 460 unknown personal playtimes. This release acceptance replayed that saved evidence and checked warm-cache enrichment for the two reference games; it did not authenticate again, launch games or measure a full-library cold-cache run. Earlier clean `8c5350f` live collection included both references as family-shared games. Full family coverage, current launchability, multi-account switching, Steam offline recovery, natural entitlement changes and live Linux/macOS authentication remain unverified.
+
+Plans are export-only: `write_supported=false` and `ownership_revalidated=false`. Accurate purchase dates, full-library classification accuracy, an installer and automatic updates are outside this release. Archives contain only the candidate's 119 tracked source files. Private configuration, credentials, caches and library data are not attached. SHA-256 checksums verify downloaded bytes; they are not digital signatures.
+
+The [tag-triggered release CI](https://github.com/lovewtong/steam-library-toolkit/actions/runs/37576350841) also passed on the same `044a435` commit, with 168 Python and 36 Node tests on each platform. The actual GitHub tag archive was downloaded anonymously; all 119 files matched the candidate Git blobs.
+
+---
+
 # v1.0.0 发布说明
 
 首个稳定版本面向 **Windows、本机、单个明确账号**，提供采集、审计、元数据补全、分类校正、本地浏览和收藏计划导出。发布目标及检查约定见 [R5 发布准备](docs/validation/R5_RELEASE_PREPARATION.md)；正式发布时间和提交以 GitHub Release/标签为准。

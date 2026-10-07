@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "version": "v1.2.0",
+  "candidate": "044a435a27023034071ac460965b5013fe37df3d",
+  "tree": "6747477cfcbb9ca701858a9774ed300c8d9637d2",
+  "previous_release_commit": "88ce73b06491d2e53b0674d3d2338ee87eaefeda",
+  "source_file_count": 119,
+  "source_archive": "steam-library-toolkit-v1.2.0-source.zip",
+  "source_archive_sha256": "d04ce24a84064d57491333830b0c14b6bd7202ff0071eb3bea0316c9c5fbcb73",
+  "every_archive_file_matches_git_blob": true,
+  "private_data_attached": false,
+  "candidate_ci": {
+    "url": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37471394949",
+    "head_sha": "044a435a27023034071ac460965b5013fe37df3d",
+    "conclusion": "success",
+    "python_per_platform": 168,
+    "node_per_platform": 36,
+    "mode": "offline"
+  },
+  "windows_release_regression": {
+    "python": 168,
+    "node": 36,
+    "python_version": "3.14.2",
+    "node_version": "22.19.0",
+    "dependency_check": "passed",
+    "source_credential_pattern_scan": "passed"
+  },
+  "upgrade_acceptance": {
+    "checks": {
+      "exact_candidate_modules_and_clean_producer": true,
+      "old_run_backup_complete": true,
+      "old_fields_preserved_on_reclassification": true,
+      "missing_dates_and_manufacturers_remain_unknown": true,
+      "personal_correction_applied_and_revoked": true,
+      "personal_file_unchanged": true,
+      "same_account_saved_history_inherited": true,
+      "family_fields_and_unknown_playtime_preserved": true,
+      "table_picker_plan_consistent": true,
+      "manufacturer_and_time_combined_filter_consistent": true,
+      "family_dates_preserved_by_reclassify_and_enrich": true,
+      "candidate_page_and_api_passed": true,
+      "source_pointer_and_artifact_hashes_unchanged": true,
+      "v1_1_old_software_old_run_rollback": true
+    },
+    "limits": [
+      "Windows with existing Python dependencies; isolated source and npm ci --ignore-scripts",
+      "Saved real single-account evidence replay only; no new authentication or collection",
+      "History dates derive from saved source fetched_at, not current time or purchase time",
+      "Rollback is v1.1.0 plus its preserved old run; no promise to read new family schema",
+      "Two reference apps warm-cache enrichment only; no full-library cold benchmark"
+    ],
+    "mode": "offline_saved_single_account_evidence"
+  },
+  "release_limits": [
+    "No new live authentication during release acceptance",
+    "Multiplatform CI is offline; Windows single-account local session is the live boundary",
+    "No full family completeness or current launchability guarantee",
+    "No full-library cold-cache benchmark or classification accuracy guarantee",
+    "Purchase dates, Steam collection writes and later package layout are excluded"
+  ],
+  "tag_ci": {
+    "url": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37576350841",
+    "head_sha": "044a435a27023034071ac460965b5013fe37df3d",
+    "conclusion": "success",
+    "mode": "offline",
+    "python_per_platform": 168,
+    "node_per_platform": 36,
+    "platforms": [
+      "offline (macos-latest)",
+      "offline (ubuntu-latest)",
+      "offline (windows-latest)"
+    ]
+  },
+  "github_tag_archive": {
+    "tag_object": "0feeadae3739530f3b74fde71ec2064d17d9c2a7",
+    "tag_target": "044a435a27023034071ac460965b5013fe37df3d",
+    "anonymous_tag_archive_access": true,
+    "source_files": 119,
+    "all_github_tag_archive_files_match_git_blobs": true,
+    "github_tag_archive_sha256": "08b30acfa0a34282a157136ff53584368d5da0eb1c93039ba7678a57a1d6c1ad",
+    "metadata_verification": "authenticated_gh_api",
+    "anonymous_api_limit": "proxy_IP_rate_limit_exceeded"
+  },
+  "state": "published_and_verified",
+  "frozen_record": "v1.2.0-candidate.json",
+  "published_at": "2026-10-07T05:32:19Z",
+  "release_url": "https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0",
+  "publication_documentation_is_separate_from_release_source": true,
+  "postpublication_verification": {
+    "version": "v1.2.0",
+    "tag_target": "044a435a27023034071ac460965b5013fe37df3d",
+    "tag_object": "0feeadae3739530f3b74fde71ec2064d17d9c2a7",
+    "previous_release_unchanged": true,
+    "anonymous_tag_archive_access": true,
+    "source_files": 119,
+    "all_github_tag_archive_files_match_git_blobs": true,
+    "github_tag_archive_sha256": "08b30acfa0a34282a157136ff53584368d5da0eb1c93039ba7678a57a1d6c1ad",
+    "metadata_verification": "authenticated_gh_api",
+    "anonymous_api_limit": "proxy_IP_rate_limit_exceeded",
+    "release_url": "https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0",
+    "published_at": "2026-10-07T05:32:19Z",
+    "anonymous_release_and_assets_access": true,
+    "latest_stable": true,
+    "every_download_matches_local_asset_and_checksums": true,
+    "assets_sha256": {
+      "release-verification-v1.2.0.json": "ad0827accd76f79687e225fa9408171ce0c060ab4d0fb691b3a5516f9918b69a",
+      "RELEASE_NOTES-v1.2.0.md": "f5a40bf325edaa3e6001d7cf76b91abc0b3397768a0327e1fc24d4517192c011",
+      "SHA256SUMS.txt": "e9a7352287d9c2b8ee8232bde55fb0b6384f9215205134756b42a25bf86661e5",
+      "steam-library-toolkit-v1.2.0-source.zip": "d04ce24a84064d57491333830b0c14b6bd7202ff0071eb3bea0316c9c5fbcb73"
+    }
+  }
+}

@@ -126,13 +126,13 @@ outputs/
 
 无论阅读哪种语言的文档，当前页面分类标签都使用中文。发布新运行后刷新浏览器。`--open INDEX` 会在 Steam 中启动游戏，不是预览操作。
 
-分类复核清单已在 main 和 v1.1.0 中，v1.0.0 不包含此命令：
+分类复核清单已在 main 和 v1.1.0 及后续版本中，v1.0.0 不包含此命令：
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/enriched.json
 ```
 
-开发商／发行商筛选、首次观察日期和家庭采集已在 `main`，v1.0.0 和 v1.1.0 不包含这些功能，用法见[厂商说明](docs/guides/MANUFACTURER_FACETS.md)和[时间分类](docs/guides/TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
+开发商／发行商筛选、首次观察日期和家庭采集已在 v1.2.0 和 `main`，v1.0.0 和 v1.1.0 不包含这些功能。上方包安装命令属于 v1.2.0 之后的开发功能，该发行标签仍使用根目录脚本。用法见[厂商说明](docs/guides/MANUFACTURER_FACETS.md)和[时间分类](docs/guides/TIME_CLASSIFICATION.md)。收藏计划使用 README 中的命令预览和导出，不要交给旧 Node 写回工具。
 
 ## 证据与故障排查
 
@@ -147,6 +147,6 @@ outputs/
 | 页面拒绝候选库 | 获取可信客户端运行，或显式允许浏览候选 |
 | 元数据未知或补全为 `partial` | 查看逐应用字段状态和来源错误；缺失不等于不支持 |
 | 页面仍显示旧数据 | 核对 `--input`、current 指针并刷新；平面文件不会替换已核验运行 |
-| 家庭共享游戏缺失 | v1.1.0 没有家庭来源；`main` 核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](docs/guides/STEAM_FAMILIES.md) |
+| 家庭共享游戏缺失 | v1.1.0 没有家庭来源；v1.2.0 和 `main` 核验并合入符合共享资格的游戏，接口成功仍不证明全集覆盖。详见[家庭采集](docs/guides/STEAM_FAMILIES.md) |
 
 可先运行 `--diagnose` 进行不读取凭据、不联网的检查。已配置的 HTTP(S) 代理会被使用，但不会打印地址或密码。不要分享含密钥的原始认证或代理诊断。详细说明见[审计整改](docs/validation/AUDIT_REMEDIATION.md)、[时间语义](docs/guides/TIME_FIELD_CONTRACT.md)和[版本迁移](RELEASE_NOTES.md)。

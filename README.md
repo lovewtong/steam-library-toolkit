@@ -47,7 +47,7 @@ python -m venv .venv
 npm ci
 ```
 
-The checkout includes developer/publisher filters, first-observation dates and family collection. The package layout described here is a development change after the frozen v1.2.0 candidate. For v1.1.0, clone with `--branch v1.1.0` and follow that tag's README; it has no `pyproject.toml` or installed commands.
+The checkout includes developer/publisher filters, first-observation dates and family collection. The package layout described here is a development change after v1.2.0. For the stable release, clone with `--branch v1.2.0` and follow the tag's README and [release notes](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0); that tag uses root scripts and has no `pyproject.toml` or installed commands.
 
 You can also install this checkout with `python -m pip install .`, then use `steam-library collect`, `steam-library enrich`, `steam-library picker` and the other commands listed by `steam-library --help`. From a wheel installation, run `steam-library node --install` to prepare the Node dependencies. There is no published PyPI package; `1.3.0.dev0` is development build metadata, not a released version.
 
@@ -78,7 +78,7 @@ Add your rules to `classification_overrides.local.json`, following the [correcti
 .\.venv\Scripts\python.exe steam_picker.py --serve --input outputs/corrected.json
 ```
 
-On `main`, you can also inspect classifications that need review:
+You can also inspect classifications that need review:
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/corrected.json
@@ -96,7 +96,7 @@ $steamAccount = 'YOUR_STEAMID64'
 
 `--dry-run` previews the plan; `--export-only` saves it as JSON. The tool checks the saved account, library and file hashes before export. It does not write collections to Steam.
 
-On `main`, add `--group-by developers publishers` for manufacturer groups, or `--developer "NAME"` / `--publisher "NAME"` to filter by an exact name.
+Add `--group-by developers publishers` for manufacturer groups, or `--developer "NAME"` / `--publisher "NAME"` to filter by an exact name.
 
 Filter by `--first-seen-year 2026 --first-seen-month 10` and group plans by `first_seen_year` / `first_seen_month`. These dates refer to the first saved observation of a client or family member, not the purchase date. See [time classification](docs/guides/TIME_CLASSIFICATION.md) for history and unknown values.
 
@@ -112,11 +112,11 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 ## Versions
 
-[v1.1.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.1.0) is the latest published release. It adds the classification review queue and six AppID corrections to v1.0.0's collection, audit, enrichment, correction, browsing and plan-export workflow.
+[v1.2.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0) is the latest published release, fixed at `044a435`. It adds developer/publisher filters, first-observation history and checked family collection to the existing collection, audit, enrichment, correction, browsing and plan-export workflow.
 
-Developer/publisher filters, first-observation dates and family collection are on `main`, awaiting the next release. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
+The package layout and installed commands on `main` are later development changes, outside v1.2.0. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
-The v1.2.0 scope and candidate are frozen at `044a435`; see the [release plan](docs/releases/V1_2_RELEASE_PLAN.md). The candidate has not been published.
+The frozen scope, upgrade acceptance and publication checks are recorded in the [release plan](docs/releases/V1_2_RELEASE_PLAN.md), [release notes](RELEASE_NOTES.md) and [publication record](releases/v1.2.0-publication.json).
 
 ## Limitations
 
@@ -124,7 +124,7 @@ The v1.2.0 scope and candidate are frozen at `044a435`; see the [release plan](d
 - Steam sources can disagree or omit entries. API and snapshot fallbacks are marked as candidates; missing playtime and metadata stay unknown.
 - Classification rules sometimes need manual correction. Developer and publisher names follow the store listing unless you override them.
 - Multi-account switching and expiring access need more testing. The browser's classification labels are currently in Chinese.
-- v1.1.0 can miss Steam Families games. `main` adds a checked family source; see [family collection](docs/guides/STEAM_FAMILIES.md) and the [scenario report](docs/validation/REAL_SCENARIO_VALIDATION.md). This does not guarantee that every family game is collected or playable.
+- v1.1.0 can miss Steam Families games. v1.2.0 adds a checked family source; see [family collection](docs/guides/STEAM_FAMILIES.md) and the [scenario report](docs/validation/REAL_SCENARIO_VALIDATION.md). This does not guarantee that every family game is collected or playable.
 - Plans are export-only. The older Node/LevelDB writers are not part of the supported workflow.
 - Exact purchase dates are not available. First-observation dates only describe the saved history available to the tool.
 
