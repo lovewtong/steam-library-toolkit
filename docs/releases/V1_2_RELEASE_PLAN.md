@@ -2,7 +2,7 @@
 
 冻结日期：2026-10-06。发布提交是 `044a435a27023034071ac460965b5013fe37df3d`，即 PR #12、#13 按依赖合并后的主线提交。v1.2.0 包含厂商、首次观察时间和家庭采集功能。
 
-2026-10-07 已按原候选创建标签并公开 [v1.2.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0)。[原冻结记录](../../releases/v1.2.0-candidate.json)保持制定时状态不变，最终状态见[发布记录](../../releases/v1.2.0-publication.json)和[中英文发布说明](../../RELEASE_NOTES.md)。v1.1.0 固定在 `88ce73b06491d2e53b0674d3d2338ee87eaefeda`，保持不变。PR #15／#16 的源码包化和资源整理属于后续开发，不在本标签中。
+2026-10-07 已按原候选创建标签并公开 [v1.2.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0)。[原冻结记录](../../releases/v1.2.0-candidate.json)保持制定时状态不变，最终状态见[发布记录](../../releases/v1.2.0-publication.json)和[中英文发布说明](V1_2_RELEASE_NOTES.md)。v1.1.0 固定在 `88ce73b06491d2e53b0674d3d2338ee87eaefeda`，保持不变。PR #15／#16 的源码包化和资源整理属于后续开发，不在本标签中。
 
 ## 固定提交
 
