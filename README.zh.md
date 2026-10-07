@@ -111,6 +111,8 @@ $steamAccount = 'YOUR_STEAMID64'
 
 厂商筛选、首次观察日期和家庭采集已在 `main`，等待下一次发布。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
+v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](V1_2_RELEASE_PLAN.md)。候选尚未正式发布。
+
 ## 已知限制
 
 - 实时采集已在 Windows 单账号环境测试。Linux 和 macOS 有自动化测试，真实账号登录仍待测试。

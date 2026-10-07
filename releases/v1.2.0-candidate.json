@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "version": "v1.2.0",
+  "state": "scope_and_commit_frozen",
+  "freeze_date": "2026-10-06",
+  "repository": "https://github.com/lovewtong/steam-library-toolkit",
+  "candidate": {
+    "commit": "044a435a27023034071ac460965b5013fe37df3d",
+    "tree": "6747477cfcbb9ca701858a9774ed300c8d9637d2",
+    "main_ci": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37471394949",
+    "python_tests_per_platform": 168,
+    "node_tests_per_platform": 36,
+    "platforms": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ],
+    "ci_mode": "offline",
+    "source_file_count": 119
+  },
+  "previous_release": {
+    "version": "v1.1.0",
+    "commit": "88ce73b06491d2e53b0674d3d2338ee87eaefeda",
+    "tag_must_not_move": true
+  },
+  "scope": [
+    "developer_and_publisher_metadata_corrections_filters_plan_groups",
+    "account_scoped_first_observation_utc_year_month_filters_plan_groups",
+    "verified_client_and_eligible_family_membership_union",
+    "two_reference_app_classification_corrections",
+    "malformed_membership_completeness_rejection_and_previous_output_protection",
+    "inherited_collection_audit_enrichment_correction_browsing_export_only_plans"
+  ],
+  "reference_appids": [
+    3017860,
+    2183900
+  ],
+  "support": {
+    "live": "Windows_single_explicit_account_local_session",
+    "other_platforms": "offline_ci_only",
+    "family": "checked_observation_not_full_library_or_launch_guarantee"
+  },
+  "excluded": [
+    "exact_purchase_or_license_inferred_dates",
+    "automatic_steam_collection_writes",
+    "installer_or_auto_update",
+    "full_library_manual_classification_guarantee",
+    "full_family_completeness_or_playability_guarantee",
+    "new_family_cold_cache_performance_guarantee"
+  ],
+  "not_live_validated": [
+    "multi_account_switching",
+    "steam_offline_online_recovery",
+    "natural_entitlement_changes",
+    "game_launches",
+    "full_family_ui_enumeration",
+    "Linux_or_macOS_authentication"
+  ],
+  "freeze_policy": {
+    "target_is_full_sha_not_branch_head": true,
+    "changes_require_explicit_new_candidate": true,
+    "documentation_record_is_separate_from_candidate": true
+  },
+  "release": {
+    "tag_created_by_this_freeze": false,
+    "github_release_created_by_this_freeze": false,
+    "ready_to_publish": false,
+    "remaining_gates": [
+      "candidate_upgrade_and_old_software_old_run_rollback_validation",
+      "final_release_notes_and_source_archive_validation",
+      "verify_exact_target_and_ci_before_tagging_and_publication"
+    ]
+  }
+}

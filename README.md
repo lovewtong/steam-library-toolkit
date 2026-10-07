@@ -111,6 +111,8 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 Developer/publisher filters, first-observation dates and family collection are on `main`, awaiting the next release. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
+The v1.2.0 scope and candidate are frozen at `044a435`; see the [release plan](V1_2_RELEASE_PLAN.md). The candidate has not been published.
+
 ## Limitations
 
 - Live collection has been tested on Windows with one account. Linux and macOS have automated tests, but live account login still needs testing.
