@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "steam-library-toolkit"
-version = "1.3.0.dev0"
+version = "1.3.0"
 description = "Collect, audit and organize a Steam library with local browsing and collection-plan exports."
 readme = "README.md"
 requires-python = ">=3.12"

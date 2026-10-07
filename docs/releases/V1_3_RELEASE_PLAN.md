@@ -1,6 +1,6 @@
 # v1.3.0：范围冻结 / Frozen scope
 
-范围冻结日期：2026-10-07。**候选提交待定，尚未创建标签或 Release。** 当前构建版本仍为 `1.3.0.dev0`；正式版本和完整候选 SHA 在代码复审、主线 CI 与版本准备完成后另行冻结。v1.2.0 继续固定在 `044a435a27023034071ac460965b5013fe37df3d`。
+范围冻结日期：2026-10-07。**候选提交待定，尚未创建标签或 Release。** 包版本已准备为 `1.3.0`；完整候选 SHA 和 tree 在版本准备复审及主线 CI 完成后另行冻结。v1.2.0 继续固定在 `044a435a27023034071ac460965b5013fe37df3d`。
 
 ## 纳入范围
 
@@ -33,7 +33,7 @@
 
 ## English
 
-Scope frozen on 2026-10-07; the candidate commit is pending and no v1.3.0 tag or Release has been created. The current package version remains `1.3.0.dev0`. The full candidate SHA and final version will be chosen explicitly after review and main CI. v1.2.0 remains unchanged.
+Scope frozen on 2026-10-07; the candidate commit is pending and no v1.3.0 tag or Release has been created. The package version is prepared as `1.3.0`. The full candidate SHA and tree will be frozen explicitly after version-preparation review and main CI. v1.2.0 remains unchanged.
 
 Scope includes the merged source/resource layout, wheel/sdist installation, installed commands and eight compatible source entries, data-directory and Node-runtime setup, package build provenance, and the existing v1.2 workflows. New acquisition sources, classification batches, purchase dates, Steam writes, installers, auto-updates and PyPI publication are excluded. Existing live-validation limits remain.
 
