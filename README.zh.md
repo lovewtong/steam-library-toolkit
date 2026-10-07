@@ -47,7 +47,7 @@ python -m venv .venv
 npm ci
 ```
 
-源码包含开发商／发行商筛选、首次观察日期和家庭采集。这里介绍的包结构属于冻结 v1.2.0 候选之后的开发变更。使用 v1.1.0 时，在克隆命令中加入 `--branch v1.1.0`，并按该标签的 README 操作；它没有 `pyproject.toml` 或安装后的命令。
+源码包含开发商／发行商筛选、首次观察日期和家庭采集。这里介绍的包结构属于 v1.2.0 之后的开发变更。使用稳定版时，在克隆命令中加入 `--branch v1.2.0`，并按该标签的 README 和[发布说明](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0)操作；该标签使用根目录脚本，没有 `pyproject.toml` 或安装后的命令。
 
 也可以用 `python -m pip install .` 安装这份源码，再运行 `steam-library collect`、`steam-library enrich`、`steam-library picker` 等命令；完整列表见 `steam-library --help`。从 wheel 安装后，用 `steam-library node --install` 准备 Node 依赖。目前没有发布到 PyPI；`1.3.0.dev0` 只是开发构建的版本标识，不是已发布版本。
 
@@ -78,7 +78,7 @@ npm ci
 .\.venv\Scripts\python.exe steam_picker.py --serve --input outputs/corrected.json
 ```
 
-使用 `main` 时，还可以查看需要复核的分类：
+还可以查看需要复核的分类：
 
 ```powershell
 .\.venv\Scripts\python.exe steam_review_classification.py --input outputs/corrected.json
@@ -96,7 +96,7 @@ $steamAccount = 'YOUR_STEAMID64'
 
 `--dry-run` 预览计划，`--export-only` 保存 JSON。导出前会检查保存的账号、游戏库和文件哈希，目前不写入 Steam 收藏。
 
-在 `main` 中，加入 `--group-by developers publishers` 可按厂商分组；`--developer "NAME"`／`--publisher "NAME"` 按完整名称筛选。
+加入 `--group-by developers publishers` 可按厂商分组；`--developer "NAME"`／`--publisher "NAME"` 按完整名称筛选。
 
 可以用 `--first-seen-year 2026 --first-seen-month 10` 按年月筛选，计划支持 `first_seen_year`／`first_seen_month` 分组。这是保存记录中首次观察到客户端或家庭成员的时间，不是购买日期。历史继承和未知值说明见[时间分类](docs/guides/TIME_CLASSIFICATION.md)。
 
@@ -112,11 +112,11 @@ $steamAccount = 'YOUR_STEAMID64'
 
 ## 版本
 
-[v1.1.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.1.0) 是当前已发布版本，在 v1.0.0 的采集、审计、补全、校正、浏览和计划导出流程上，增加分类复核清单与六项 AppID 校正。
+[v1.2.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0) 是当前已发布版本，固定在 `044a435`，在既有采集、审计、补全、校正、浏览和计划导出流程上，增加厂商筛选、首次观察历史和经过核验的家庭采集。
 
-厂商筛选、首次观察日期和家庭采集已在 `main`，等待下一次发布。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
+`main` 的包结构和安装后的命令属于后续开发变更，不包含在 v1.2.0 中。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
-v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](docs/releases/V1_2_RELEASE_PLAN.md)。候选尚未正式发布。
+冻结范围、升级验收和发布核验见[发布计划](docs/releases/V1_2_RELEASE_PLAN.md)、[发布说明](RELEASE_NOTES.md)和[发布记录](releases/v1.2.0-publication.json)。
 
 ## 已知限制
 
@@ -124,7 +124,7 @@ v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](docs/rele
 - Steam 各来源可能有差异或遗漏。API 和快照降级数据会标为候选；缺失的时长和元数据保留为未知。
 - 分类规则可能需要人工调整。开发商和发行商名称默认使用商店信息，也可以自行校正。
 - 多账号切换和临时权益还需要更多测试。目前浏览页面的分类标签使用中文。
-- v1.1.0 可能漏掉 Steam Families 游戏。`main` 加入了经过核验的家庭来源，见[家庭采集](docs/guides/STEAM_FAMILIES.md)和[账号场景](docs/validation/REAL_SCENARIO_VALIDATION.md)；仍不保证全家庭游戏完整或当前均可启动。
+- v1.1.0 可能漏掉 Steam Families 游戏。v1.2.0 加入了经过核验的家庭来源，见[家庭采集](docs/guides/STEAM_FAMILIES.md)和[账号场景](docs/validation/REAL_SCENARIO_VALIDATION.md)；仍不保证全家庭游戏完整或当前均可启动。
 - 收藏计划仅支持导出，旧 Node／LevelDB 写回脚本不在支持流程内。
 - 暂时无法提供准确购买日期。首次观察日期只描述工具可取得的历史记录。
 
