@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {clientLibrary, ownedGames, collectWebSources} = require('../node_bridge/steam_web_sources.cjs');
-const {decodePlaytime} = require('../node_bridge/steam_playtime.cjs');
+const {clientLibrary, ownedGames, collectWebSources} = require('../src/steam_library_toolkit/resources/node_bridge/steam_web_sources.cjs');
+const {decodePlaytime} = require('../src/steam_library_toolkit/resources/node_bridge/steam_playtime.cjs');
 const schema = require('steam-user/protobufs/generated/_load.js');
 const account = '76561198000000001';
 const accountId = Number(BigInt(account) - 76561197960265728n);
@@ -80,7 +80,7 @@ test('network errors expose stable codes without exception text or tokens', asyn
 });
 
 test('license evidence distinguishes overlapping own/shared/free packages', () => {
-  const {licenseEvidence} = require('../node_bridge/steam_licenses.cjs');
+  const {licenseEvidence} = require('../src/steam_library_toolkit/resources/node_bridge/steam_licenses.cjs');
   const user = {picsCache: {packages: {1: {packageinfo: {appids: [10]}}, 2: {packageinfo: {appids: [10, 20]}}}},
     getOwnedPackages: f => f.excludeShared || f.excludeFree || f.excludeExpiring ? [1] : [1, 2]};
   const evidence = licenseEvidence(user);
@@ -117,7 +117,7 @@ test('auth failures are not retried and transient failures are exhausted safely'
 });
 
 test('protocol shape recorder discards all response values and unknown keys', () => {
-  const {shape} = require('../node_bridge/steam_protocol_shapes.cjs');
+  const {shape} = require('../src/steam_library_toolkit/resources/node_bridge/steam_protocol_shapes.cjs');
   const value = shape({apps: [{appid: 123456789, app: 'private-name-canary', app_type: 1,
     access_token: 'private-token-canary', 'private-key-canary': 'private-value-canary'}]});
   const encoded = JSON.stringify(value);

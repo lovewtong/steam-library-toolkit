@@ -1,6 +1,6 @@
 """Five-dimension rules and AppID corrections, independent of CLI and storage publishing."""
 import re
-from classification_rules import genre_primary, genre_category
+from steam_library_toolkit.classification.rules import genre_primary, genre_category
 
 
 # 名称启发式分类；AppID 校正优先，系列名匹配不代表精确身份确认。
@@ -352,7 +352,7 @@ def _classify_one(game):
     }
 
 def classify_one(game, overrides=None):
-    from classification_overrides import load_overrides, correction, evidence, MAIN_TO_PRIMARY
+    from steam_library_toolkit.classification.overrides import load_overrides, correction, evidence, MAIN_TO_PRIMARY
     overrides = load_overrides() if overrides is None else overrides
     result = _classify_one(game)
     analysis = result['analysis']
@@ -388,11 +388,11 @@ def classify_one(game, overrides=None):
     else:
         result['classification_evidence'] = {'source': source if known else fields['primary']['source']}
     result['classification_evidence']['fields'] = fields
-    from steam_manufacturers import manufacturer_fields
+    from steam_library_toolkit.classification.manufacturers import manufacturer_fields
     result.update(manufacturer_fields(game, rule))
-    from steam_observation import first_seen_fields
+    from steam_library_toolkit.sources.observation import first_seen_fields
     result.update(first_seen_fields(game))
-    from steam_membership import membership_fields
+    from steam_library_toolkit.sources.membership import membership_fields
     result.update(membership_fields(game))
     # Preserve the evidence so normalized readers can validate the saved date.
     if isinstance(game.get('first_seen_evidence'), dict):

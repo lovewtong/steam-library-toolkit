@@ -1,5 +1,5 @@
 """Shared coarse genre mapping. Titles are not evidence of a store genre."""
-from classification_overrides import MAIN_TO_PRIMARY
+from steam_library_toolkit.classification.overrides import MAIN_TO_PRIMARY
 
 # More specific gameplay wins over broad Action/Adventure and Indie labels.
 GENRE_RULES = (

@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from steam_metadata import RequestGate, parse_fields, merge_fields, coverage
-from steam_http import get_response
+from steam_library_toolkit.sources.metadata import RequestGate, parse_fields, merge_fields, coverage
+from steam_library_toolkit.sources.http import get_response
 
 
 class MetadataFieldsTests(unittest.TestCase):
@@ -41,8 +41,8 @@ class MetadataFieldsTests(unittest.TestCase):
         clock = [0.0]
         def sleep(delay):
             clock[0] += delay
-        with patch('steam_metadata.time.monotonic', side_effect=lambda: clock[0]), \
-                patch('steam_metadata.time.sleep', side_effect=sleep):
+        with patch('steam_library_toolkit.sources.metadata.time.monotonic', side_effect=lambda: clock[0]), \
+                patch('steam_library_toolkit.sources.metadata.time.sleep', side_effect=sleep):
             gate.wait()
             self.assertEqual(clock[0], 0)
             gate.wait()
@@ -55,12 +55,12 @@ class MetadataFieldsTests(unittest.TestCase):
         limited = Mock(status_code=429, headers={'Retry-After': '0'})
         success = Mock(status_code=200)
         gate = Mock()
-        with patch('steam_http.request_once', side_effect=[limited, success]), patch('steam_http.wait_delay'):
+        with patch('steam_library_toolkit.sources.http.request_once', side_effect=[limited, success]), patch('steam_library_toolkit.sources.http.wait_delay'):
             self.assertIs(get_response('https://example.invalid', params={}, timeout=1, gate=gate), success)
         self.assertEqual(gate.wait.call_count, 2)
 
     def test_old_cache_cannot_keep_incorrect_controller_result(self):
-        from steam_library_toolkit.store import cached_store_details
+        from steam_library_toolkit.sources.store import cached_store_details
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / '1.json'
             old = {'schema_version': 4, 'fetched_at': 1000, 'status': 'success',
@@ -68,8 +68,8 @@ class MetadataFieldsTests(unittest.TestCase):
                                'is_controller': False, 'is_multiplayer': False}}
             path.write_text(json.dumps(old), encoding='utf-8')
             result = {'status': 'success', 'details': parse_fields({'categories': [{'id': 28, 'description': '完全支持控制器'}]})}
-            with patch('steam_library_toolkit.store.time.time', return_value=1001), \
-                    patch('steam_library_toolkit.store.get_store_result', return_value=result) as fetch:
+            with patch('steam_library_toolkit.sources.store.time.time', return_value=1001), \
+                    patch('steam_library_toolkit.sources.store.get_store_result', return_value=result) as fetch:
                 self.assertTrue(cached_store_details(1, directory)['is_controller'])
                 self.assertTrue(cached_store_details(1, directory)['is_controller'])
                 self.assertEqual(fetch.call_count, 1)

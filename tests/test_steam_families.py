@@ -8,16 +8,16 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import steam_collect
-from steam_membership import trusted_current_membership, verified_source, verified_family_source
-from steam_observation import attach_first_seen
-from steam_picker_server import PickerLibrary
-from steam_reclassify import reclassify
-from steam_review_classification import build_review
-from steam_runs import publish_run, manifest_path, resolve_artifact, check_previous
-from steam_schema import validate_artifacts
-from steam_sources import SourceResult, reconcile, AccountMismatchError
-from steam_sync_collections import build_plan
+import steam_library_toolkit.cli.collect as steam_collect
+from steam_library_toolkit.sources.membership import trusted_current_membership, verified_source, verified_family_source
+from steam_library_toolkit.sources.observation import attach_first_seen
+from steam_library_toolkit.web.server import PickerLibrary
+from steam_library_toolkit.cli.reclassify import reclassify
+from steam_library_toolkit.cli.review_classification import build_review
+from steam_library_toolkit.storage.runs import publish_run, manifest_path, resolve_artifact, check_previous
+from steam_library_toolkit.storage.schema import validate_artifacts
+from steam_library_toolkit.sources.reconcile import SourceResult, reconcile, AccountMismatchError
+from steam_library_toolkit.cli.collections import build_plan
 
 ACCOUNT = '76561198000000001'
 REFS = (3017860, 2183900)
@@ -43,7 +43,7 @@ def payload():
 
 def collected(data=None, **options):
     audit = {}
-    with patch('steam_collect.load_config', return_value={}), patch('steam_collect.collect_client', return_value=data or payload()):
+    with patch('steam_library_toolkit.cli.collect.load_config', return_value={}), patch('steam_library_toolkit.cli.collect.collect_client', return_value=data or payload()):
         rows = steam_collect.collect(fetch_store=False, use_client=True, audit=audit, **options)
     return rows, audit
 
@@ -78,7 +78,7 @@ class FamiliesTests(unittest.TestCase):
         for bad in [None, {'state': 'partial', 'error_code': 'FAMILY_LIST_CHANGED'},
                     {'state': 'complete', 'records': []}, {'state': 'unavailable', 'error_code': 'HTTP_503'}]:
             data = payload(); data['family'] = bad
-            with patch('steam_collect.load_config', return_value={}), patch('steam_collect.collect_client', return_value=data), \
+            with patch('steam_library_toolkit.cli.collect.load_config', return_value={}), patch('steam_library_toolkit.cli.collect.collect_client', return_value=data), \
                  patch.object(sys, 'argv', ['steam_collect.py', '--local-session', '--no-store', '-o', str(self.output)]), \
                  contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
                 steam_collect.main()
@@ -109,7 +109,7 @@ class FamiliesTests(unittest.TestCase):
             self.assertFalse(SourceResult('client_library', completeness=proof).authoritative)
             for name in ('client', 'family'):
                 data = payload(); data[name]['completeness'] = proof
-                with patch('steam_collect.load_config', return_value={}), patch('steam_collect.collect_client', return_value=data), \
+                with patch('steam_library_toolkit.cli.collect.load_config', return_value={}), patch('steam_library_toolkit.cli.collect.collect_client', return_value=data), \
                      patch.object(sys, 'argv', ['steam_collect.py', '--local-session', '--no-store', '--strict-membership', '-o', str(self.output)]), \
                      contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as failure:
                     steam_collect.main()
@@ -143,7 +143,7 @@ class FamiliesTests(unittest.TestCase):
     def test_explicit_client_scope_uses_no_family_and_cannot_replace_accessible_scope(self):
         rows, audit = collected(); publish_run(self.output, rows, audit)
         data = payload(); data.pop('family')
-        with patch('steam_collect.load_config', return_value={}), patch('steam_collect.collect_client', return_value=data) as helper:
+        with patch('steam_library_toolkit.cli.collect.load_config', return_value={}), patch('steam_library_toolkit.cli.collect.collect_client', return_value=data) as helper:
             reduced_audit = {}; reduced = steam_collect.collect(fetch_store=False, use_client=True, include_family=False, audit=reduced_audit)
             self.assertIs(helper.call_args.kwargs['use_family'], False)
         self.assertEqual(reduced_audit['membership'], 'client_snapshot')

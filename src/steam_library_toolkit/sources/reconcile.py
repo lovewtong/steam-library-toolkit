@@ -71,7 +71,7 @@ class SourceResult:
 
     @property
     def authoritative(self):
-        from steam_membership import verified_source
+        from steam_library_toolkit.sources.membership import verified_source
         return self.source == "client_library" and verified_source(self.audit())
 
     def audit(self):
@@ -141,7 +141,7 @@ def resolve_playtime(found, providers, field_name):
 
 def reconcile(results, expected_account=None, *, allow_candidate_membership=False):
     """Verified client rows plus eligible, verified family games determine current membership."""
-    from steam_membership import verified_family_source, family_evidence_valid
+    from steam_library_toolkit.sources.membership import verified_family_source, family_evidence_valid
     accounts = {s.steam_id for s in results if s.steam_id}
     if expected_account:
         accounts.add(expected_account)

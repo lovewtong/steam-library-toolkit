@@ -5,14 +5,14 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from steam_observation import attach_first_seen, first_seen_fields, matches_first_seen
-from steam_runs import publish_run, manifest_path, load_library, resolve_artifact
-from steam_sources import AccountMismatchError
-from steam_picker_server import PickerLibrary
-from steam_sync_collections import build_plan
-from steam_reclassify import reclassify
-from steam_enrich import enrich
-from steam_metadata import parse_fields
+from steam_library_toolkit.sources.observation import attach_first_seen, first_seen_fields, matches_first_seen
+from steam_library_toolkit.storage.runs import publish_run, manifest_path, load_library, resolve_artifact
+from steam_library_toolkit.sources.reconcile import AccountMismatchError
+from steam_library_toolkit.web.server import PickerLibrary
+from steam_library_toolkit.cli.collections import build_plan
+from steam_library_toolkit.cli.reclassify import reclassify
+from steam_library_toolkit.cli.enrich import enrich
+from steam_library_toolkit.sources.metadata import parse_fields
 from support import run_bundle, ACCOUNT
 
 
@@ -77,7 +77,7 @@ class ObservationTests(unittest.TestCase):
                 stats['success'] = 1
                 kwargs['observation'].update(source='store_api')
                 return parse_fields({})
-            with patch('steam_enrich.cached_store_details', side_effect=store):
+            with patch('steam_library_toolkit.cli.enrich.cached_store_details', side_effect=store):
                 enrich(rebuilt, enriched)
             for row, before in zip(load_library(enriched), original):
                 self.assertEqual(row['first_seen_at'], before['first_seen_at'])
@@ -117,7 +117,7 @@ class ObservationTests(unittest.TestCase):
         self.assertFalse(matches_first_seen({}, 'unknown', '01'))
 
     def test_bad_history_hash_and_wrong_account_evidence_are_rejected(self):
-        from steam_schema import validate_artifacts
+        from steam_library_toolkit.storage.schema import validate_artifacts
         with tempfile.TemporaryDirectory() as d:
             output = Path(d) / 'source.json'
             rows, audit = bundle('one', (1,), '2026-01-01T00:00:00Z')

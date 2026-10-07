@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'steam_picker.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../src/steam_library_toolkit/resources/web/steam_picker.html'), 'utf8');
 const elements = new Map();
 const document = {
   getElementById(id) {

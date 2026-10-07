@@ -8,8 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from steam_runs import publish_run, load_library, manifest_path
-from steam_sources import SourceResult, reconcile
+from steam_library_toolkit.storage.runs import publish_run, load_library, manifest_path
+from steam_library_toolkit.sources.reconcile import SourceResult, reconcile
 
 from support import ROOT, ACCOUNT, run_bundle
 
@@ -19,7 +19,7 @@ class FailureAndScaleTests(unittest.TestCase):
         from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
         import socket
         import threading
-        from steam_http import get_response
+        from steam_library_toolkit.sources.http import get_response
         requests_seen = []
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args):
@@ -63,7 +63,7 @@ class FailureAndScaleTests(unittest.TestCase):
                 self.assertEqual([r['appid'] for r in load_library(target)], [1, 2])
 
     def test_kill_writer_at_commit_boundary_retains_old_pointer_and_releases_lock(self):
-        from steam_lock import collection_lock
+        from steam_library_toolkit.storage.lock import collection_lock
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / 'library.json'
             publish_run(target, *run_bundle('previous'))
@@ -73,15 +73,15 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 from support import run_bundle
-from steam_lock import collection_lock
-from steam_runs import publish_run, manifest_path, atomic_json
+from steam_library_toolkit.storage.lock import collection_lock
+from steam_library_toolkit.storage.runs import publish_run, manifest_path, atomic_json
 target=Path(sys.argv[1])
 def gate(path, data):
     if Path(path)==manifest_path(target):
         print('READY_TO_COMMIT',flush=True)
         sys.stdin.read(1)
     atomic_json(path,data)
-with collection_lock(target),patch('steam_runs.atomic_json',side_effect=gate):
+with collection_lock(target),patch('steam_library_toolkit.storage.runs.atomic_json',side_effect=gate):
     publish_run(target,*run_bundle('interrupted',(3,)))
 """
             process = subprocess.Popen([sys.executable, '-c', code, str(target)], cwd=ROOT,
@@ -132,8 +132,8 @@ with collection_lock(target),patch('steam_runs.atomic_json',side_effect=gate):
         self.assertEqual(report['membership'], 'client_snapshot')
 
     def test_offline_summary_counts_historical_time_separately_from_unknown(self):
-        from steam_collect import collect
-        from steam_sources import utc_now
+        from steam_library_toolkit.cli.collect import collect
+        from steam_library_toolkit.sources.reconcile import utc_now
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'snapshot.json'
             path.write_text(json.dumps({'schema_version': 2, 'steam_id': ACCOUNT,

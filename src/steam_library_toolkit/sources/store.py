@@ -4,9 +4,9 @@ import time
 from pathlib import Path
 import requests
 
-from steam_http import get_response, SourceCoolingDown, check_cancel
-from steam_metadata import STORE_GATE, parse_fields
-from steam_sources import app_type, atomic_json
+from steam_library_toolkit.sources.http import get_response, SourceCoolingDown, check_cancel
+from steam_library_toolkit.sources.metadata import STORE_GATE, parse_fields
+from steam_library_toolkit.sources.reconcile import app_type, atomic_json
 
 
 def get_store_result(appid: int, *, cancel_event=None):
@@ -83,7 +83,7 @@ def cached_store_details(appid, cache_dir, refresh=False, audit_meta=None, *, ca
 
 
 def valid_store_details(details):
-    from steam_metadata import MANUFACTURER_FIELDS, manufacturer_names
+    from steam_library_toolkit.sources.metadata import MANUFACTURER_FIELDS, manufacturer_names
     return (isinstance(details, dict)
             and all(key in details and (details[key] is None or manufacturer_names(details[key]) is not None)
                     for key in MANUFACTURER_FIELDS)

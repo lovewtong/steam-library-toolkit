@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "steam-library-toolkit"
+version = "1.3.0.dev0"
+description = "Collect, audit and organize a Steam library with local browsing and collection-plan exports."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["requests>=2.28.0", "keyring>=25.0.0", "vdf>=3.4", "jsonschema>=4.18.0"]
+
+[project.urls]
+Repository = "https://github.com/lovewtong/steam-library-toolkit"
+Issues = "https://github.com/lovewtong/steam-library-toolkit/issues"
+
+[project.scripts]
+steam-library = "steam_library_toolkit.cli.dispatch:main"
+steam-library-collect = "steam_library_toolkit.cli.collect:main"
+steam-library-enrich = "steam_library_toolkit.cli.enrich:main"
+steam-library-reclassify = "steam_library_toolkit.cli.reclassify:main"
+steam-library-review = "steam_library_toolkit.cli.review_classification:main"
+steam-library-plan = "steam_library_toolkit.cli.collections:main"
+steam-library-picker = "steam_library_toolkit.cli.picker:main"
+steam-library-classify = "steam_library_toolkit.cli.classify_table:main"
+steam-library-classify-five = "steam_library_toolkit.cli.classify_five:main"
+steam-library-node = "steam_library_toolkit.cli.node_runtime:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["steam_library_toolkit*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+steam_library_toolkit = ["resources/web/*.html", "resources/schemas/*.json", "resources/rules/*.json", "resources/node_bridge/*.cjs"]

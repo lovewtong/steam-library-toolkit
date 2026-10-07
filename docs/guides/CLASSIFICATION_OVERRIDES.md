@@ -2,7 +2,7 @@
 
 人工校正只修改分类展示，不改变库成员、应用类型、时长或采集时间。修改名称或使用本地化名称不会影响 AppID 匹配。
 
-仓库内 `classification_overrides.json` 保存有来源的内置规则；`classification_overrides.local.json` 保存个人偏好，已被 Git 忽略。可复制 `classification_overrides.example.json` 后编辑。文件必须为 schema_version=1，apps 的键是规范十进制 AppID。
+包内 `src/steam_library_toolkit/resources/rules/classification_overrides.json` 保存有来源的内置规则；数据目录中的 `classification_overrides.local.json` 保存个人偏好，已被 Git 忽略。可将 `examples/classification_overrides.example.json` 复制到数据目录并命名为 `classification_overrides.local.json` 后编辑。文件必须为 schema_version=1，apps 的键是规范十进制 AppID。源码默认数据目录仍是仓库根目录；安装后默认使用当前工作目录，可用 `STEAM_LIBRARY_HOME` 指定其他目录。
 
 玩法规则必须提供 `main_category`、`reason`，可选 `reference`、`sub`、`vibe`、`intensity`、`slogan`。未发布扩展允许提供 developers/publishers 名称数组；仅校正厂商时可省略 main_category，但仍须 reason，也不能单独填写玩法细项。详见 [厂商维度](MANUFACTURER_FACETS.md)。字符串会去掉首尾空白；不接受重复键、未知字段、空理由、无效 AppID 或时长/成员字段。`intensity` 只能是低、中、高。本地条目整体替换同 AppID 的内置条目，未填写的字段不会暗中继承内置校正。
 

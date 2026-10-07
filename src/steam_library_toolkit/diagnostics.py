@@ -10,7 +10,8 @@ import urllib.request
 
 
 def environment_report():
-    root = Path(__file__).resolve().parent
+    from steam_library_toolkit.paths import node_modules_dir
+    node_modules = node_modules_dir()
     versions = {}
     for name in ("requests", "keyring", "vdf", "jsonschema"):
         try:
@@ -28,7 +29,7 @@ def environment_report():
     packages = {}
     for name in ("steam-user", "steam-session", "undici"):
         try:
-            packages[name] = json.loads((root / "node_modules" / name / "package.json").read_text(encoding="utf-8"))["version"]
+            packages[name] = json.loads((node_modules / name / "package.json").read_text(encoding="utf-8"))["version"]
         except (OSError, ValueError, KeyError):
             packages[name] = None
     return {"schema_version": 1, "os": platform.system(), "python_version": platform.python_version(),

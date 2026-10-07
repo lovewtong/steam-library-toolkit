@@ -4,6 +4,39 @@
 
 Run commands from the project root. Examples use the Windows virtual environment created in the README and the current `main` branch. Replace account and machine placeholders before use. Features absent from older releases are marked separately.
 
+## Installed commands and data directories
+
+The eight root scripts still work from a checkout. After `python -m pip install .`, the same handlers are available through `steam-library`:
+
+| Old command | Installed command |
+| --- | --- |
+| `steam_collect.py` | `steam-library collect` |
+| `steam_enrich.py` | `steam-library enrich` |
+| `steam_reclassify.py` | `steam-library reclassify` |
+| `steam_review_classification.py` | `steam-library review` |
+| `steam_sync_collections.py` | `steam-library plan` |
+| `steam_picker.py` | `steam-library picker` |
+| `classify_games.py` | `steam-library classify` |
+| `classify_steam_games.py` | `steam-library classify-five` |
+
+Each also has a direct executable, such as `steam-library-collect` or `steam-library-classify-five`. `python -m steam_library_toolkit collect --help` works with the selected Python environment. The argument names remain the same.
+
+Source commands default to the checkout root for configuration, personal corrections, cache and output. Wheel commands default to the working directory; they do not store data beside the installed code. Set `STEAM_LIBRARY_HOME` before launching a command to choose another directory. Explicit relative input/output paths remain relative to the working directory.
+
+```powershell
+# Use executables from the environment where the package was installed.
+$env:STEAM_LIBRARY_HOME = 'C:\SteamLibraryData'
+New-Item -ItemType Directory -Force $env:STEAM_LIBRARY_HOME
+Set-Location $env:STEAM_LIBRARY_HOME
+steam-library node --install
+steam-library collect --local-session --no-store --strict-membership -o library.json
+steam-library picker --serve --input library.json
+```
+
+In a checkout, `npm ci` remains the normal Node setup. For an installed package, `steam-library node --install` uses the bundled lockfile and installs dependencies into `<data directory>/.steam_node`. Set `STEAM_LIBRARY_NODE_HOME` to choose a separate Node directory; existing unmanaged directories are rejected. Installation needs network access and does not authenticate to Steam. For a nonstandard existing dependency location, `NODE_PATH` is also supported. Python API-only, snapshot and saved-library workflows do not need the client bridge.
+
+Built-in rules, schemas, HTML and bridge modules are package resources. Keep personal rules in the data directory; do not edit installed resources. Wheels exclude account files, cache, run outputs and `node_modules`. The old internal root modules are no longer public import paths; use `steam_library_toolkit` modules for Python integration. The eight supported old CLI entry files are retained.
+
 ## Accounts and sources
 
 ```powershell
@@ -15,7 +48,7 @@ Run commands from the project root. Examples use the Windows virtual environment
 .\.venv\Scripts\python.exe steam_collect.py --no-store -o outputs/library.json
 ```
 
-`config_local.json` is optional for client authentication. For API-only use, copy `config_local.example.json` and configure your API key and SteamID64 locally. API-only results are candidates, not a verified current client library. `--account` overrides the configured account; mismatched source accounts are rejected. Use separate output directories for different accounts.
+`config_local.json` is optional for client authentication. For API-only use, copy `examples/config_local.example.json` to your data directory as `config_local.json` and configure your API key and SteamID64 locally. API-only results are candidates, not a verified current client library. `--account` overrides the configured account; mismatched source accounts are rejected. Use separate output directories for different accounts.
 
 `--machine MACHINE_NAME` selects an online client explicitly. The default targets this machine, not an arbitrary other device. A signed-in desktop does not eliminate the helper's own server connection and authentication step.
 

@@ -43,10 +43,15 @@ git clone https://github.com/lovewtong/steam-library-toolkit.git
 cd steam-library-toolkit
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
+.\.venv\Scripts\python.exe -m pip install -e . --no-deps
 npm ci
 ```
 
-这里安装的是 `main`，包含开发商／发行商筛选、首次观察日期和家庭采集。如果要使用已发布的 v1.1.0，在克隆命令中加入 `--branch v1.1.0`；该版本有复核清单，不包含这些新增功能。
+源码包含开发商／发行商筛选、首次观察日期和家庭采集。这里介绍的包结构属于冻结 v1.2.0 候选之后的开发变更。使用 v1.1.0 时，在克隆命令中加入 `--branch v1.1.0`，并按该标签的 README 操作；它没有 `pyproject.toml` 或安装后的命令。
+
+也可以用 `python -m pip install .` 安装这份源码，再运行 `steam-library collect`、`steam-library enrich`、`steam-library picker` 等命令；完整列表见 `steam-library --help`。从 wheel 安装后，用 `steam-library node --install` 准备 Node 依赖。目前没有发布到 PyPI；`1.3.0.dev0` 只是开发构建的版本标识，不是已发布版本。
+
+源码运行时，默认配置、缓存和输出仍位于仓库根目录；wheel 安装后默认使用当前工作目录。启动命令前设置 `STEAM_LIBRARY_HOME` 可选择其他数据目录，显式 `--input`、`--output` 路径按原有方式处理。详见[安装后的用法](USAGE.zh.md#安装后的命令与数据目录)。
 
 ## 用法
 
@@ -149,12 +154,14 @@ v1.2.0 的范围和候选已冻结在 `044a435`，详见[发布计划](docs/rele
 npm test
 .\.venv\Scripts\python.exe tools/check_secrets.py
 .\.venv\Scripts\python.exe tools/check_docs.py
+.\.venv\Scripts\python.exe -m pip install build==1.6.1
+.\.venv\Scripts\python.exe tools/check_distribution.py
 git diff --check
 ```
 
 修改命令或功能时，请同步中英文 README 和使用说明。
 
-根目录 Python 脚本保留为命令入口。运行所需的 Node 代码位于 `node_bridge/`，开发脚本位于 `tools/`，旧实验工具位于 `legacy/`。
+根目录的八个 Python 命令保留为兼容入口。实现位于 `src/steam_library_toolkit/`，其中 `resources/` 保存页面、Schema、内置规则和 Node 桥接；示例在 `examples/`，开发脚本在 `tools/`，旧实验工具在 `legacy/`。详见[仓库结构](docs/ARCHITECTURE.md)。
 
 ## 许可证
 

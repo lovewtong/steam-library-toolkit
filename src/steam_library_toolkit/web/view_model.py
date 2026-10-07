@@ -1,7 +1,7 @@
 """Validate saved classifications and expose documented display fields."""
-from steam_manufacturers import manufacturer_fields
-from steam_observation import first_seen_fields
-from steam_membership import membership_fields
+from steam_library_toolkit.classification.manufacturers import manufacturer_fields
+from steam_library_toolkit.sources.observation import first_seen_fields
+from steam_library_toolkit.sources.membership import membership_fields
 
 
 def field_evidence(game):

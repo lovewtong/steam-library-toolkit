@@ -1,6 +1,6 @@
 """Shared synthetic account and verified-run fixtures; contains no test cases."""
 from pathlib import Path
-from steam_sources import SourceResult, reconcile
+from steam_library_toolkit.sources.reconcile import SourceResult, reconcile
 
 
 ROOT = Path(__file__).resolve().parents[1]

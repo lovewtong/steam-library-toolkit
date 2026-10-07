@@ -10,14 +10,17 @@ import subprocess
 import uuid
 import platform
 
-from steam_sources import AccountMismatchError, atomic_json, select_for_classification, utc_now
-from steam_membership import trusted_current_membership
+from steam_library_toolkit.sources.reconcile import AccountMismatchError, atomic_json, select_for_classification, utc_now
+from steam_library_toolkit.sources.membership import trusted_current_membership
 
 
 def new_run_metadata():
-    root = Path(__file__).resolve().parent
-    from steam_diagnostics import environment_report
+    from steam_library_toolkit.paths import SOURCE_ROOT
+    root = SOURCE_ROOT
+    from steam_library_toolkit.diagnostics import environment_report
     try:
+        if root is None or not (root / ".git").exists():
+            raise OSError("No checkout Git metadata")
         command = ["git", "-c", f"safe.directory={root.as_posix()}"]
         commit_result = subprocess.run(command + ["rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, timeout=5)
         status_result = subprocess.run(command + ["status", "--porcelain"], cwd=root, capture_output=True, text=True, timeout=5)
@@ -133,8 +136,8 @@ def check_previous(output, rows, audit, max_removal_ratio=.20):
 
 def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None, allow_candidates=False):
     """Write and validate all files first. current.json is the sole authoritative commit point."""
-    from steam_library_toolkit.tables import classify_library, write_csv, write_md_table
-    from steam_library_toolkit.classification import classify_one
+    from steam_library_toolkit.classification.tables import classify_library, write_csv, write_md_table
+    from steam_library_toolkit.classification.five import classify_one
     output = Path(output)
     candidate = not trusted_current_membership(audit)
     if candidate and not allow_candidates:
@@ -143,7 +146,7 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     directory = output.parent / ("." + output.stem + ".runs") / run_id
     directory.mkdir(parents=True, exist_ok=False)
     snapshot = audit.pop("snapshot", None)
-    from steam_schema import validate_artifacts
+    from steam_library_toolkit.storage.schema import validate_artifacts
     validate_artifacts(rows, audit, snapshot)
     if snapshot and (snapshot.get("run_id") != run_id or snapshot.get("steam_id") != audit["steam_id"]):
         raise AccountMismatchError("GENERATION_MISMATCH：快照账号或运行编号不同")
@@ -151,7 +154,7 @@ def publish_run(output, rows, audit, *, audit_export=None, snapshot_export=None,
     if any(r.get("run_id") != run_id for r in rows):
         raise ValueError("GENERATION_MISMATCH：条目运行编号不一致")
     selected = select_for_classification(rows)
-    from classification_overrides import load_overrides
+    from steam_library_toolkit.classification.overrides import load_overrides
     overrides = load_overrides()
     applied = {str(g['appid']): overrides[str(g['appid'])] for g in selected if str(g['appid']) in overrides}
     audit['classification'] = {'override_count': len(applied), 'rules_artifact': 'classification_overrides.json'}

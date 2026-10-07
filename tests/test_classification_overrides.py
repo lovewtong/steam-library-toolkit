@@ -5,10 +5,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from classification_overrides import load_overrides, read_rules
-from classify_games import classify_library
-from classify_steam_games import classify_one, find_known
-from steam_runs import publish_run, load_library, resolve_artifact, manifest_path
+from steam_library_toolkit.classification.overrides import load_overrides, read_rules
+from steam_library_toolkit.cli.classify_table import classify_library
+from steam_library_toolkit.cli.classify_five import classify_one, find_known
+from steam_library_toolkit.storage.runs import publish_run, load_library, resolve_artifact, manifest_path
 from support import run_bundle
 
 
@@ -101,20 +101,20 @@ class ClassificationOverridesTests(unittest.TestCase):
             rules = json.loads(resolve_artifact(p, 'classification_overrides.json').read_text(encoding='utf-8'))
             self.assertEqual(set(rules['apps']), {'730'})
             before = manifest_path(p).read_bytes()
-            with patch('classification_overrides.load_overrides', side_effect=ValueError('invalid rules')):
+            with patch('steam_library_toolkit.classification.overrides.load_overrides', side_effect=ValueError('invalid rules')):
                 with self.assertRaises(ValueError):
                     publish_run(p, *run_bundle('failed', (730,)))
             self.assertEqual(manifest_path(p).read_bytes(), before)
 
     def test_rebuild_requires_no_network_and_keeps_original_generation(self):
-        from steam_reclassify import reclassify
+        from steam_library_toolkit.cli.reclassify import reclassify
         with tempfile.TemporaryDirectory() as d:
             source, target = Path(d) / 'source.json', Path(d) / 'target.json'
             rows, audit = run_bundle('original', (730,))
             publish_run(source, rows, audit)
             original = manifest_path(source).read_bytes()
             with patch('requests.get', side_effect=AssertionError('network forbidden')), \
-                    patch('steam_auth.collect_client', side_effect=AssertionError('auth forbidden')):
+                    patch('steam_library_toolkit.sources.auth.collect_client', side_effect=AssertionError('auth forbidden')):
                 reclassify(source, target)
             self.assertEqual(manifest_path(source).read_bytes(), original)
             self.assertEqual([{k:v for k,v in r.items() if k != 'run_id'} for r in load_library(target)],

@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 from collections import defaultdict
 from datetime import datetime, timezone
-from classification_rules import genre_category
+from steam_library_toolkit.classification.rules import genre_category
 
 
 # 标签：可多选，用于细粒度描述
@@ -28,7 +28,7 @@ TAG_RULES = [
 def load_library(path: Path) -> list:
     """加载 steam_library.json。"""
     if not path.exists():
-        raise FileNotFoundError(f"未找到 {path}，请先运行 steam_collect.py 生成游戏库 JSON。")
+        raise FileNotFoundError(f"未找到 {path}，请先用 steam-library collect（源码也可用 steam_collect.py）生成游戏库 JSON。")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -67,10 +67,10 @@ def match_tags(game: dict) -> list[str]:
 
 def classify_library(library: list, overrides=None) -> list[dict]:
     """对每款游戏赋予主分类与标签。"""
-    from classification_overrides import load_overrides, correction, evidence
-    from steam_manufacturers import manufacturer_fields
-    from steam_observation import first_seen_fields
-    from steam_membership import membership_fields
+    from steam_library_toolkit.classification.overrides import load_overrides, correction, evidence
+    from steam_library_toolkit.classification.manufacturers import manufacturer_fields
+    from steam_library_toolkit.sources.observation import first_seen_fields
+    from steam_library_toolkit.sources.membership import membership_fields
     overrides = load_overrides() if overrides is None else overrides
     result = []
     for g in library:

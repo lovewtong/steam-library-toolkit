@@ -28,6 +28,10 @@ game_library_classified.md
 __pycache__/
 *.py[cod]
 .venv/
+build/
+dist/
+*.egg-info/
+.steam_node/
 venv/
 .env
 

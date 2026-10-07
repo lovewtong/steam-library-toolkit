@@ -4,6 +4,39 @@
 
 在项目根目录运行命令。示例使用 README 中创建的 Windows 虚拟环境和当前 `main` 分支，账号和机器名占位符需自行替换。旧版本没有的功能另行标注。
 
+## 安装后的命令与数据目录
+
+八个根目录脚本仍可从源码运行。执行 `python -m pip install .` 后，同一套处理函数也可通过 `steam-library` 调用：
+
+| 旧命令 | 安装后的命令 |
+| --- | --- |
+| `steam_collect.py` | `steam-library collect` |
+| `steam_enrich.py` | `steam-library enrich` |
+| `steam_reclassify.py` | `steam-library reclassify` |
+| `steam_review_classification.py` | `steam-library review` |
+| `steam_sync_collections.py` | `steam-library plan` |
+| `steam_picker.py` | `steam-library picker` |
+| `classify_games.py` | `steam-library classify` |
+| `classify_steam_games.py` | `steam-library classify-five` |
+
+每项也有独立可执行命令，例如 `steam-library-collect`、`steam-library-classify-five`。选定 Python 环境后，也可运行 `python -m steam_library_toolkit collect --help`。参数名称保持不变。
+
+源码命令默认从仓库根目录读取配置、个人规则、缓存和输出；wheel 安装后默认使用当前工作目录，不向安装目录写入数据。启动命令前设置 `STEAM_LIBRARY_HOME` 可指定其他数据目录。显式指定的相对输入／输出路径仍相对于当前工作目录。
+
+```powershell
+# 使用安装了此包的环境中的可执行命令。
+$env:STEAM_LIBRARY_HOME = 'C:\SteamLibraryData'
+New-Item -ItemType Directory -Force $env:STEAM_LIBRARY_HOME
+Set-Location $env:STEAM_LIBRARY_HOME
+steam-library node --install
+steam-library collect --local-session --no-store --strict-membership -o library.json
+steam-library picker --serve --input library.json
+```
+
+源码环境继续用 `npm ci`。安装后的 `steam-library node --install` 使用包内锁文件，将依赖安装到 `<数据目录>/.steam_node`；可通过 `STEAM_LIBRARY_NODE_HOME` 指定独立 Node 目录，已有的非托管目录会被拒绝。安装需要网络，但不执行 Steam 认证。已有非标准位置的依赖也可通过 `NODE_PATH` 指定。Python API-only、快照导入和保存库处理不需要客户端桥接。
+
+内置规则、Schema、HTML 和桥接模块属于包资源。个人规则放在数据目录，不修改安装目录中的资源。wheel 排除账号文件、缓存、运行输出和 `node_modules`。旧根目录内部模块不再作为公开导入路径；Python 集成请使用 `steam_library_toolkit` 下的模块。八个常用旧 CLI 文件保留。
+
 ## 账号与来源
 
 ```powershell
@@ -15,7 +48,7 @@
 .\.venv\Scripts\python.exe steam_collect.py --no-store -o outputs/library.json
 ```
 
-客户端认证不强制要求 `config_local.json`。仅使用 API 时，复制 `config_local.example.json`，在本地填写 API Key 和 SteamID64。API-only 结果属于候选，不是已核验的当前客户端库。`--account` 覆盖配置中的账号，来源账号不一致会拒绝合并；不同账号使用独立输出目录。
+客户端认证不强制要求 `config_local.json`。仅使用 API 时，将 `examples/config_local.example.json` 复制到数据目录并命名为 `config_local.json`，在本地填写 API Key 和 SteamID64。API-only 结果属于候选，不是已核验的当前客户端库。`--account` 覆盖配置中的账号，来源账号不一致会拒绝合并；不同账号使用独立输出目录。
 
 `--machine MACHINE_NAME` 显式选择在线客户端；默认选择本机，不会随意选另一台设备。桌面已登录不代表辅助进程可以跳过自己的服务器连接和认证。
 

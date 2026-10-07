@@ -5,10 +5,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from classify_games import classify_library
-from classify_steam_games import classify_one
-from classification_overrides import load_overrides
-from steam_runs import publish_run, resolve_artifact
+from steam_library_toolkit.cli.classify_table import classify_library
+from steam_library_toolkit.cli.classify_five import classify_one
+from steam_library_toolkit.classification.overrides import load_overrides
+from steam_library_toolkit.storage.runs import publish_run, resolve_artifact
 from support import run_bundle
 
 
@@ -117,7 +117,7 @@ class ClassificationQualityTests(unittest.TestCase):
             original = copy.deepcopy(rows)
             rule = {'1': {'main_category': '其他', 'reason': '只核对主类'}}
             target = Path(directory) / 'library.json'
-            with patch('classification_overrides.load_overrides', return_value=rule):
+            with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=rule):
                 publish_run(target, rows, audit)
             five = json.loads(resolve_artifact(target, 'steam_library_classified.json').read_text(encoding='utf-8'))
             table = json.loads(resolve_artifact(target, 'classified.json').read_text(encoding='utf-8'))
@@ -125,13 +125,13 @@ class ClassificationQualityTests(unittest.TestCase):
             self.assertEqual(table[0]['classification_evidence']['fields']['main_category']['state'], 'reviewed')
             self.assertNotEqual(table[0]['classification_evidence']['fields']['tags']['state'], 'reviewed')
             self.assertEqual(rows, original)
-            from steam_picker_server import PickerLibrary
+            from steam_library_toolkit.web.server import PickerLibrary
             shown = PickerLibrary(target).read()['games']
             self.assertEqual(shown[0]['classification_evidence']['fields']['primary']['state'], 'reviewed')
             self.assertEqual(shown[0]['classification_evidence']['fields']['sub']['state'], 'unknown')
 
     def test_picker_legacy_evidence_does_not_claim_review_or_expose_extra_fields(self):
-        from steam_picker_server import normalized_games
+        from steam_library_toolkit.web.server import normalized_games
         game = classify_one({'appid': 1, 'name': 'BioShock'}, {})
         game.pop('classification_evidence')
         self.assertEqual(normalized_games([game])[0]['classification_evidence'], {'fields': {}})

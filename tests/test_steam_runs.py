@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from steam_sources import SourceResult, reconcile, AccountMismatchError
-from steam_runs import publish_run, load_library, manifest_path, resolve_artifact, check_previous
+from steam_library_toolkit.sources.reconcile import SourceResult, reconcile, AccountMismatchError
+from steam_library_toolkit.storage.runs import publish_run, load_library, manifest_path, resolve_artifact, check_previous
 
 ACCOUNT = "76561198000000001"
 
@@ -36,15 +36,15 @@ class GenerationTests(unittest.TestCase):
     def test_failed_render_or_manifest_commit_preserves_entire_previous_generation(self):
         self.publish("first")
         pointer = manifest_path(self.output).read_bytes()
-        with patch("steam_library_toolkit.tables.write_csv", side_effect=OSError("disk full")), self.assertRaises(OSError):
+        with patch("steam_library_toolkit.classification.tables.write_csv", side_effect=OSError("disk full")), self.assertRaises(OSError):
             self.publish("render_failed", ids=(30,))
         self.assertEqual(manifest_path(self.output).read_bytes(), pointer)
-        from steam_runs import atomic_json
+        from steam_library_toolkit.storage.runs import atomic_json
         def fail_pointer(path, data):
             if Path(path) == manifest_path(self.output):
                 raise OSError("locked")
             atomic_json(path, data)
-        with patch("steam_runs.atomic_json", side_effect=fail_pointer), self.assertRaises(OSError):
+        with patch("steam_library_toolkit.storage.runs.atomic_json", side_effect=fail_pointer), self.assertRaises(OSError):
             self.publish("pointer_failed", ids=(40,))
         self.assertEqual(manifest_path(self.output).read_bytes(), pointer)
         self.assertEqual([g["appid"] for g in load_library(self.output)], [10, 20])
@@ -63,7 +63,7 @@ class GenerationTests(unittest.TestCase):
         pointer = manifest_path(self.output).read_bytes()
         def truncate(rows, path):
             path.write_text("appid,run_id\n", encoding="utf-8")
-        with patch("steam_library_toolkit.tables.write_csv", side_effect=truncate), self.assertRaises(RuntimeError):
+        with patch("steam_library_toolkit.classification.tables.write_csv", side_effect=truncate), self.assertRaises(RuntimeError):
             self.publish("broken_csv")
         self.assertEqual(manifest_path(self.output).read_bytes(), pointer)
 
@@ -113,7 +113,7 @@ class GenerationTests(unittest.TestCase):
                        SourceResult("client_library", state="unavailable", steam_id="76561198000000002")])
 
     def test_precise_type_selection_shared_by_both_entrypoints(self):
-        from steam_classification import load_selected
+        from steam_library_toolkit.classification.selection import load_selected
         from types import SimpleNamespace
         rows, audit = bundle("types")
         rows[1]["app_type"] = "demo"
@@ -124,7 +124,7 @@ class GenerationTests(unittest.TestCase):
         self.assertEqual(len(load_selected(args)[1]), 2)
 
     def test_candidate_classification_requires_explicit_optin(self):
-        from steam_classification import load_selected
+        from steam_library_toolkit.classification.selection import load_selected
         from types import SimpleNamespace
         self.publish("candidate", candidate=True)
         args = SimpleNamespace(input=self.output.with_suffix(".candidates.json"), allow_candidates=False, include_type="all")

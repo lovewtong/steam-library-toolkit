@@ -6,9 +6,9 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-import classify_games
-import steam_collect
-from steam_sources import AccountMismatchError, SourceResult, atomic_json, read_snapshot, reconcile, select_for_classification
+import steam_library_toolkit.cli.classify_table as classify_games
+import steam_library_toolkit.cli.collect as steam_collect
+from steam_library_toolkit.sources.reconcile import AccountMismatchError, SourceResult, atomic_json, read_snapshot, reconcile, select_for_classification
 
 ACCOUNT = "76561198000000001"
 OTHER = "76561198000000002"
@@ -109,14 +109,14 @@ class FileAndCollectionTests(unittest.TestCase):
     def test_failed_atomic_replace_keeps_old_file(self):
         p = self.path / "library.json"
         p.write_text("old", encoding="utf-8")
-        with patch("steam_sources.os.replace", side_effect=OSError("locked")), self.assertRaises(OSError):
+        with patch("steam_library_toolkit.sources.reconcile.os.replace", side_effect=OSError("locked")), self.assertRaises(OSError):
             atomic_json(p, [{"appid": 1}])
         self.assertEqual(p.read_text(), "old")
         self.assertEqual(list(self.path.glob("*.tmp")), [])
 
-    @patch("steam_collect.load_config", return_value={"api_key": "", "steam_id": ACCOUNT})
-    @patch("steam_collect.collect_client")
-    @patch("steam_collect.get_owned_games", side_effect=steam_collect.requests.Timeout("secret-url"))
+    @patch("steam_library_toolkit.cli.collect.load_config", return_value={"api_key": "", "steam_id": ACCOUNT})
+    @patch("steam_library_toolkit.cli.collect.collect_client")
+    @patch("steam_library_toolkit.cli.collect.get_owned_games", side_effect=steam_collect.requests.Timeout("secret-url"))
     def test_source_failure_isolated_and_strict_mode_preserves_files(self, api, helper, config):
         helper.return_value = {"steam_id": ACCOUNT, "client": {"state": "complete", "completeness": {"verified": True}, "records": [{"appid": 10, "name": "Game", "app_type": "game"}]},
                                "api": {"state": "unavailable", "error_code": "WEB_API_FAILED"}, "licenses": [],
@@ -134,10 +134,10 @@ class FileAndCollectionTests(unittest.TestCase):
             steam_collect.collect(fetch_store=False, use_client=True, strict=True, snapshot_output=output)
         self.assertEqual(output.read_text(), "old")
 
-    @patch("steam_collect.time.sleep")
-    @patch("steam_library_toolkit.store.get_store_result")
+    @patch("steam_library_toolkit.cli.collect.time.sleep")
+    @patch("steam_library_toolkit.sources.store.get_store_result")
     def test_metadata_cache_reuses_and_refreshes_without_losing_delisted_app(self, store, sleep):
-        from steam_metadata import parse_fields
+        from steam_library_toolkit.sources.metadata import parse_fields
         details = {"app_type": "game", **parse_fields({'genres': [], 'categories': []})}
         store.return_value = {"status": "success", "details": details}
         self.assertEqual(steam_collect.cached_store_details(10, self.path), details)
@@ -150,7 +150,7 @@ class FileAndCollectionTests(unittest.TestCase):
         self.assertEqual(rows[0]["appid"], 10)
         self.assertEqual(rows[0]["genres"], [])
 
-    @patch("steam_http.request_once")
+    @patch("steam_library_toolkit.sources.http.request_once")
     def test_store_bad_json_shapes_are_optional_failures(self, get):
         get.return_value.status_code = 200
         for data in ([], {"10": None}, {"10": {"success": True, "data": None}}):
@@ -158,21 +158,21 @@ class FileAndCollectionTests(unittest.TestCase):
                 get.return_value.json.return_value = data
                 self.assertIsNone(steam_collect.get_store_details(10))
 
-    @patch("steam_collect.time.sleep")
-    @patch("steam_library_toolkit.store.get_store_result", return_value={"status": "rate_limited", "details": None})
+    @patch("steam_library_toolkit.cli.collect.time.sleep")
+    @patch("steam_library_toolkit.sources.store.get_store_result", return_value={"status": "rate_limited", "details": None})
     def test_rate_limit_cache_expires_quickly_and_does_not_become_not_found(self, store, sleep):
-        with patch("steam_library_toolkit.store.time.time", return_value=1000):
+        with patch("steam_library_toolkit.sources.store.time.time", return_value=1000):
             self.assertIsNone(steam_collect.cached_store_details(10, self.path))
-        with patch("steam_library_toolkit.store.time.time", return_value=1020):
+        with patch("steam_library_toolkit.sources.store.time.time", return_value=1020):
             self.assertIsNone(steam_collect.cached_store_details(10, self.path))
         self.assertEqual(store.call_count, 1)
         self.assertEqual(json.loads((self.path/"10.json").read_text())["status"], "rate_limited")
-        with patch("steam_library_toolkit.store.time.time", return_value=1061):
+        with patch("steam_library_toolkit.sources.store.time.time", return_value=1061):
             steam_collect.cached_store_details(10, self.path)
         self.assertEqual(store.call_count, 2)
 
     def test_snapshot_integrity_checks_fail_on_modified_members(self):
-        from steam_sources import records_hash
+        from steam_library_toolkit.sources.reconcile import records_hash
         path = self.snapshot()
         data = json.loads(path.read_text(encoding="utf-8"))
         data.update(record_count=1, apps_sha256=records_hash(data["apps"]))

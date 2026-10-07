@@ -7,12 +7,12 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / 'src'))
 
-from classification_overrides import read_rules
-from steam_library_toolkit.tables import classify_library
-from steam_library_toolkit.classification import classify_one
-from steam_sources import atomic_json
+from steam_library_toolkit.classification.overrides import read_rules
+from steam_library_toolkit.classification.tables import classify_library
+from steam_library_toolkit.classification.five import classify_one
+from steam_library_toolkit.sources.reconcile import atomic_json
 
 FIXTURE = ROOT / 'tests/fixtures/classification-r1.json'
 FIXTURES = {'r1': FIXTURE, 'batch-01': ROOT / 'tests/fixtures/classification-batch-01.json',
@@ -21,7 +21,7 @@ FIXTURES = {'r1': FIXTURE, 'batch-01': ROOT / 'tests/fixtures/classification-bat
 
 def evaluate(fixture_path=FIXTURE):
     fixture = json.loads(fixture_path.read_text(encoding='utf-8'))
-    rules = read_rules(ROOT / 'classification_overrides.json')  # Never load personal rules.
+    rules = read_rules(ROOT / 'src/steam_library_toolkit/resources/rules/classification_overrides.json')  # Never load personal rules.
     results = []
     for sample in fixture['samples']:
         game = {key: copy.deepcopy(sample[key]) for key in ('appid', 'name', 'genres')}
