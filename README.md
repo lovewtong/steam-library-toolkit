@@ -49,7 +49,7 @@ npm ci
 
 The checkout includes developer/publisher filters, first-observation dates and family collection. The package layout described here is a development change after v1.2.0. For the stable release, clone with `--branch v1.2.0` and follow the tag's README and [release notes](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0); that tag uses root scripts and has no `pyproject.toml` or installed commands.
 
-You can also install this checkout with `python -m pip install .`, then use `steam-library collect`, `steam-library enrich`, `steam-library picker` and the other commands listed by `steam-library --help`. From a wheel installation, run `steam-library node --install` to prepare the Node dependencies. There is no published PyPI package. This checkout prepares `1.3.0`; its release assets remain pending until publication.
+You can also install this checkout with `python -m pip install .`, then use `steam-library collect`, `steam-library enrich`, `steam-library picker` and the other commands listed by `steam-library --help`. From a wheel installation, run `steam-library node --install` to prepare the Node dependencies. There is no published PyPI package. Version `1.3.0` is frozen at `09b6d4a`; its tag and verified Release draft are prepared, but the Release is not yet public. See the [candidate record](releases/v1.3.0-candidate.json) and [upgrade/rollback acceptance](docs/validation/V1_3_RELEASE_ACCEPTANCE.md).
 
 In a source checkout, default configuration, cache and output paths remain at the repository root. An installed wheel uses the current working directory. Set `STEAM_LIBRARY_HOME` before starting a command to choose another data directory; explicit `--input` and `--output` paths retain their usual meaning. See [installed usage](USAGE.md#installed-commands-and-data-directories).
 
@@ -116,7 +116,7 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 The package layout and installed commands on `main` are later development changes, outside v1.2.0. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
-The [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md) covers package installation and build provenance. The package version is now `1.3.0`; the exact candidate and its acceptance are recorded separately before release.
+The [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md) covers package installation and build provenance. Candidate `09b6d4a` passed prepublication acceptance; the Release remains a verified draft.
 
 The frozen scope, upgrade acceptance and publication checks are recorded in the [release plan](docs/releases/V1_2_RELEASE_PLAN.md), [release notes](RELEASE_NOTES.md) and [publication record](releases/v1.2.0-publication.json).
 
