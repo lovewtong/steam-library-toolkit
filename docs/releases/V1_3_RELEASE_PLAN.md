@@ -16,14 +16,14 @@
 
 `9b332573fc2767b692373eba40631eaf603a5665` 干净主线的 `1.3.0.dev0` wheel 在全新 Windows Python 3.14.2 虚拟环境中安装，独立准备 Node 22.19.0 依赖。真实本机授权采集及复测得到 829 条、818 game、441 共享、460 条个人时长未知；两轮成员与观察历史一致。DOOM: The Dark Ages（3017860）和 Space Marine 2（2183900）均为 family_library/shared。两款实际商店请求、重分类、页面 HTTP/API、计划 dry-run／导出与复核清单通过，旧运行与配置未变。
 
-这份真人证据属于引入构建标识前的上述提交。新的构建标识需要在包含该功能的干净提交和 wheel 上独立验收；不能把旧结果直接归给新候选。个人库和原始日志保留本机，公开文档只记录结果与适用范围。
+这份早期真人证据属于引入构建标识前的上述提交。后续干净开发提交 `d639954e9050d059c33e4b2b7ab7bb66cca233de` 已通过新的隔离安装、独立内容哈希、严格家庭采集、旧运行继承及失败诊断验收，详见[构建身份验收记录](../validation/BUILD_IDENTITY_ACCEPTANCE.md)。首轮许可来源失败后以相同严格参数重试成功；两次结果均保留。个人库和原始日志留在本机。开发提交验收不能直接当作尚未确定的正式候选验收。
 
 ## 发布门槛
 
 | 任务 | 目标与状态 |
 |---|---|
-| 构建标识代码与文档复审 | 完成字段兼容、变更检测、sdist/直接 wheel 一致及三平台 CI；本变更待复审 |
-| 新构建安装验收 | 在干净提交上构建并安装，核对版本、wheel 哈希、build_id 和旧数据；保留独立真实家庭采集记录 |
+| 构建标识代码与文档复审 | 本地 180 Python、36 Node、变更检测及 sdist/直接 wheel 一致通过；合并前核对 PR 复审与精确 HEAD 的远端三平台 CI |
+| 新构建安装验收 | 干净开发提交 d639954 的版本、wheel 哈希、build_id、旧数据与严格真实家庭采集通过；正式候选需另行验收 |
 | 主线整合 | 受影响 PR 按依赖复审后合并，核验精确主线提交的三平台 CI |
 | 正式版本与候选冻结 | 将开发版本更新为 1.3.0，明确完整候选 SHA、tree 和构建记录；不可自动采用分支 HEAD |
 | 最终候选验收 | 重跑候选相关构建、安装、旧数据升级及旧软件＋旧运行回退；真实验收证据绑定该候选 |
@@ -37,6 +37,6 @@ Scope frozen on 2026-10-07; the candidate commit is pending and no v1.3.0 tag or
 
 Scope includes the merged source/resource layout, wheel/sdist installation, installed commands and eight compatible source entries, data-directory and Node-runtime setup, package build provenance, and the existing v1.2 workflows. New acquisition sources, classification batches, purchase dates, Steam writes, installers, auto-updates and PyPI publication are excluded. Existing live-validation limits remain.
 
-The clean `9b33257` wheel already passed Windows one-account local-session family collection and repeat/history checks: 829 records, 818 games, 441 shared and 460 unknown playtimes. The two reference games, real two-app enrichment, reclassification, HTTP page/API, review and plan exports passed. This evidence predates build provenance and is not automatically evidence for a later candidate.
+The clean `9b33257` wheel passed Windows one-account local-session family collection and repeat/history checks: 829 records, 818 games, 441 shared and 460 unknown playtimes. The two reference games, real two-app enrichment, reclassification, HTTP page/API, review and plan exports passed. Later clean development commit `d639954` separately passed installed build identity and strict family/history acceptance; see the [acceptance record](../validation/BUILD_IDENTITY_ACCEPTANCE.md), including its initial license-source failure and successful retry. These are development-commit results, not automatic acceptance of a later final candidate.
 
 Release gates are code review and multiplatform CI, independent clean-build installation acceptance, main integration, explicit final-version/full-SHA freeze, candidate upgrade/rollback validation, and bilingual notes plus public archive/tag/download checks. New features require a separate scope decision; private data and installed dependencies are excluded from distributed archives.
