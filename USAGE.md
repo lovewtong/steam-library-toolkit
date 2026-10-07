@@ -37,6 +37,8 @@ In a checkout, `npm ci` remains the normal Node setup. For an installed package,
 
 Built-in rules, schemas, HTML and bridge modules are package resources. Keep personal rules in the data directory; do not edit installed resources. Wheels exclude account files, cache, run outputs and `node_modules`. The old internal root modules are no longer public import paths; use `steam_library_toolkit` modules for Python integration. The eight supported old CLI entry files are retained.
 
+Run `producer` evidence now includes the package version and a verified installed build ID. Source runs retain checkout Git information; installed runs keep Git fields unknown and check their code/resource payload. Older wheels may have no build ID. See [build provenance](docs/guides/BUILD_PROVENANCE.md) for statuses and [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md) for the pending release gates.
+
 ## Accounts and sources
 
 ```powershell

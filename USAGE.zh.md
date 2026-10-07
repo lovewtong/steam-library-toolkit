@@ -37,6 +37,8 @@ steam-library picker --serve --input library.json
 
 内置规则、Schema、HTML 和桥接模块属于包资源。个人规则放在数据目录，不修改安装目录中的资源。wheel 排除账号文件、缓存、运行输出和 `node_modules`。旧根目录内部模块不再作为公开导入路径；Python 集成请使用 `steam_library_toolkit` 下的模块。八个常用旧 CLI 文件保留。
 
+运行的 `producer` 证据新增包版本和安装内容核验后的构建标识。源码运行保留 checkout Git 信息；安装版的 Git 字段保持未知，并核对实际代码／资源。旧 wheel 可能没有构建标识。状态说明见[构建追溯](docs/guides/BUILD_PROVENANCE.md)，待完成发布门槛见 [v1.3.0 范围](docs/releases/V1_3_RELEASE_PLAN.md)。
+
 ## 账号与来源
 
 ```powershell

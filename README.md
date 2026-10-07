@@ -116,6 +116,8 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 The package layout and installed commands on `main` are later development changes, outside v1.2.0. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
 
+The [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md) covers package installation and build provenance. Its candidate is pending; `1.3.0.dev0` remains a development version.
+
 The frozen scope, upgrade acceptance and publication checks are recorded in the [release plan](docs/releases/V1_2_RELEASE_PLAN.md), [release notes](RELEASE_NOTES.md) and [publication record](releases/v1.2.0-publication.json).
 
 ## Limitations
