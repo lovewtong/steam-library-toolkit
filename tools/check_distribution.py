@@ -149,7 +149,9 @@ def main():
         selected = work / 'selected'
         selected.mkdir()
         explicit = {**environment, 'STEAM_LIBRARY_HOME': str(selected)}
-        run([python, '-c', 'from steam_library_toolkit.paths import ROOT; from pathlib import Path; import os; assert ROOT == Path(os.environ["STEAM_LIBRARY_HOME"])'], cwd=user, env=explicit)
+        # Windows runners use 8.3 temp names; macOS /var may resolve to /private/var.
+        # Compare actual directory identity rather than two spelling variants.
+        run([python, '-c', 'from steam_library_toolkit.paths import ROOT; import os; assert ROOT.samefile(os.environ["STEAM_LIBRARY_HOME"])'], cwd=user, env=explicit)
         # -S removes editable-package discovery. Only third-party modules are
         # restored explicitly; the compatibility entry must bootstrap src itself.
         dependency_paths = json.loads(run([sys.executable, '-c', 'import json,site; print(json.dumps(site.getsitepackages()))']))
