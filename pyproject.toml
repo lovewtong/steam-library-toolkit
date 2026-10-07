@@ -34,4 +34,4 @@ include = ["steam_library_toolkit*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-steam_library_toolkit = ["resources/web/*.html", "resources/schemas/*.json", "resources/rules/*.json", "resources/node_bridge/*.cjs"]
+steam_library_toolkit = ["resources/build-info.json", "resources/web/*.html", "resources/schemas/*.json", "resources/rules/*.json", "resources/node_bridge/*.cjs"]

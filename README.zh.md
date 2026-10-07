@@ -116,6 +116,8 @@ $steamAccount = 'YOUR_STEAMID64'
 
 `main` 的包结构和安装后的命令属于后续开发变更，不包含在 v1.2.0 中。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
+[v1.3.0 范围](docs/releases/V1_3_RELEASE_PLAN.md)包含包安装和构建追溯。候选提交待定，`1.3.0.dev0` 仍为开发版本。
+
 冻结范围、升级验收和发布核验见[发布计划](docs/releases/V1_2_RELEASE_PLAN.md)、[发布说明](RELEASE_NOTES.md)和[发布记录](releases/v1.2.0-publication.json)。
 
 ## 已知限制

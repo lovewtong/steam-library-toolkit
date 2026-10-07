@@ -16,6 +16,7 @@ from steam_library_toolkit.sources.membership import trusted_current_membership
 
 def new_run_metadata():
     from steam_library_toolkit.paths import SOURCE_ROOT
+    from steam_library_toolkit.build_identity import producer_package_info
     root = SOURCE_ROOT
     from steam_library_toolkit.diagnostics import environment_report
     try:
@@ -29,7 +30,7 @@ def new_run_metadata():
     except (OSError, subprocess.TimeoutExpired):
         commit, dirty = None, None
     return {"run_id": uuid.uuid4().hex, "started_at": utc_now(),
-            "producer": {"git_commit": commit, "dirty": dirty},
+            "producer": {"git_commit": commit, "dirty": dirty, **producer_package_info()},
             "environment": environment_report()}
 
 

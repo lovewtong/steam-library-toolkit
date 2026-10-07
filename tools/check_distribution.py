@@ -19,6 +19,7 @@ LEGACY = ['steam_collect', 'steam_enrich', 'steam_reclassify', 'steam_review_cla
           'steam_sync_collections', 'steam_picker', 'classify_games', 'classify_steam_games']
 
 SMOKE = r'''
+import importlib.metadata
 import json, os, sys, threading
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -46,7 +47,10 @@ rows, audit = reconcile([SourceResult('client_library',
     [{'appid': 550, 'name': 'Fixture', 'app_type': 'game'}],
     steam_id='76561198000000001', completeness={'verified': True})])
 audit.update(new_run_metadata())
-assert audit['producer'] == {'git_commit': None, 'dirty': None}
+producer = audit['producer']
+assert producer['git_commit'] is None and producer['dirty'] is None
+assert producer['package_version'] == importlib.metadata.version('steam-library-toolkit')
+assert producer['build_status'] == 'verified' and producer['build_id'].startswith('sha256:')
 for row in rows:
     row.update(run_id=audit['run_id'], playtime_minutes=None)
 validate_artifacts(rows, audit)
@@ -88,6 +92,17 @@ env = node_environment()
 subprocess.run(['node', '-e', "for (const n of ['steam-user','steam-session','undici']) require(n);"],
                cwd=RESOURCES / 'node_bridge', env=env, check=True, capture_output=True)
 assert not (Path(steam_library_toolkit.__file__).parent / 'config_local.json').exists()
+stamp = json.loads((RESOURCES / 'build-info.json').read_bytes())
+assert producer['build_id'] == 'sha256:' + stamp['payload_sha256']
+resource = RESOURCES / 'rules/CLASSIFICATION_RULES.md'
+original = resource.read_bytes()
+try:
+    resource.write_bytes(original + b'\n')
+    modified = new_run_metadata()['producer']
+    assert modified['build_status'] == 'modified' and modified['build_id'] is None
+finally:
+    resource.write_bytes(original)
+assert new_run_metadata()['producer'] == producer
 print('Installed wheel: schemas, rules, run publication, classification, review, plan, HTML/API, HTTP retry and Node resolution passed.')
 '''
 
@@ -123,7 +138,7 @@ def main():
         assert payload == package_bytes(next(direct.glob('*.whl'))), 'sdist/wheel resource drift'
         required = ['resources/web/steam_picker.html', 'resources/rules/CLASSIFICATION_RULES.md',
                     'resources/rules/classification_overrides.json', 'resources/node_bridge/package.json',
-                    'resources/node_bridge/package-lock.json', 'sources/http_worker.py']
+                    'resources/node_bridge/package-lock.json', 'sources/http_worker.py', 'resources/build-info.json']
         assert all('steam_library_toolkit/' + name in payload for name in required)
         with tarfile.open(source) as archive:
             names = archive.getnames()
