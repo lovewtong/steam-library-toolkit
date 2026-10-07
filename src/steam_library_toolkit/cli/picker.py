@@ -167,7 +167,7 @@ def main():
         print(f"  [{i}] {g.get('name')} | {a.get('primary')} | {a.get('sub')} | {a.get('vibe')} | {a.get('intensity')} | {a.get('slogan')}")
     if len(filtered) > 50:
         print(f"  ... 仅显示前 50 款，共 {len(filtered)} 款。")
-    print("\n用 Steam 启动： python steam_picker.py <筛选条件> --open <序号>")
+    print("\n用 Steam 启动： steam-library picker <筛选条件> --open <序号>（源码也可用 python steam_picker.py）")
 
 if __name__ == "__main__":
     main()

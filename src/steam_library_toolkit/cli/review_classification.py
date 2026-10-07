@@ -173,7 +173,7 @@ def main(argv=None):
         print(f"P{item['priority']} AppID {item['appid']} {name}：表格 {table} / picker {primary}")
     if args.output:
         print(f'完整清单已导出：{args.output}（含个人游戏清单，请保存在本地）')
-    print('核对后编辑 classification_overrides.local.json，再用 steam_reclassify.py 发布独立运行并重新检查。')
+    print('核对后编辑 classification_overrides.local.json，再用 steam-library reclassify（源码也可用 steam_reclassify.py）发布独立运行并重新检查。')
 
 
 if __name__ == '__main__':

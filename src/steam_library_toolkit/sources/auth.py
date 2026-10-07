@@ -113,7 +113,7 @@ def local_credentials(steam_path=None, account=None):
     try:
         import vdf
     except ImportError:
-        raise AuthError("PYTHON_DEPENDENCY_MISSING", "本地会话缺少 vdf，请使用项目 .venv 的 Python 或执行 python -m pip install -r requirements.txt") from None
+        raise AuthError("PYTHON_DEPENDENCY_MISSING", "本地会话缺少 vdf，请使用已安装依赖的 Python 环境或执行 python -m pip install vdf") from None
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam\ActiveProcess") as key:
             active = winreg.QueryValueEx(key, "ActiveUser")[0]
@@ -193,7 +193,7 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
         token = None
     node = shutil.which("node")
     if not node:
-        raise AuthError("NODE_NOT_FOUND", "客户端采集需要 Node.js 和 npm ci")
+        raise AuthError("NODE_NOT_FOUND", "客户端采集需要 Node.js 22；源码目录执行 npm ci，安装包执行 steam-library node --install")
     from steam_library_toolkit.paths import RESOURCES, node_environment
     helper = RESOURCES / "node_bridge/steam_client_collect.cjs"
     on_progress("Steam 客户端：本地凭据已读取，准备连接（尚未完成服务器认证）" if local_session
@@ -275,7 +275,7 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
                     raise AuthError("HELPER_EXIT_FAILED", "客户端 helper 未正常退出")
                 return event
         if process.poll() is not None:
-            raise AuthError("HELPER_START_FAILED", "客户端 helper 提前退出；请确认 Node.js 18+ 并运行 npm ci")
+            raise AuthError("HELPER_START_FAILED", "客户端 helper 提前退出；请确认 Node.js 22，源码目录执行 npm ci，安装包执行 steam-library node --install")
         raise AuthError("CLIENT_TIMEOUT", f"客户端采集超时；最后阶段：{STAGES[stage]}。请检查 Steam 网络连接")
     finally:
         if not process.stdin.closed:

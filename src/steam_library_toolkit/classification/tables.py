@@ -28,7 +28,7 @@ TAG_RULES = [
 def load_library(path: Path) -> list:
     """加载 steam_library.json。"""
     if not path.exists():
-        raise FileNotFoundError(f"未找到 {path}，请先运行 steam_collect.py 生成游戏库 JSON。")
+        raise FileNotFoundError(f"未找到 {path}，请先用 steam-library collect（源码也可用 steam_collect.py）生成游戏库 JSON。")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
