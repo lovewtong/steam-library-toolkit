@@ -40,7 +40,7 @@
     <span class="count" id="count">0 款</span>
   </div>
   <div class="list" id="list"></div>
-  <p class="tip">需先运行 <code>python steam_picker.py --serve</code> 从本目录启动服务，再打开本页面。点击「在 Steam 中打开」会唤起 Steam 启动游戏。</p>
+  <p class="tip">安装版使用 <code>steam-library picker --serve --input library.json</code> 启动服务；源码兼容入口为 <code>python steam_picker.py --serve --input library.json</code>。请替换为自己的库路径。点击「在 Steam 中打开」会唤起 Steam 启动游戏。</p>
 
   <script>
     let data = [];
