@@ -3,9 +3,9 @@ import argparse
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from steam_auth import collect_client
-from steam_sources import atomic_json, utc_now
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from steam_library_toolkit.sources.auth import collect_client
+from steam_library_toolkit.sources.reconcile import atomic_json, utc_now
 
 
 def main():

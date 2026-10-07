@@ -6,10 +6,10 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from steam_enrich import enrich
-from steam_lock import collection_lock
-from steam_runs import load_library, manifest_path, publish_run, resolve_artifact
-from steam_sources import SourceResult, reconcile, records_hash
+from steam_library_toolkit.cli.enrich import enrich
+from steam_library_toolkit.storage.lock import collection_lock
+from steam_library_toolkit.storage.runs import load_library, manifest_path, publish_run, resolve_artifact
+from steam_library_toolkit.sources.reconcile import SourceResult, reconcile, records_hash
 
 
 class EnrichmentTests(unittest.TestCase):
@@ -18,9 +18,9 @@ class EnrichmentTests(unittest.TestCase):
         def store(appid, cache_dir, refresh, stats, **kwargs):
             barrier.wait(timeout=5)  # A serial implementation cannot pass this barrier.
             stats.update(success=1, cache_hits=0)
-            from steam_metadata import parse_fields
+            from steam_library_toolkit.sources.metadata import parse_fields
             return parse_fields({'genres': [{'description': str(appid)}]})
-        with patch('steam_enrich.cached_store_details', side_effect=store):
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details', side_effect=store):
             _, meta = enrich(self.source, self.output, workers=2)
         self.assertEqual([r['appid'] for r in load_library(self.output)], [1, 2])
         self.assertEqual(meta['success'], 2)
@@ -28,7 +28,7 @@ class EnrichmentTests(unittest.TestCase):
         self.assertEqual(meta['apps']['1']['fields']['categories'], 'missing')
 
     def test_invalid_worker_count_does_not_request_or_publish(self):
-        with patch('steam_enrich.cached_store_details') as fetch:
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details') as fetch:
             for value in (0, 5, True, 1.5):
                 with self.assertRaisesRegex(ValueError, 'ENRICH_WORKERS_INVALID'):
                     enrich(self.source, self.output, workers=value)
@@ -63,9 +63,9 @@ class EnrichmentTests(unittest.TestCase):
                 'is_controller': None, 'app_type': 'dlc'}
 
     def test_enrich_preserves_evidence_snapshot_and_original_generation(self):
-        with patch('steam_enrich.cached_store_details', side_effect=self.store), \
-                patch('steam_collect.collect_client', side_effect=AssertionError('Authentication forbidden')), \
-                patch('steam_collect.load_config', side_effect=AssertionError('Credentials forbidden')):
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details', side_effect=self.store), \
+                patch('steam_library_toolkit.cli.collect.collect_client', side_effect=AssertionError('Authentication forbidden')), \
+                patch('steam_library_toolkit.cli.collect.load_config', side_effect=AssertionError('Credentials forbidden')):
             _, meta = enrich(manifest_path(self.source), self.output)
         result = load_library(self.output)
         for original, enriched in zip(self.rows, result):
@@ -89,7 +89,7 @@ class EnrichmentTests(unittest.TestCase):
     def test_partial_failure_retains_previous_metadata(self):
         def failure(appid, cache_dir, refresh, stats, **kwargs):
             stats.update(not_found=1, cache_hits=0)
-        with patch('steam_enrich.cached_store_details', side_effect=failure):
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details', side_effect=failure):
             _, meta = enrich(self.source, self.output, appids=[1])
         rows = load_library(self.output)
         self.assertEqual([r['genres'] for r in rows], [['Original'], ['Original']])
@@ -99,7 +99,7 @@ class EnrichmentTests(unittest.TestCase):
         self.assertTrue(all(a['action'] == 'retained' for a in meta['apps']['1']['field_actions'].values()))
 
     def test_rejects_bad_source_selection_and_conflicting_output_before_network(self):
-        with patch('steam_enrich.cached_store_details') as store:
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details') as store:
             with self.assertRaisesRegex(ValueError, 'ENRICH_OUTPUT_CONFLICT'):
                 enrich(self.source, manifest_path(self.source))
             with self.assertRaisesRegex(ValueError, 'ENRICH_APPID_INVALID'):
@@ -110,15 +110,15 @@ class EnrichmentTests(unittest.TestCase):
         self.assertFalse(manifest_path(self.output).exists())
 
     def test_corruption_and_interruption_do_not_replace_previous_result(self):
-        with patch('steam_enrich.cached_store_details', side_effect=self.store):
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details', side_effect=self.store):
             enrich(self.source, self.output)
         pointer = manifest_path(self.output).read_bytes()
-        with patch('steam_enrich.cached_store_details', side_effect=KeyboardInterrupt):
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details', side_effect=KeyboardInterrupt):
             with self.assertRaises(KeyboardInterrupt):
                 enrich(self.source, self.output)
         self.assertEqual(manifest_path(self.output).read_bytes(), pointer)
         resolve_artifact(self.source).write_text('[]', encoding='utf-8')
-        with patch('steam_enrich.cached_store_details') as store:
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details') as store:
             with self.assertRaisesRegex(ValueError, 'GENERATION_INVALID'):
                 enrich(self.source, self.output)
             store.assert_not_called()
@@ -137,7 +137,7 @@ class EnrichmentTests(unittest.TestCase):
             row['run_id'] = 'otheraccount'
         publish_run(self.output, rows, audit)
         pointer = manifest_path(self.output).read_bytes()
-        with patch('steam_enrich.cached_store_details') as store:
+        with patch('steam_library_toolkit.cli.enrich.cached_store_details') as store:
             with self.assertRaisesRegex(ValueError, 'ACCOUNT_MISMATCH'):
                 enrich(self.source, self.output)
             store.assert_not_called()

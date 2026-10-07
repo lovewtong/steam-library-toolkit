@@ -3,8 +3,8 @@ import threading
 import time
 import unittest
 
-from steam_http import get_response
-from steam_metadata import RequestGate
+from steam_library_toolkit.sources.http import get_response
+from steam_library_toolkit.sources.metadata import RequestGate
 
 
 class HTTPStatusRetryTests(unittest.TestCase):

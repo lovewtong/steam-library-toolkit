@@ -1,5 +1,5 @@
 """Manufacturer facets shared by reports, picker and collection plans."""
-from steam_metadata import MANUFACTURER_FIELDS, manufacturer_names
+from steam_library_toolkit.sources.metadata import MANUFACTURER_FIELDS, manufacturer_names
 
 
 def manufacturer_fields(game, rule=None):
@@ -18,7 +18,7 @@ def manufacturer_fields(game, rule=None):
         elif not evidence[key]:
             evidence[key] = {'state': 'unverified', 'source': 'legacy'}
         if rule and key in rule:
-            from classification_overrides import evidence as rule_evidence
+            from steam_library_toolkit.classification.overrides import evidence as rule_evidence
             names = list(rule[key])
             evidence[key] = {**rule_evidence(rule), 'state': 'reviewed'}
         result[key] = names

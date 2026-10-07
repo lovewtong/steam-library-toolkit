@@ -1,0 +1,14 @@
+include package.json package-lock.json
+include docs/guides/CLASSIFICATION_RULES.md
+include README.zh.md USAGE.md USAGE.zh.md requirements.txt requirements-tested.txt
+include _compat.py steam_collect.py steam_enrich.py steam_reclassify.py steam_review_classification.py
+include steam_sync_collections.py steam_picker.py classify_games.py classify_steam_games.py run_steam_picker.bat
+include RELEASE_NOTES.md .gitignore
+recursive-include examples *.json
+recursive-include docs *.md
+recursive-include releases *.json
+recursive-include tools *.py
+recursive-include tests *.py *.cjs *.json
+recursive-include legacy *.js
+recursive-include .github *.yml
+recursive-include src/steam_library_toolkit/resources *.html *.json *.cjs

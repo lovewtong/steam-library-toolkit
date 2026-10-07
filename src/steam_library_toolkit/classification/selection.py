@@ -1,6 +1,6 @@
 """Shared input, type selection and run identity for both classification schemes."""
-from steam_runs import load_library
-from steam_sources import APP_TYPES, app_type, select_for_classification
+from steam_library_toolkit.storage.runs import load_library
+from steam_library_toolkit.sources.reconcile import APP_TYPES, app_type, select_for_classification
 
 
 def add_selection_arguments(parser):

@@ -9,8 +9,8 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-import steam_sync_collections as sync
-from steam_runs import publish_run, manifest_path, resolve_artifact
+import steam_library_toolkit.cli.collections as sync
+from steam_library_toolkit.storage.runs import publish_run, manifest_path, resolve_artifact
 from support import ACCOUNT, run_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,7 +72,7 @@ class CollectionPlanTests(unittest.TestCase):
                                   ({'response': {'games': [{'appid': 1}]}}, [1])):
             response = Mock(status_code=200)
             response.json.return_value = payload
-            with patch('steam_collect.get_response', return_value=response):
+            with patch('steam_library_toolkit.cli.collect.get_response', return_value=response):
                 self.assertEqual(sync.get_owned_appids_from_api('fixture', ACCOUNT), expected)
 
     def test_confirmed_empty_run_never_falls_back_to_legacy_members(self):
@@ -201,7 +201,7 @@ class CollectionPlanTests(unittest.TestCase):
         plan, pointer, before, directory = sync.build_plan(self.source, ACCOUNT)
         sync.export_plan(self.output, plan, pointer, before, directory)
         previous = tree(self.root)
-        with patch('steam_sources.os.replace', side_effect=OSError('injected')):
+        with patch('steam_library_toolkit.sources.reconcile.os.replace', side_effect=OSError('injected')):
             with self.assertRaises(OSError):
                 sync.export_plan(self.output, {**plan, 'collections': {}}, pointer, before, directory)
         self.assertEqual(tree(self.root), previous)

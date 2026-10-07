@@ -43,21 +43,21 @@ def main():
     parser.add_argument('--output-dir', required=True, type=Path)
     parser.add_argument('--phase', choices=('prepare', 'cold', 'warm1', 'warm2', 'warm3', 'subset1', 'subset2', 'subset4', 'summary'), required=True)
     args = parser.parse_args()
-    sys.path.insert(0, str(args.repo.resolve()))
-    from steam_library_toolkit import store
-    import steam_http
-    from steam_enrich import enrich
+    sys.path.insert(0, str(args.repo.resolve() / 'src'))
+    from steam_library_toolkit.sources import store
+    import steam_library_toolkit.sources.http as steam_http
+    from steam_library_toolkit.cli.enrich import enrich
     from steam_library_toolkit.paths import library_target
-    from steam_runs import new_run_metadata, load_library, manifest_path, resolve_artifact
-    from steam_sources import atomic_json
-    from classification_overrides import load_overrides, read_rules
+    from steam_library_toolkit.storage.runs import new_run_metadata, load_library, manifest_path, resolve_artifact
+    from steam_library_toolkit.sources.reconcile import atomic_json
+    from steam_library_toolkit.classification.overrides import load_overrides, read_rules
     source = library_target(args.input)
     root = args.output_dir.resolve()
     root.mkdir(parents=True, exist_ok=True)
     frozen_path = root / 'frozen.json'
     current = new_run_metadata()
     assert current['producer']['dirty'] is False, 'Benchmark requires a clean Git tree'
-    assert load_overrides() == read_rules(args.repo / 'classification_overrides.json'), 'Personal overrides require separate review'
+    assert load_overrides() == read_rules(args.repo / 'src/steam_library_toolkit/resources/rules/classification_overrides.json'), 'Personal overrides require separate review'
     pointer_bytes = manifest_path(source).read_bytes()
     rows = load_library(source)
     audit = json.loads(resolve_artifact(source, 'steam_library.audit.json').read_bytes())
@@ -148,7 +148,7 @@ def main():
 
     try:
         with ExitStack() as stack:
-            stack.enter_context(patch('steam_http.request_once', side_effect=record_request))
+            stack.enter_context(patch('steam_library_toolkit.sources.http.request_once', side_effect=record_request))
             stack.enter_context(patch.object(gate, 'wait', side_effect=record_wait))
             stack.enter_context(patch.object(gate, 'defer', side_effect=record_defer))
             for name in ('load_config', 'collect_client', 'get_owned_games'):

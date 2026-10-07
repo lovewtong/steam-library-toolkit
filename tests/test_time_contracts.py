@@ -6,10 +6,10 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from classify_games import classify_library, write_csv
-from steam_collect import get_owned_games
-from steam_sources import SourceResult, reconcile
-from steam_runs import publish_run, resolve_artifact
+from steam_library_toolkit.cli.classify_table import classify_library, write_csv
+from steam_library_toolkit.cli.collect import get_owned_games
+from steam_library_toolkit.sources.reconcile import SourceResult, reconcile
+from steam_library_toolkit.storage.runs import publish_run, resolve_artifact
 
 
 class TimeContractsTests(unittest.TestCase):
@@ -19,11 +19,11 @@ class TimeContractsTests(unittest.TestCase):
             for case in cases['valid']:
                 row = {'appid': 1, **({field: case['value']} if case['present'] else {})}
                 expected = [row, {'appid': 2, 'playtime_forever': 7}]
-                with self.subTest(field=field, case=case), patch('steam_collect.get_response', return_value=Mock(
+                with self.subTest(field=field, case=case), patch('steam_library_toolkit.cli.collect.get_response', return_value=Mock(
                         status_code=200, json=lambda: {'response': {'game_count': 2, 'games': expected}})):
                     self.assertEqual(get_owned_games('fixture-key', 'fixture-account'), expected)
             for value in cases['invalid']:
-                with self.subTest(field=field, value=value), patch('steam_collect.get_response', return_value=Mock(
+                with self.subTest(field=field, value=value), patch('steam_library_toolkit.cli.collect.get_response', return_value=Mock(
                         status_code=200, json=lambda: {'response': {'games': [{'appid': 1, field: value}]}})):
                     with self.assertRaises(ValueError):
                         get_owned_games('fixture-key', 'fixture-account')

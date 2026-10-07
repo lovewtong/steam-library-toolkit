@@ -5,12 +5,12 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from classification_overrides import read_rules
-from classify_games import classify_library
-from classify_steam_games import classify_one, find_known
-from steam_picker_server import PickerLibrary
-from steam_runs import publish_run, resolve_artifact
-from steam_sync_collections import build_plan
+from steam_library_toolkit.classification.overrides import read_rules
+from steam_library_toolkit.cli.classify_table import classify_library
+from steam_library_toolkit.cli.classify_five import classify_one, find_known
+from steam_library_toolkit.web.server import PickerLibrary
+from steam_library_toolkit.storage.runs import publish_run, resolve_artifact
+from steam_library_toolkit.cli.collections import build_plan
 from support import run_bundle, ACCOUNT
 from tools.review_classification_sample import evaluate, FIXTURE, FIXTURES, ROOT
 
@@ -21,7 +21,7 @@ class R1ClassificationTests(unittest.TestCase):
         cls.samples = json.loads(FIXTURE.read_text(encoding='utf-8'))['samples']
         cls.editorial_samples = [sample for path in FIXTURES.values()
                                  for sample in json.loads(path.read_text(encoding='utf-8'))['samples']]
-        cls.rules = read_rules(ROOT / 'classification_overrides.json')
+        cls.rules = read_rules(ROOT / 'src/steam_library_toolkit/resources/rules/classification_overrides.json')
 
     def test_fixed_sample_retains_all_cohorts_and_original_overrides(self):
         ids = {s['appid'] for s in self.samples}
@@ -92,7 +92,7 @@ class R1ClassificationTests(unittest.TestCase):
         before = copy.deepcopy(rows)
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / 'library.json'
-            with patch('classification_overrides.load_overrides', return_value=self.rules):
+            with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=self.rules):
                 publish_run(target, rows, audit)
             self.assertEqual(rows, before)
             table = {r['appid']: r for r in json.loads(resolve_artifact(target, 'classified.json').read_bytes())}

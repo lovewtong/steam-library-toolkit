@@ -3,7 +3,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-from steam_membership import trusted_current_membership
+from steam_library_toolkit.sources.membership import trusted_current_membership
 
 OBSERVATION_SOURCES = ('client_library', 'saved_client_snapshot', 'family_library', 'saved_family_snapshot')
 
@@ -39,8 +39,8 @@ def trusted_client(audit):
 
 def attach_first_seen(output, rows, audit, *, history_from=None):
     """Called by collection under its output lock; the ledger commits with the run."""
-    from steam_runs import manifest_path, resolve_artifact
-    from steam_sources import AccountMismatchError
+    from steam_library_toolkit.storage.runs import manifest_path, resolve_artifact
+    from steam_library_toolkit.sources.reconcile import AccountMismatchError
     account = audit.get('steam_id')
     ledger = {}
     targets = [Path(output)]

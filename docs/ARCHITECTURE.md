@@ -1,53 +1,47 @@
 # Repository layout / 仓库结构
 
-This is a local Python command-line tool with a Node bridge for Steam client protocols. It is run from a source checkout; there is no installer or published Python package.
+Python source uses a `src` package. The root commands are compatibility entries; an installed wheel provides `steam-library` and individual executables. The Node bridge and other runtime assets travel with the package. No PyPI release is currently published.
 
-项目从源码目录运行：Python 提供命令和本地页面，Node 桥接 Steam 客户端协议。目前没有安装器或已发布的 Python 安装包。
+Python 源码采用 `src` 包结构。根目录命令保留为兼容入口，wheel 安装后提供 `steam-library` 及独立命令。Node 桥接和其他运行资源随包分发，目前未发布到 PyPI。
 
 | Location / 位置 | Responsibility / 职责 |
 |---|---|
-| Root `steam_*.py`, `classify_*.py` | Command entry points and existing Python modules / 命令入口与既有 Python 模块 |
-| `steam_library_toolkit/` | Shared paths, store access, classification and display models / 共享路径、商店访问、分类和展示数据模型 |
-| `node_bridge/` | Runtime client, license, family and playtime adapters / 产品运行所需的客户端、许可、家庭与时长适配 |
-| `tools/` | Development checks, benchmarks and inspection scripts / 开发检查、基准与辅助脚本 |
-| `tests/`, `tests/fixtures/` | Offline regressions and public fixtures / 离线回归与可公开测试样本 |
-| `tests/support.py` | Shared synthetic account and run fixtures / 测试账号与运行样本辅助函数 |
-| `schemas/` | Stored artifact contracts / 保存产物的格式契约 |
-| `docs/guides/` | Current feature guides / 当前功能说明 |
-| `docs/validation/` | Reviews and acceptance evidence / 复审与验收记录 |
-| `docs/releases/`, `releases/` | Version plans and machine-readable freeze records / 版本计划与机器可读冻结记录 |
-| `docs/history/`, `legacy/` | Historical proposals and retired experiments / 历史方案与旧实验工具 |
+| Eight root CLI files, `_compat.py` | Supported old commands and source bootstrap / 常用旧命令与源码加载 |
+| `src/steam_library_toolkit/cli/` | Argument parsing and workflow orchestration / 参数解析与流程编排 |
+| `src/steam_library_toolkit/sources/` | Authentication, reconciliation, HTTP workers, metadata, membership and observations / 认证、来源合并、HTTP worker、元数据、成员与观察记录 |
+| `src/steam_library_toolkit/classification/` | Rules, corrections, selection, manufacturer fields and tables / 分类规则、校正、选择、厂商字段与表格 |
+| `src/steam_library_toolkit/storage/` | Run publication, locks and schema validation / 运行发布、锁与格式校验 |
+| `src/steam_library_toolkit/web/` | Read models and loopback server / 展示模型与本地 HTTP 服务 |
+| `src/steam_library_toolkit/resources/` | HTML, schemas, built-in rules and production Node bridge / 页面、Schema、内置规则和生产 Node 桥接 |
+| `examples/` | Public configuration and correction templates / 可公开的配置与校正模板 |
+| Root npm manifests | Single source of Node dependency metadata / Node 依赖元数据的唯一来源 |
+| `tools/`, `tests/` | Developer checks, benchmarks and offline regressions / 开发检查、基准与离线回归 |
+| `docs/guides/`, `docs/validation/` | Current guides and version-specific evidence / 当前说明与具体版本的验收证据 |
+| `docs/releases/`, `releases/` | Plans and machine-readable freezes / 发布计划与机器可读冻结记录 |
+| `docs/history/`, `legacy/` | Historical proposals and retired experiments / 历史方案与旧实验 |
 
-Configuration, personal corrections, caches and outputs keep their existing paths. These are local files, not source assets. A `.current.json` pointer and the hidden `.runs` directory it references belong together; directory cleanup must not separate them.
+## Paths and dependencies / 路径与依赖
 
-个人配置、校正规则、缓存和输出保持原路径。它们属于本地数据，不是源码资源。`.current.json` 与所引用的隐藏 `.runs` 目录必须一起保留，整理时不能拆散。
+`paths.py` separates user data from immutable resources. Source commands keep the checkout root as their default data directory. An installed wheel uses the working directory or `STEAM_LIBRARY_HOME`. Personal configuration and correction filenames remain unchanged. Explicit CLI paths remain relative to the working directory. Keep a `.current.json` pointer together with its hidden `.runs` directory.
 
-## Module boundaries / 模块边界
+`paths.py` 区分用户数据与内置资源。源码运行沿用仓库根目录，wheel 安装后使用当前工作目录或 `STEAM_LIBRARY_HOME`。个人配置和校正文件名不变，显式 CLI 相对路径仍相对于工作目录。`.current.json` 与所引用的隐藏 `.runs` 目录必须一起保留。
 
-- `steam_collect.py` and `steam_enrich.py` share store requests and caching in `steam_library_toolkit.store`.
-- `steam_library_toolkit.classification` and `.tables` own the rules and table renderers. The two root classification commands re-export their old functions for compatibility; runtime modules import the services directly.
-- `steam_library_toolkit.view_model` validates saved classification rows for browsing, review queues and collection plans. It does not depend on the HTTP server.
-- `steam_library_toolkit.paths` resolves checkout resources and existing default data paths. It also normalizes library inputs without importing another command.
-- Existing `steam_sources`, `steam_membership`, `steam_runs`, `steam_schema`, `steam_metadata`, `steam_observation` and transport modules remain at the root. They can be migrated separately if installation packaging is introduced.
+The build hook in `setup.py` copies the root npm manifests and canonical [classification guide](guides/CLASSIFICATION_RULES.md) into the wheel. It removes developer shortcuts from the installed npm manifest. These generated copies are not additional tracked sources. `pyproject.toml` defines Python metadata, dependencies and console commands; its development version does not change the frozen release target.
 
-采集与补全共用商店服务；分类规则和表格生成不依赖命令参数解析；网页、复核清单和收藏计划共用数据模型；输入路径整理不借用另一个命令入口。其他既有模块暂留根目录，后续若引入安装分发，再单独迁移，不能只移动文件而遗漏资源和 worker 定位。
+`setup.py` 将根目录 npm 清单及唯一的[分类说明](guides/CLASSIFICATION_RULES.md)复制进 wheel，并移除安装后 npm 清单中的开发快捷命令。生成副本不另行提交。`pyproject.toml` 定义 Python 元数据、依赖与命令，开发版本号不改变冻结的发布目标。
 
-Run the offline checks from the repository root:
+Source Node dependencies use `npm ci`. Wheel users run `steam-library node --install`; the managed directory defaults to `<data directory>/.steam_node`, overridable with `STEAM_LIBRARY_NODE_HOME`. The bridge receives this directory through `NODE_PATH`. Collection never installs dependencies automatically. The HTTP worker runs as a package module with the parent package directory passed to its subprocess, so old source commands also work without an editable install.
 
-```powershell
-.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py"
-npm test
-.\.venv\Scripts\python.exe tools/check_secrets.py
-.\.venv\Scripts\python.exe tools/check_docs.py
-git diff --check
-```
+源码 Node 依赖使用 `npm ci`；wheel 用户运行 `steam-library node --install`，默认目录为 `<数据目录>/.steam_node`，可用 `STEAM_LIBRARY_NODE_HOME` 更改。桥接通过 `NODE_PATH` 查找依赖，采集不会自动安装。HTTP worker 按包模块启动，父进程传入包目录，使旧源码命令无需 editable 安装也能启动 worker。
 
-The document check validates relative file targets. It does not test URL availability, heading anchors or whether historical statements still describe the current release.
+## Validation / 验证
 
-文档检查验证相对链接的目标文件，不验证外部 URL、标题锚点或历史表述是否适用于当前版本。
+See [README](../README.md#contributing) for offline and build checks. `tools/check_distribution.py` compares checkout and sdist-built wheel payloads, installs outside the repository, prepares independent Node dependencies, and exercises saved-library workflows, HTML/API serving and a real HTTP retry. It checks all eight old source entries without editable discovery. This verifies installation behavior, not a new live-account acceptance run.
+
+离线与构建命令见 [README](../README.zh.md#参与贡献)。分发检查比较源码和 sdist 构建的 wheel，在仓库外安装并准备独立 Node 依赖，验证保存库流程、HTML/API 服务和真实 HTTP 重试；也检查八个旧入口在没有 editable 包发现时运行。这是安装行为验证，不是新的真实账号验收。
 
 ## Release boundary / 发布边界
 
-This reorganization is separate from the frozen v1.2.0 candidate `044a435a27023034071ac460965b5013fe37df3d`. The candidate and its validation records remain unchanged. A later branch head must not silently replace that release target.
+This migration is separate from frozen v1.2.0 candidate `044a435a27023034071ac460965b5013fe37df3d`. Its candidate record and validation evidence remain unchanged. A later branch head must not silently replace that target.
 
-结构整理独立于已冻结的 v1.2.0 候选 `044a435a27023034071ac460965b5013fe37df3d`。候选和对应验收记录保持不变，不得静默用后续分支 HEAD 替代发布目标。
+本次迁移独立于冻结的 v1.2.0 候选 `044a435a27023034071ac460965b5013fe37df3d`，候选和验收记录保持不变，不得静默用后续分支 HEAD 替代发布目标。

@@ -43,10 +43,15 @@ git clone https://github.com/lovewtong/steam-library-toolkit.git
 cd steam-library-toolkit
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
+.\.venv\Scripts\python.exe -m pip install -e . --no-deps
 npm ci
 ```
 
-This installs `main`, including developer/publisher filters, first-observation dates and family collection. For the published v1.1.0 release, add `--branch v1.1.0` to the clone command; that release includes the review queue but does not include these newer features.
+The checkout includes developer/publisher filters, first-observation dates and family collection. The package layout described here is a development change after the frozen v1.2.0 candidate. For v1.1.0, clone with `--branch v1.1.0` and follow that tag's README; it has no `pyproject.toml` or installed commands.
+
+You can also install this checkout with `python -m pip install .`, then use `steam-library collect`, `steam-library enrich`, `steam-library picker` and the other commands listed by `steam-library --help`. From a wheel installation, run `steam-library node --install` to prepare the Node dependencies. There is no published PyPI package; `1.3.0.dev0` is development build metadata, not a released version.
+
+In a source checkout, default configuration, cache and output paths remain at the repository root. An installed wheel uses the current working directory. Set `STEAM_LIBRARY_HOME` before starting a command to choose another data directory; explicit `--input` and `--output` paths retain their usual meaning. See [installed usage](USAGE.md#installed-commands-and-data-directories).
 
 ## Usage
 
@@ -149,12 +154,14 @@ Please include the command you ran, the expected result and the error message wh
 npm test
 .\.venv\Scripts\python.exe tools/check_secrets.py
 .\.venv\Scripts\python.exe tools/check_docs.py
+.\.venv\Scripts\python.exe -m pip install build==1.6.1
+.\.venv\Scripts\python.exe tools/check_distribution.py
 git diff --check
 ```
 
 Keep the English and Chinese README and usage guides in sync when changing commands or behavior.
 
-Root Python scripts remain the command entry points. Runtime Node code is in `node_bridge/`, developer scripts in `tools/`, and retired experiments in `legacy/`.
+The eight root Python commands remain compatibility entries. Implementation lives in `src/steam_library_toolkit/`; its `resources/` contains the browser page, schemas, built-in rules and Node bridge. Examples are in `examples/`, developer scripts in `tools/`, and retired experiments in `legacy/`. See [repository layout](docs/ARCHITECTURE.md).
 
 ## License
 

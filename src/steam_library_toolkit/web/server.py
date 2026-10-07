@@ -4,13 +4,13 @@ from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
-from steam_library_toolkit.classification import classify_one
-from steam_runs import manifest_path, resolve_artifact, load_library
-from steam_sources import select_for_classification
-from steam_membership import trusted_current_membership
-from steam_library_toolkit.view_model import field_evidence, normalized_games
+from steam_library_toolkit.classification.five import classify_one
+from steam_library_toolkit.storage.runs import manifest_path, resolve_artifact, load_library
+from steam_library_toolkit.sources.reconcile import select_for_classification
+from steam_library_toolkit.sources.membership import trusted_current_membership
+from steam_library_toolkit.web.view_model import field_evidence, normalized_games
 
-ROOT = Path(__file__).resolve().parent
+from steam_library_toolkit.paths import ROOT, RESOURCES
 
 
 class PickerLibrary:
@@ -30,7 +30,7 @@ class PickerLibrary:
                 raise ValueError("CANDIDATE_LIBRARY")
             games = normalized_games(json.loads((directory / "steam_library_classified.json").read_text(encoding="utf-8")))
             rows = json.loads(path.read_text(encoding="utf-8"))
-            from steam_schema import validate_artifacts
+            from steam_library_toolkit.storage.schema import validate_artifacts
             validate_artifacts(rows, audit)
             if ({int(g["appid"]) for g in games} != {r["appid"] for r in select_for_classification(rows)}
                     or any(g["run_id"] != audit.get("run_id") for g in games)):
@@ -47,7 +47,7 @@ class PickerLibrary:
             rows = load_library(self.source)
             if not self.allow_candidates and any(r.get("membership", {}).get("state") == "candidate" for r in rows):
                 raise ValueError("CANDIDATE_LIBRARY")
-            from classification_overrides import load_overrides
+            from steam_library_toolkit.classification.overrides import load_overrides
             overrides = load_overrides()
             games = normalized_games([{**classify_one(r, overrides), "run_id": r.get("run_id")} for r in select_for_classification(rows)])
             run = {"run_id": None, "status": "legacy_unverified", "count": len(games)}
@@ -80,7 +80,7 @@ def create_server(library, port=8765):
                 return self.respond(403, '{"error":"ORIGIN_REJECTED"}')
             route = urlsplit(self.path).path
             if route in ("/", "/index.html"):
-                return self.respond(200, (ROOT / "steam_picker.html").read_bytes(), "text/html; charset=utf-8")
+                return self.respond(200, (RESOURCES / "web/steam_picker.html").read_bytes(), "text/html; charset=utf-8")
             if route not in ("/api/library", "/api/run"):
                 return self.respond(404, '{"error":"NOT_FOUND"}')
             try:

@@ -2,13 +2,14 @@
 import base64
 import json
 import math
-from pathlib import Path
+import os
 import random
 import subprocess
 import sys
 import time
 from email.utils import parsedate_to_datetime
 import requests
+from steam_library_toolkit.paths import PACKAGE_ROOT
 
 
 class RequestCancelled(RuntimeError):
@@ -37,8 +38,11 @@ def request_once(url, *, params, timeout, deadline, cancel_event=None, max_bytes
     if time.monotonic() >= deadline:
         raise requests.Timeout('HTTP_DEADLINE_EXCEEDED')
     # Killable isolation also bounds DNS, TLS and slow-drip bodies, not just socket inactivity.
-    process = subprocess.Popen([sys.executable, str(Path(__file__).with_name('steam_http_worker.py'))],
+    environment = dict(os.environ)
+    environment['PYTHONPATH'] = os.pathsep.join(filter(None, (str(PACKAGE_ROOT.parent), environment.get('PYTHONPATH'))))
+    process = subprocess.Popen([sys.executable, '-m', 'steam_library_toolkit.sources.http_worker'],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        env=environment,
         creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     payload = json.dumps({'url': url, 'params': params, 'timeout': timeout, 'max_bytes': max_bytes}).encode('utf-8')
     try:

@@ -2,7 +2,7 @@
 from copy import deepcopy
 import threading
 import time
-from steam_http import check_cancel, SourceCoolingDown, wait_delay
+from steam_library_toolkit.sources.http import check_cancel, SourceCoolingDown, wait_delay
 
 MANUFACTURER_FIELDS = ('developers', 'publishers')
 LIST_FIELDS = ('genres', 'categories', *MANUFACTURER_FIELDS)

@@ -10,8 +10,8 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
 
-import steam_review_classification as review
-from steam_runs import manifest_path, publish_run, resolve_artifact
+import steam_library_toolkit.cli.review_classification as review
+from steam_library_toolkit.storage.runs import manifest_path, publish_run, resolve_artifact
 from support import run_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +29,7 @@ class ClassificationReviewQueueTests(unittest.TestCase):
             row.update(name=name, genres=genres)
         rows[-1]['app_type'] = 'application'
         self.rules = {'1003': {'main_category': '动作/冒险', 'reason': 'Synthetic reviewed primary'}}
-        with patch('classification_overrides.load_overrides', return_value=self.rules):
+        with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=self.rules):
             publish_run(self.source, rows, audit)
         self.pointer = manifest_path(self.source)
         self.directory = resolve_artifact(self.source).parent
@@ -48,8 +48,8 @@ class ClassificationReviewQueueTests(unittest.TestCase):
 
     def test_priorities_overlap_and_saved_values_without_reclassification(self):
         before = self.snapshot()
-        with patch('classification_overrides.load_overrides', side_effect=AssertionError('Current rules forbidden')), \
-             patch('steam_library_toolkit.classification.classify_one', side_effect=AssertionError('Reclassification forbidden')):
+        with patch('steam_library_toolkit.classification.overrides.load_overrides', side_effect=AssertionError('Current rules forbidden')), \
+             patch('steam_library_toolkit.classification.five.classify_one', side_effect=AssertionError('Reclassification forbidden')):
             report, *_ = review.build_review(self.source)
         self.assertEqual(self.snapshot(), before)
         self.assertEqual(report['summary']['games'], 5)
@@ -75,11 +75,11 @@ class ClassificationReviewQueueTests(unittest.TestCase):
         self.assertEqual(item['picker']['evidence'], {'fields': {}})
 
     def test_manual_correction_rebuild_clears_resolved_item_and_keeps_old_run(self):
-        from steam_reclassify import reclassify
+        from steam_library_toolkit.cli.reclassify import reclassify
         before = self.snapshot()
         corrected = self.root / 'corrected.json'
         rules = {**self.rules, '1001': {'main_category': '射击', 'reason': 'Synthetic manual review'}}
-        with patch('classification_overrides.load_overrides', return_value=rules):
+        with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=rules):
             reclassify(self.source, corrected)
         report, *_ = review.build_review(corrected)
         self.assertNotIn(1001, {item['appid'] for item in report['items']})
@@ -152,7 +152,7 @@ class ClassificationReviewQueueTests(unittest.TestCase):
                      self.root / 'new.current.json', ROOT / 'classification_overrides.local.json'):
             with self.subTest(path=path), self.assertRaisesRegex(ValueError, 'OUTPUT_CONFLICT'):
                 review.export_review(path, *args)
-        with patch('steam_review_classification.os.link', side_effect=OSError('injected')):
+        with patch('steam_library_toolkit.cli.review_classification.os.link', side_effect=OSError('injected')):
             with self.assertRaises(OSError):
                 review.export_review(self.root / 'failed.json', *args)
         self.assertEqual(self.snapshot(), before)

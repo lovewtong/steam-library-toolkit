@@ -14,7 +14,7 @@ import threading
 import time
 import urllib.request
 
-from steam_sources import AccountMismatchError
+from steam_library_toolkit.sources.reconcile import AccountMismatchError
 
 SERVICE = "steam-library-toolkit"
 STAGES = {
@@ -194,13 +194,14 @@ def collect_client(account=None, *, login=False, local_session=False, steam_path
     node = shutil.which("node")
     if not node:
         raise AuthError("NODE_NOT_FOUND", "客户端采集需要 Node.js 和 npm ci")
-    helper = Path(__file__).parent / "node_bridge/steam_client_collect.cjs"
+    from steam_library_toolkit.paths import RESOURCES, node_environment
+    helper = RESOURCES / "node_bridge/steam_client_collect.cjs"
     on_progress("Steam 客户端：本地凭据已读取，准备连接（尚未完成服务器认证）" if local_session
                 else "Steam 客户端：准备启动认证与采集")
     events = queue.Queue()
     process = subprocess.Popen(
         [node, str(helper)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-        text=True, encoding="utf-8", env={**os.environ, "DEBUG": "", "NODE_DEBUG": ""},
+        text=True, encoding="utf-8", env={**node_environment(), "DEBUG": "", "NODE_DEBUG": ""},
         creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
     )
     def read_events():

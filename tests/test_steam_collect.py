@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-import steam_collect
+import steam_library_toolkit.cli.collect as steam_collect
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +25,7 @@ class CollectionTests(unittest.TestCase):
         self.path.write_text(text, encoding=encoding)
         return self.path
 
-    @patch("steam_http.request_once")
+    @patch("steam_library_toolkit.sources.http.request_once")
     def test_api_filters_are_explicit_on_wire(self, get):
         get.return_value = Mock(status_code=200)
         get.return_value.json.return_value = {"response": {"games": [{"appid": 10}]}}
@@ -42,7 +42,7 @@ class CollectionTests(unittest.TestCase):
         self.assertEqual(params["access_token"], "private-access")
         self.assertGreater(get.call_args.kwargs['max_bytes'], 0)
 
-    @patch("steam_http.request_once")
+    @patch("steam_library_toolkit.sources.http.request_once")
     def test_invalid_api_response_is_not_silently_an_empty_library(self, get):
         get.return_value = Mock(status_code=200)
         for data in ({}, [], {"response": {}}, {"response": {"games": {}}},
@@ -68,8 +68,8 @@ class CollectionTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     steam_collect.load_apps_file(self.write_apps(text))
 
-    @patch("steam_collect.get_owned_games")
-    @patch("steam_collect.load_config", return_value={"api_key": "test-key", "steam_id": "test-id"})
+    @patch("steam_library_toolkit.cli.collect.get_owned_games")
+    @patch("steam_library_toolkit.cli.collect.load_config", return_value={"api_key": "test-key", "steam_id": "test-id"})
     def test_merge_preserves_playtime_and_adds_unplayed_and_delisted_apps(self, config, api):
         api.return_value = [
             {"appid": 10, "name": "API Name", "playtime_forever": 123,
@@ -90,16 +90,16 @@ class CollectionTests(unittest.TestCase):
         self.assertIsNone(by_id[30]["last_played_at"])
         self.assertNotIn("sources", api.return_value[0])
 
-    @patch("steam_collect.get_owned_games", side_effect=ValueError("private"))
-    @patch("steam_collect.load_config", return_value={"api_key": "test-key", "steam_id": "test-id"})
+    @patch("steam_library_toolkit.cli.collect.get_owned_games", side_effect=ValueError("private"))
+    @patch("steam_library_toolkit.cli.collect.load_config", return_value={"api_key": "test-key", "steam_id": "test-id"})
     def test_private_api_still_uses_export(self, config, api):
         with contextlib.redirect_stdout(io.StringIO()):
             games = steam_collect.collect(fetch_store=False, apps_file=self.write_apps())
         self.assertEqual(len(games), 3)
 
-    @patch("steam_collect.time.sleep")
-    @patch("steam_library_toolkit.store.get_store_result", return_value={"status": "not_found", "details": None})
-    @patch("steam_collect.load_config", side_effect=AssertionError("must not read credentials"))
+    @patch("steam_library_toolkit.cli.collect.time.sleep")
+    @patch("steam_library_toolkit.sources.store.get_store_result", return_value={"status": "not_found", "details": None})
+    @patch("steam_library_toolkit.cli.collect.load_config", side_effect=AssertionError("must not read credentials"))
     def test_no_api_and_unavailable_store_keep_license_entries(self, config, store, sleep):
         with contextlib.redirect_stdout(io.StringIO()):
             games = steam_collect.collect(apps_file=self.write_apps(), use_api=False, cache_dir=Path(self.temp.name)/"cache")

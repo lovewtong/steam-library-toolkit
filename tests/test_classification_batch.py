@@ -5,14 +5,14 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from classification_overrides import read_rules
-from classify_games import classify_library
-from classify_steam_games import classify_one
-from steam_picker_server import PickerLibrary
-from steam_reclassify import reclassify
-from steam_review_classification import build_review
-from steam_runs import publish_run, resolve_artifact
-from steam_sync_collections import build_plan
+from steam_library_toolkit.classification.overrides import read_rules
+from steam_library_toolkit.cli.classify_table import classify_library
+from steam_library_toolkit.cli.classify_five import classify_one
+from steam_library_toolkit.web.server import PickerLibrary
+from steam_library_toolkit.cli.reclassify import reclassify
+from steam_library_toolkit.cli.review_classification import build_review
+from steam_library_toolkit.storage.runs import publish_run, resolve_artifact
+from steam_library_toolkit.cli.collections import build_plan
 from support import ACCOUNT, run_bundle
 from tools.review_classification_sample import evaluate, FIXTURES, ROOT
 
@@ -22,7 +22,7 @@ class ClassificationBatchTests(unittest.TestCase):
     def setUpClass(cls):
         cls.fixture = FIXTURES['batch-01']
         cls.samples = json.loads(cls.fixture.read_text(encoding='utf-8'))['samples']
-        cls.rules = read_rules(ROOT / 'classification_overrides.json')
+        cls.rules = read_rules(ROOT / 'src/steam_library_toolkit/resources/rules/classification_overrides.json')
 
     def test_batch_has_independent_frozen_expectations_and_baseline(self):
         ids = {s['appid'] for s in self.samples}
@@ -54,13 +54,13 @@ class ClassificationBatchTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source, target = root / 'before.json', root / 'after.json'
-            with patch('classification_overrides.load_overrides', return_value=previous):
+            with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=previous):
                 publish_run(source, rows, audit)
             old_report, *_ = build_review(source)
             self.assertEqual({i['appid'] for i in old_report['items']}, set(ids) | {15150})
             self.assertTrue(all(i['priority'] == 1 for i in old_report['items']))
             original_files = {p: p.read_bytes() for p in root.rglob('*') if p.is_file()}
-            with patch('classification_overrides.load_overrides', return_value=self.rules):
+            with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=self.rules):
                 reclassify(source, target)
             self.assertTrue(all(p.read_bytes() == content for p, content in original_files.items()))
             self.assertEqual(build_review(source)[0], old_report)

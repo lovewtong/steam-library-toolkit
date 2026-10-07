@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+from steam_library_toolkit.paths import ROOT, BUILTIN_RULES_FILE
 MAIN_TO_PRIMARY = {'射击': '射击 (FPS/TPS)', '动作/冒险': '动作/冒险', 'RPG': '角色扮演 (RPG)',
                    '策略': '策略/模拟', '模拟经营': '策略/模拟', '休闲/益智': '解谜/休闲',
                    '体育/竞速': '体育/竞速', '独立/其他': '独立/叙事', '其他': '其他'}
@@ -25,7 +25,7 @@ def read_rules(path):
                 or not isinstance(data['apps'], dict)):
             raise ValueError()
         result = {}
-        from steam_metadata import MANUFACTURER_FIELDS, manufacturer_names
+        from steam_library_toolkit.sources.metadata import MANUFACTURER_FIELDS, manufacturer_names
         allowed = {'main_category', 'reason', 'reference', 'sub', 'vibe', 'intensity', 'slogan', *MANUFACTURER_FIELDS}
         for appid, rule in data['apps'].items():
             if (not appid.isascii() or not appid.isdigit() or str(int(appid)) != appid
@@ -48,7 +48,7 @@ def read_rules(path):
 
 
 def load_overrides(local_path=None):
-    result = read_rules(ROOT / 'classification_overrides.json')
+    result = read_rules(BUILTIN_RULES_FILE)
     local = Path(local_path) if local_path is not None else ROOT / 'classification_overrides.local.json'
     if local.exists():
         # A local entry replaces the entire built-in entry; no hidden field inheritance.
