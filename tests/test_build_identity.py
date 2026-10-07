@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -52,6 +53,22 @@ class BuildIdentityTests(unittest.TestCase):
                     producer = new_run_metadata()['producer']
             self.assertEqual(producer, {'git_commit': None, 'dirty': None, 'package_version': VERSION,
                 'build_id': 'sha256:' + info['payload_sha256'], 'build_status': 'verified'})
+
+    def test_paths_are_sorted_by_case_sensitive_posix_names_on_every_platform(self):
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            files = {'a.txt': b'a', 'Z.txt': b'Z', 'b/child.txt': b'child', 'b.txt': b'b'}
+            for relative, content in files.items():
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+            expected = hashlib.sha256(b'steam-library-payload-v1\0' + VERSION.encode() + b'\0')
+            for relative in sorted(files):
+                encoded = relative.encode()
+                expected.update(len(encoded).to_bytes(8, 'big'))
+                expected.update(encoded)
+                expected.update(hashlib.sha256(files[relative]).digest())
+            self.assertEqual(payload_hash(root, VERSION), expected.hexdigest())
 
     def test_older_wheel_without_stamp_remains_unknown_and_usable(self):
         with tempfile.TemporaryDirectory() as name:

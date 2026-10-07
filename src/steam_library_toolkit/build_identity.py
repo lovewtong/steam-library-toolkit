@@ -12,9 +12,10 @@ def payload_hash(directory, version):
     """Hash version, relative file names and bytes; omit generated runtime files."""
     directory = Path(directory)
     digest = hashlib.sha256(b'steam-library-payload-v1\0' + version.encode('utf-8') + b'\0')
-    files = sorted(path for path in directory.rglob('*') if path.is_file()
+    files = sorted((path for path in directory.rglob('*') if path.is_file()
                    and '__pycache__' not in path.relative_to(directory).parts
-                   and path.suffix not in ('.pyc', '.pyo') and path.relative_to(directory) != BUILD_INFO)
+                   and path.suffix not in ('.pyc', '.pyo') and path.relative_to(directory) != BUILD_INFO),
+                   key=lambda path: path.relative_to(directory).as_posix())
     for path in files:
         name = path.relative_to(directory).as_posix().encode('utf-8')
         digest.update(len(name).to_bytes(8, 'big'))
