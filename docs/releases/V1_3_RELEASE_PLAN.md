@@ -1,6 +1,6 @@
 # v1.3.0：范围冻结 / Frozen scope
 
-范围冻结日期：2026-10-07；候选及发布前验收完成：2026-10-08。**正式版本 1.3.0，候选 `09b6d4aaf645c54a83b6c5fa132eb1378954319c`**，tree `9a8064783a21011c4bc846ffa906d55f7c2086c1`。标签已固定，Release 已核验并保留草稿；尚未公开发布。详见[候选记录](../../releases/v1.3.0-candidate.json)和[最终验收](../validation/V1_3_RELEASE_ACCEPTANCE.md)。v1.2.0 继续固定在 `044a435a27023034071ac460965b5013fe37df3d`。
+范围冻结日期：2026-10-07；候选及发布前验收完成：2026-10-08。**正式版本 1.3.0，候选 `09b6d4aaf645c54a83b6c5fa132eb1378954319c`**，tree `9a8064783a21011c4bc846ffa906d55f7c2086c1`。标签已固定，Release 已于北京时间 2026-10-08 14:13:46 正式发布，公开页面与六个附件匿名下载通过；详见[发布记录](../../releases/v1.3.0-publication.json)。详见[候选记录](../../releases/v1.3.0-candidate.json)和[最终验收](../validation/V1_3_RELEASE_ACCEPTANCE.md)。v1.2.0 继续固定在 `044a435a27023034071ac460965b5013fe37df3d`。
 
 ## 纳入范围
 
@@ -28,13 +28,13 @@
 | 正式版本与候选冻结 | 1.3.0 / `09b6d4aaf645c54a83b6c5fa132eb1378954319c`；后续文档提交不替换候选 |
 | 最终候选验收 | 实际旧数据升级、旧软件＋旧数据回退、候选真实家庭采集、两款直取和实际页面通过 |
 | 标签与分发 | [标签 CI](https://github.com/lovewtong/steam-library-toolkit/actions/runs/37648932017) 通过；匿名源码归档和六个草稿附件回下载核验通过 |
-| 公开发布 | 待发布草稿；随后核验公开页面及附件匿名下载 |
+| 公开发布 | 已发布；页面与六个附件匿名 HTTP 200，冻结哈希及 SHA256SUMS 全部通过 |
 
 若发现范围内阻塞问题，修复、复审并更新候选及对应证据；范围外功能留待后续版本。源码与 wheel 是本版交付形态，不承诺自动安装或更新。源码内的私人账号配置、缓存、运行和 node_modules 不进入归档。
 
 ## English
 
-Scope frozen on 2026-10-07; candidate/prepublication acceptance completed on 2026-10-08. Version `1.3.0` and full candidate `09b6d4aaf645c54a83b6c5fa132eb1378954319c` are fixed. The tag exists and its CI passed; a six-asset verified Release draft remains unpublished. See the [candidate record](../../releases/v1.3.0-candidate.json) and [final acceptance](../validation/V1_3_RELEASE_ACCEPTANCE.md). Later documentation is separate from the candidate; v1.2.0 remains unchanged.
+Scope frozen on 2026-10-07; candidate/prepublication acceptance completed on 2026-10-08. Version `1.3.0` and full candidate `09b6d4aaf645c54a83b6c5fa132eb1378954319c` are fixed. The tag and CI passed; the Release was published on 2026-10-08. The public page and six anonymous asset downloads passed, including frozen hashes and SHA256SUMS; see the [publication record](../../releases/v1.3.0-publication.json). See the [candidate record](../../releases/v1.3.0-candidate.json) and [final acceptance](../validation/V1_3_RELEASE_ACCEPTANCE.md). Later documentation is separate from the candidate; v1.2.0 remains unchanged.
 
 Scope includes the merged source/resource layout, wheel/sdist installation, installed commands and eight compatible source entries, data-directory and Node-runtime setup, package build provenance, and the existing v1.2 workflows. New acquisition sources, classification batches, purchase dates, Steam writes, installers, auto-updates and PyPI publication are excluded. Existing live-validation limits remain.
 

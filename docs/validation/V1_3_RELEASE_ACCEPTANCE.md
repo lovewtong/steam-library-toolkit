@@ -1,6 +1,6 @@
 # v1.3.0 发布前验收 / Prepublication acceptance
 
-验收完成日期：2026-10-08。冻结候选为 `09b6d4aaf645c54a83b6c5fa132eb1378954319c`，tree 为 `9a8064783a21011c4bc846ffa906d55f7c2086c1`。正式包版本 `1.3.0`，标签 `v1.3.0` 固定到此提交。Release 为已核验草稿，尚未公开发布；此前 v1.2.0 标签与公开附件保持原样。
+验收完成日期：2026-10-08。冻结候选为 `09b6d4aaf645c54a83b6c5fa132eb1378954319c`，tree 为 `9a8064783a21011c4bc846ffa906d55f7c2086c1`。正式包版本 `1.3.0`，标签 `v1.3.0` 固定到此提交。Release 已于北京时间 2026-10-08 14:13:46 正式发布，公开页面与六个附件的匿名下载和哈希通过；详见[发布记录](../../releases/v1.3.0-publication.json)。此前 v1.2.0 标签与公开附件保持原样。
 
 ## 构建与 CI
 
@@ -49,7 +49,7 @@ DOOM: The Dark Ages（3017860）与 Space Marine 2（2183900）均为 family_lib
 
 草稿六个附件：源码 ZIP、sdist、wheel、双语说明、脱敏验收 JSON、SHA256SUMS。附件全部回下载与原文件逐字节及 SHA-256 核对一致，草稿正文、目标提交和标签对应正确。匿名下载 GitHub 标签归档并核验全部 162 个 Git blob；个人库、原始日志、配置、凭据和 node_modules 未上传。
 
-**公开发布后仍需检查 Release 页面、六个附件的匿名下载和 SHA256SUMS。** 草稿附件回下载使用维护者授权，不算公开访问验收。发布前状态保存在[候选记录](../../releases/v1.3.0-candidate.json)，不能将此记录当作已经发布的通知。
+**公开发布后的页面、六个附件匿名下载及 SHA256SUMS 已通过。** 发布前草稿回下载使用维护者授权；后续公开验收使用不带 Authorization、Cookie 或 curl 配置的 HTTPS 请求，七个请求均为 HTTP 200，六个哈希与冻结记录一致。附件及[候选记录](../../releases/v1.3.0-candidate.json)保留发布前快照，当前状态见[发布记录](../../releases/v1.3.0-publication.json)。
 
 未真人验证：多账号切换、离线恢复、自然权益变化、Linux/macOS 认证、全家庭 UI 穷举、实际游戏启动和全库冷缓存性能。本版不包含 Steam 自动写回、购买日期推定、安装器、自动更新或 PyPI 发布。
 
@@ -63,4 +63,4 @@ Candidate-bound live Windows collection passed on the first attempt: 829 records
 
 This is one account and two store requests, not exhaustive family membership, full metadata coverage or a cold-library performance benchmark. Family responses have no protocol completion marker; semantic completeness is not proven. The review queue contains 782 pending items and 36 not queued; not queued is not all-field human validation. Other account/platform/recovery/entitlement scenarios remain unverified.
 
-Six draft assets were downloaded back and matched byte-for-byte and by SHA-256. Anonymous GitHub tag-source download matched all Git blobs. The Release remains unpublished: anonymous public Release-page/asset checks must follow publication. Private account exports, raw logs and credentials remain local.
+Six draft assets were downloaded back and matched byte-for-byte and by SHA-256. Anonymous GitHub tag-source download matched all Git blobs. The Release is now published: credential-free public page and all six asset requests returned HTTP 200 and matched frozen hashes and SHA256SUMS. The candidate and attachments retain prepublication snapshots; the [publication record](../../releases/v1.3.0-publication.json) describes current status. Private account exports, raw logs and credentials remain local.

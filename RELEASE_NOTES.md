@@ -2,7 +2,7 @@
 
 [中文](#中文) · [English](#english)
 
-冻结版本：`1.3.0`。候选提交：`09b6d4aaf645c54a83b6c5fa132eb1378954319c`；tree：`9a8064783a21011c4bc846ffa906d55f7c2086c1`。本说明与附件固定于该候选，不采用后续 main HEAD。发布前验收已通过，Release 当前保留草稿。
+冻结版本：`1.3.0`。候选提交：`09b6d4aaf645c54a83b6c5fa132eb1378954319c`；tree：`9a8064783a21011c4bc846ffa906d55f7c2086c1`。本说明与附件固定于该候选，不采用后续 main HEAD。发布前验收已通过，版本现已正式发布，公开页面与六个附件的匿名下载及哈希核验全部通过。
 
 ## 中文
 
@@ -68,8 +68,17 @@ Exact-main multiplatform CI, fresh wheel installation, actual v1.2 software/data
 
 - [标签 CI](https://github.com/lovewtong/steam-library-toolkit/actions/runs/37648932017) 三平台通过。匿名下载的 GitHub 标签归档中，162 个文件逐一匹配候选 Git blob。
 - 实际安装页面验证两款参照各筛出一条，空月份为零条，未知发行商为 816 条；安装／源码启动说明均可用。完整元数据补全与未知字段仍保留各自边界。
-- Release 草稿包含源码 ZIP、sdist、wheel、双语说明、脱敏验收 JSON 和 SHA256SUMS。附件回下载按 SHA-256 核对；公开 Release 页面与附件的匿名下载检查需在正式发布后执行。
+- 六个冻结附件为源码 ZIP、sdist、wheel、双语说明、脱敏验收 JSON 和 SHA256SUMS。附件中的状态是发布前验收快照，保留原文件及哈希；公开下载验收结果见下方发布记录。
 
-Tag CI and anonymous tag-source checks passed. Browser filtering, unknown/empty states and installed help were exercised. This is prepublication acceptance: the Release remains a draft; anonymous access to the public Release page and its attachments must be checked after publication. SHA-256 provides integrity/traceability, not a digital signature.
+Tag CI and anonymous tag-source checks passed. Browser filtering, unknown/empty states and installed help were exercised. This version is now published. The six immutable attachments retain their prepublication evidence/status; postpublication anonymous page and asset checks are recorded separately below. SHA-256 provides integrity/traceability, not a digital signature.
 
-详细验收 / Detailed acceptance: [V1_3_RELEASE_ACCEPTANCE](docs/validation/V1_3_RELEASE_ACCEPTANCE.md) · [候选 / Candidate](releases/v1.3.0-candidate.json)。
+## 公开发布核验 / Publication verification
+
+发布于 `2026-10-08T06:13:46Z`（UTC；北京时间 2026-10-08 14:13:46）。冻结提交 `09b6d4aaf645c54a83b6c5fa132eb1378954319c`。
+
+- 不带 Authorization、Cookie 或 curl 配置的匿名 HTTPS 请求：公开 Release 页面和全部六个附件均为 HTTP 200。
+- 六个附件 SHA-256 与冻结记录完全一致；SHA256SUMS 中的五个文件哈希及清单自身哈希均通过。
+- 标签和已发布旧版本保持原样，六个附件继续保留发布前验收快照，不替换其中的历史状态或重建安装包。
+- [发布记录 / Publication record](releases/v1.3.0-publication.json) · [升级与验收 / Acceptance](docs/validation/V1_3_RELEASE_ACCEPTANCE.md)
+
+Published on 2026-10-08. Credential-free HTTPS requests returned HTTP 200 for the public page and all six attachments. Every SHA-256 matched the frozen candidate record, including the checksum manifest. The six assets retain their immutable prepublication snapshots; this section and the repository publication record provide current status. Candidate/tag/build identity and previous releases remain unchanged. Existing live-validation limits still apply.
