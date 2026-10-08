@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "version": "v1.3.0",
+  "state": "published_and_verified",
+  "verification_date": "2026-10-08",
+  "release_id": 405939315,
+  "published_at": "2026-10-08T06:13:46Z",
+  "release_url": "https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.3.0",
+  "candidate": "09b6d4aaf645c54a83b6c5fa132eb1378954319c",
+  "tree": "9a8064783a21011c4bc846ffa906d55f7c2086c1",
+  "tag_object": "5fd2e72040f202441681a2083c0ad17e591179ed",
+  "tag_ci": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37648932017",
+  "candidate_ci": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37647055981",
+  "prepublication_main_ci": "https://github.com/lovewtong/steam-library-toolkit/actions/runs/37650557595",
+  "source_file_count": 162,
+  "frozen_record": "v1.3.0-candidate.json",
+  "anonymous_public_page": {
+    "http_status": 200,
+    "final_host": "github.com",
+    "size": 209918,
+    "sha256": "aadf93b52b3812942e5f5342fd8886b67ca72b404be98d55f3f6982efae8aa26",
+    "final_publication_notes_visible": true
+  },
+  "anonymous_assets": {
+    "release-verification-v1.3.0.json": {
+      "url": "https://github.com/lovewtong/steam-library-toolkit/releases/download/v1.3.0/release-verification-v1.3.0.json",
+      "http_status": 200,
+      "final_host": "release-assets.githubusercontent.com",
+      "size": 4363,
+      "sha256": "9cdb94dd7f5bd7223aed66f9787d4e7839fc129132363bd440985fb645552c8e"
+    },
+    "RELEASE_NOTES-v1.3.0.md": {
+      "url": "https://github.com/lovewtong/steam-library-toolkit/releases/download/v1.3.0/RELEASE_NOTES-v1.3.0.md",
+      "http_status": 200,
+      "final_host": "release-assets.githubusercontent.com",
+      "size": 9186,
+      "sha256": "4030f3894a1ed1e5bea5a89f2264d92746f35801967fbc506389f03efdc6bf9d"
+    },
+    "SHA256SUMS.txt": {
+      "url": "https://github.com/lovewtong/steam-library-toolkit/releases/download/v1.3.0/SHA256SUMS.txt",
+      "http_status": 200,
+      "final_host": "release-assets.githubusercontent.com",
+      "size": 512,
+      "sha256": "aee6989d3decbabd4719689a702990bf510e9e4328e009b9829c93e31016c552"
+    },
+    "steam-library-toolkit-v1.3.0-source.zip": {
+      "url": "https://github.com/lovewtong/steam-library-toolkit/releases/download/v1.3.0/steam-library-toolkit-v1.3.0-source.zip",
+      "http_status": 200,
+      "final_host": "release-assets.githubusercontent.com",
+      "size": 392793,
+      "sha256": "1bd5bd96755def15e30b2c03285604841935dd8293b626ebfbf9823381bf2b29"
+    },
+    "steam_library_toolkit-1.3.0-py3-none-any.whl": {
+      "url": "https://github.com/lovewtong/steam-library-toolkit/releases/download/v1.3.0/steam_library_toolkit-1.3.0-py3-none-any.whl",
+      "http_status": 200,
+      "final_host": "release-assets.githubusercontent.com",
+      "size": 128022,
+      "sha256": "475e71b2b7009b9d09be294312fc5408bd2fdac0b58bc98516b42b73ac9fcf29"
+    },
+    "steam_library_toolkit-1.3.0.tar.gz": {
+      "url": "https://github.com/lovewtong/steam-library-toolkit/releases/download/v1.3.0/steam_library_toolkit-1.3.0.tar.gz",
+      "http_status": 200,
+      "final_host": "release-assets.githubusercontent.com",
+      "size": 293489,
+      "sha256": "272d6866f1c784a8a663dae521b16f2ce24c719405fd1e3cab56d5f156e37b39"
+    }
+  },
+  "all_six_downloads_match_frozen_digests": true,
+  "sha256sums_verified": true,
+  "public_release_latest": true,
+  "old_tags_unchanged": true,
+  "metadata_verification": "authenticated_gh_api",
+  "download_verification": "curl -q without Authorization or cookies; HTTPS redirects only",
+  "public_assets_are_prepublication_snapshots": true,
+  "private_data_attached": false,
+  "publication_documentation_is_separate_from_release_source": true,
+  "public_notes_sha256_lf": "7a1768b5e20e67500ecae41b54b6950a73b26c664e77dd0c2cef5cad03f5b1fe",
+  "old_release_asset_digests_unchanged": true
+}

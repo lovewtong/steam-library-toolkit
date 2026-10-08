@@ -39,7 +39,7 @@
 在 PowerShell 中执行：
 
 ```powershell
-git clone https://github.com/lovewtong/steam-library-toolkit.git
+git clone --branch v1.3.0 https://github.com/lovewtong/steam-library-toolkit.git
 cd steam-library-toolkit
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
@@ -47,9 +47,9 @@ python -m venv .venv
 npm ci
 ```
 
-源码包含开发商／发行商筛选、首次观察日期和家庭采集。这里介绍的包结构属于 v1.2.0 之后的开发变更。使用稳定版时，在克隆命令中加入 `--branch v1.2.0`，并按该标签的 README 和[发布说明](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0)操作；该标签使用根目录脚本，没有 `pyproject.toml` 或安装后的命令。
+上面的命令选择稳定版 v1.3.0 标签，包含厂商筛选、首次观察日期、家庭采集和安装后的命令。旧版 v1.2.0 使用根目录脚本，没有 `pyproject.toml`；使用旧标签时，请按该版本自己的 README 操作。
 
-也可以用 `python -m pip install .` 安装这份源码，再运行 `steam-library collect`、`steam-library enrich`、`steam-library picker` 等命令；完整列表见 `steam-library --help`。从 wheel 安装后，用 `steam-library node --install` 准备 Node 依赖。目前没有发布到 PyPI。版本 `1.3.0` 已冻结在 `09b6d4a`，标签与核验后的 Release 草稿已准备，尚未公开发布。详见[候选记录](releases/v1.3.0-candidate.json)和[升级／回退验收](docs/validation/V1_3_RELEASE_ACCEPTANCE.md)。
+也可以用 `python -m pip install .` 安装这份源码，再运行 `steam-library collect`、`steam-library enrich`、`steam-library picker` 等命令；完整列表见 `steam-library --help`。从 wheel 安装后，用 `steam-library node --install` 准备 Node 依赖。目前没有发布到 PyPI。版本 `1.3.0` 已在 `09b6d4a` 正式发布，wheel 和源码归档可从 [v1.3.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.3.0) 下载。详见[候选记录](releases/v1.3.0-candidate.json)和[升级／回退验收](docs/validation/V1_3_RELEASE_ACCEPTANCE.md)。
 
 源码运行时，默认配置、缓存和输出仍位于仓库根目录；wheel 安装后默认使用当前工作目录。启动命令前设置 `STEAM_LIBRARY_HOME` 可选择其他数据目录，显式 `--input`、`--output` 路径按原有方式处理。详见[安装后的用法](USAGE.zh.md#安装后的命令与数据目录)。
 
@@ -112,13 +112,13 @@ $steamAccount = 'YOUR_STEAMID64'
 
 ## 版本
 
-[v1.2.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0) 是当前已发布版本，固定在 `044a435`，在既有采集、审计、补全、校正、浏览和计划导出流程上，增加厂商筛选、首次观察历史和经过核验的家庭采集。
+[v1.3.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.3.0) 是当前已发布版本，固定在 `09b6d4a`，在既有采集、审计、补全、校正、浏览和计划导出流程上，增加 wheel/sdist 打包、安装后的命令和构建追溯。
 
-`main` 的包结构和安装后的命令属于后续开发变更，不包含在 v1.2.0 中。已发布版本见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
+稳定使用时请选择版本标签，`main` 可能包含后续改动。下载见 [Releases](https://github.com/lovewtong/steam-library-toolkit/releases)。
 
-[v1.3.0 范围](docs/releases/V1_3_RELEASE_PLAN.md)包含包安装和构建追溯。候选 `09b6d4a` 已通过发布前验收，Release 保留核验后的草稿。
+[v1.3.0 范围](docs/releases/V1_3_RELEASE_PLAN.md)包含包安装和构建追溯。候选 `09b6d4a` 已通过升级／回退与发布验收，六个附件的匿名下载均与冻结哈希一致。
 
-冻结范围、升级验收和发布核验见[发布计划](docs/releases/V1_2_RELEASE_PLAN.md)、[发布说明](RELEASE_NOTES.md)和[发布记录](releases/v1.2.0-publication.json)。
+冻结范围、升级验收和发布核验见[发布计划](docs/releases/V1_3_RELEASE_PLAN.md)、[发布说明](RELEASE_NOTES.md)和[发布记录](releases/v1.3.0-publication.json)。
 
 ## 已知限制
 
@@ -139,7 +139,7 @@ $steamAccount = 'YOUR_STEAMID64'
 - [收藏计划](docs/guides/STEAM_SYNC_README.md) · [时间字段](docs/guides/TIME_FIELD_CONTRACT.md) · [时间分类](docs/guides/TIME_CLASSIFICATION.md)
 - [发布说明](RELEASE_NOTES.md) · [稳定版范围](docs/releases/STABLE_RELEASE_SCOPE.md)
 - 测试记录：[性能](docs/validation/R2_PERFORMANCE_BASELINE.md)、[Windows 使用流程](docs/validation/R3_WINDOWS_ACCEPTANCE.md)、[Bug 修复](docs/validation/AUDIT_REMEDIATION.md)
-- [当前账号场景](docs/validation/REAL_SCENARIO_VALIDATION.md) · [下一版本范围](docs/releases/V1_3_RELEASE_PLAN.md)
+- [当前账号场景](docs/validation/REAL_SCENARIO_VALIDATION.md) · [v1.3.0 范围](docs/releases/V1_3_RELEASE_PLAN.md)
 
 详细说明和测试记录目前主要使用中文。
 

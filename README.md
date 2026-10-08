@@ -39,7 +39,7 @@ Use Windows with Steam installed and signed in. The project has been tested with
 From PowerShell:
 
 ```powershell
-git clone https://github.com/lovewtong/steam-library-toolkit.git
+git clone --branch v1.3.0 https://github.com/lovewtong/steam-library-toolkit.git
 cd steam-library-toolkit
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-tested.txt
@@ -47,9 +47,9 @@ python -m venv .venv
 npm ci
 ```
 
-The checkout includes developer/publisher filters, first-observation dates and family collection. The package layout described here is a development change after v1.2.0. For the stable release, clone with `--branch v1.2.0` and follow the tag's README and [release notes](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0); that tag uses root scripts and has no `pyproject.toml` or installed commands.
+The commands above select the stable v1.3.0 tag. It includes developer/publisher filters, first-observation dates, family collection and installed commands. v1.2.0 uses root scripts and has no `pyproject.toml`; follow its own README when using that older tag.
 
-You can also install this checkout with `python -m pip install .`, then use `steam-library collect`, `steam-library enrich`, `steam-library picker` and the other commands listed by `steam-library --help`. From a wheel installation, run `steam-library node --install` to prepare the Node dependencies. There is no published PyPI package. Version `1.3.0` is frozen at `09b6d4a`; its tag and verified Release draft are prepared, but the Release is not yet public. See the [candidate record](releases/v1.3.0-candidate.json) and [upgrade/rollback acceptance](docs/validation/V1_3_RELEASE_ACCEPTANCE.md).
+You can also install this checkout with `python -m pip install .`, then use `steam-library collect`, `steam-library enrich`, `steam-library picker` and the other commands listed by `steam-library --help`. From a wheel installation, run `steam-library node --install` to prepare the Node dependencies. There is no published PyPI package. Version `1.3.0` is published at `09b6d4a`; download the wheel or source archives from [v1.3.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.3.0). See the [candidate record](releases/v1.3.0-candidate.json) and [upgrade/rollback acceptance](docs/validation/V1_3_RELEASE_ACCEPTANCE.md).
 
 In a source checkout, default configuration, cache and output paths remain at the repository root. An installed wheel uses the current working directory. Set `STEAM_LIBRARY_HOME` before starting a command to choose another data directory; explicit `--input` and `--output` paths retain their usual meaning. See [installed usage](USAGE.md#installed-commands-and-data-directories).
 
@@ -112,13 +112,13 @@ This check runs offline. See [advanced usage](USAGE.md) for account selection, s
 
 ## Versions
 
-[v1.2.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.2.0) is the latest published release, fixed at `044a435`. It adds developer/publisher filters, first-observation history and checked family collection to the existing collection, audit, enrichment, correction, browsing and plan-export workflow.
+[v1.3.0](https://github.com/lovewtong/steam-library-toolkit/releases/tag/v1.3.0) is the latest published release, fixed at `09b6d4a`. It adds wheel/sdist packaging, installed commands and build provenance to the collection, audit, enrichment, correction, browsing and plan-export workflow.
 
-The package layout and installed commands on `main` are later development changes, outside v1.2.0. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for published versions.
+Use the version tag for a stable checkout; `main` may contain later changes. See [Releases](https://github.com/lovewtong/steam-library-toolkit/releases) for downloads.
 
-The [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md) covers package installation and build provenance. Candidate `09b6d4a` passed prepublication acceptance; the Release remains a verified draft.
+The [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md) covers package installation and build provenance. Candidate `09b6d4a` passed upgrade/rollback and publication acceptance. Anonymous downloads of all six attachments matched the frozen hashes.
 
-The frozen scope, upgrade acceptance and publication checks are recorded in the [release plan](docs/releases/V1_2_RELEASE_PLAN.md), [release notes](RELEASE_NOTES.md) and [publication record](releases/v1.2.0-publication.json).
+The frozen scope, upgrade acceptance and publication checks are recorded in the [release plan](docs/releases/V1_3_RELEASE_PLAN.md), [release notes](RELEASE_NOTES.md) and [publication record](releases/v1.3.0-publication.json).
 
 ## Limitations
 
@@ -139,7 +139,7 @@ The frozen scope, upgrade acceptance and publication checks are recorded in the 
 - [Collection plans](docs/guides/STEAM_SYNC_README.md) · [Time fields](docs/guides/TIME_FIELD_CONTRACT.md) · [Time classification](docs/guides/TIME_CLASSIFICATION.md)
 - [Release notes](RELEASE_NOTES.md) · [Stable scope](docs/releases/STABLE_RELEASE_SCOPE.md)
 - Test reports: [performance](docs/validation/R2_PERFORMANCE_BASELINE.md), [Windows workflow](docs/validation/R3_WINDOWS_ACCEPTANCE.md), [bug fixes](docs/validation/AUDIT_REMEDIATION.md)
-- [Current account scenarios](docs/validation/REAL_SCENARIO_VALIDATION.md) · [Next release scope](docs/releases/V1_3_RELEASE_PLAN.md)
+- [Current account scenarios](docs/validation/REAL_SCENARIO_VALIDATION.md) · [v1.3.0 scope](docs/releases/V1_3_RELEASE_PLAN.md)
 
 The detailed guides and test reports are mostly in Chinese.
 
