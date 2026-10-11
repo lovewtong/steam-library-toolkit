@@ -74,6 +74,39 @@ class ClassificationReviewQueueTests(unittest.TestCase):
         self.assertEqual(item['applied_override'], self.rules['1003'])
         self.assertEqual(item['picker']['evidence'], {'fields': {}})
 
+    def test_reviewed_miscellaneous_is_distinct_from_unknown_fallback(self):
+        from steam_library_toolkit.cli.reclassify import reclassify
+        target = self.root / 'reviewed-miscellaneous.json'
+        rules = {**self.rules, '1002': {'main_category': '其他',
+            'sub': '开发纪实数字书', 'reason': 'Synthetic explicit non-gameplay editorial decision'}}
+        with patch('steam_library_toolkit.classification.overrides.load_overrides', return_value=rules):
+            reclassify(self.source, target)
+        after = review.build_review(target)[0]
+        self.assertNotIn(1002, {item['appid'] for item in after['items']})
+        before = review.build_review(self.source)[0]
+        self.assertIn('primary_unknown', next(i for i in before['items'] if i['appid'] == 1002)['reasons'])
+        # A legacy label alone, without reviewed field evidence, still needs triage.
+        self.mutate('steam_library_classified.json', lambda games: games[1].pop('classification_evidence'))
+        legacy = review.build_review(self.source)[0]
+        self.assertIn('primary_unknown', next(i for i in legacy['items'] if i['appid'] == 1002)['reasons'])
+
+    def test_reviewed_other_on_one_side_keeps_unknown_other_side_queued(self):
+        def five_state(games, state):
+            games[1]['classification_evidence']['fields']['primary']['state'] = state
+
+        def table_state(rows, state):
+            rows[1]['classification_evidence']['fields']['main_category']['state'] = state
+
+        self.mutate('steam_library_classified.json', lambda games: five_state(games, 'reviewed'))
+        for table_status, five_status in (('unknown', 'reviewed'), ('reviewed', 'unknown')):
+            with self.subTest(table=table_status, picker=five_status):
+                self.mutate('classified.json', lambda rows: table_state(rows, table_status))
+                self.mutate('steam_library_classified.json', lambda games: five_state(games, five_status))
+                item = next(i for i in review.build_review(self.source)[0]['items'] if i['appid'] == 1002)
+                self.assertEqual(item['priority'], 1)
+                self.assertIn('primary_unknown', item['reasons'])
+                self.assertIn('primary_unreviewed', item['reasons'])
+
     def test_manual_correction_rebuild_clears_resolved_item_and_keeps_old_run(self):
         from steam_library_toolkit.cli.reclassify import reclassify
         before = self.snapshot()

@@ -17,7 +17,7 @@
 | 独立/其他 | 独立/叙事 |
 | 其他 | 其他 |
 
-表格主分类决定 picker 主分类的映射，所以一条校正不会在两个入口分别定义互相矛盾的主分类。基础 genres 映射已共用 classification_rules.py；五维的 KNOWN 名称启发式仍可优先于 genres，不等于两套输出已完全统一。
+表格主分类决定 picker 主分类的映射，所以一条校正不会在两个入口分别定义互相矛盾的主分类。基础 genres 映射共用 `src/steam_library_toolkit/classification/rules.py`；五维的 KNOWN 名称启发式仍可优先于 genres，不等于两套输出已完全统一。
 
 主类改变时，未指定的 sub/vibe 重置为“待核对”、intensity 为“未知”，推荐语重新生成。只修改 sub 时，未指定推荐语也重新生成。主类不变时可以保留旧细项，但证据继续标为规则推断，不能当成人工确认。显式提供的字段优先。
 
@@ -38,6 +38,6 @@ classification_evidence.fields 为每个五维字段（表格为 main_category/t
 
 ## 当前覆盖与限制
 
-内置规则现有 34 条：原 16 条、R1 新增 12 条、[批次 01](../validation/CLASSIFICATION_BATCH_01.md) 新增 6 条。R1 固定 31 项样本保持不变，新批次独立保存；所有注册样本共同覆盖全部内置规则的改名和字段证据检查。R1 记录见 [R1_CLASSIFICATION_REVIEW.md](../validation/R1_CLASSIFICATION_REVIEW.md)，早期逐项来源与分类取舍见 [CLASSIFICATION_REVIEW.md](../validation/CLASSIFICATION_REVIEW.md)。这些是明确的校正样本，不代表全库准确率。
+内置规则现有 165 条：原 16 条、R1 新增 12 条、[批次 01](../validation/CLASSIFICATION_BATCH_01.md) 新增 6 条、家庭验证参照新增 2 条，以及 [批次 02](../validation/CLASSIFICATION_BATCH_02.md) 新增 129 条。批次 02 的固定 155 项中，另 26 项因缺少独立证据保留原结果，不增加校正。R1 固定 31 项样本保持不变，新批次独立保存；所有注册样本共同覆盖全部内置规则的改名和字段证据检查。R1 记录见 [R1_CLASSIFICATION_REVIEW.md](../validation/R1_CLASSIFICATION_REVIEW.md)，早期逐项来源与分类取舍见 [CLASSIFICATION_REVIEW.md](../validation/CLASSIFICATION_REVIEW.md)。这些是明确的校正样本，不代表全库准确率。
 
 原有 KNOWN 名称规则尚未全部迁移到 AppID；早期记录的“其他 14→3”属于历史产物。R1 固定样本中 2 项仍为未知，4 项仅沿用历史证据，不能将不同样本计数混用。名称匹配已增加词边界及商标/空白规范化，但仍是启发式。元数据字段状态、类别 ID 与有限并发见 [补全说明](METADATA_ENRICHMENT.md)；未知时长研究和自动收藏写回仍为后续工作。

@@ -16,6 +16,7 @@ from steam_library_toolkit.sources.reconcile import atomic_json
 
 FIXTURE = ROOT / 'tests/fixtures/classification-r1.json'
 FIXTURES = {'r1': FIXTURE, 'batch-01': ROOT / 'tests/fixtures/classification-batch-01.json',
+            'batch-02': ROOT / 'tests/fixtures/classification-batch-02.json',
             'family-references': ROOT / 'tests/fixtures/classification-family-references.json'}
 
 
