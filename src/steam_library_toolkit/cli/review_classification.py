@@ -87,7 +87,8 @@ def build_review(source):
         reasons = []
         if game['analysis']['primary'] != table_primary:
             reasons.append('primary_disagreement')
-        if (game['analysis']['primary'] == '其他' or tab['main_category'] == '其他'
+        if ((game['analysis']['primary'] == '其他' and five_evidence.get('state') != 'reviewed')
+                or (tab['main_category'] == '其他' and table_evidence.get('state') != 'reviewed')
                 or any(e.get('state') == 'unknown' for e in (five_evidence, table_evidence))):
             reasons.append('primary_unknown')
         if any(e.get('state') not in ('reviewed', 'inferred', 'unknown') or not e.get('source')

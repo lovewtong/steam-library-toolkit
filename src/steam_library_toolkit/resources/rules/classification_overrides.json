@@ -216,6 +216,779 @@
       "sub": "侦探推理",
       "reason": "2026-09-29 批次 01 编辑核对；仅确认主类与子类。原版商店介绍调查六个案件、审问与演绎指认嫌疑人；项目选择解谜展示组，不否认其 Adventure 类型。",
       "reference": "https://store.steampowered.com/api/appdetails?appids=241260&l=english"
+    },
+    "17470": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。对应 2008 原版商店正文说明等离子切割器、断肢和射击，未使用重制版代替原版。",
+      "reference": "https://store.steampowered.com/app/17470/Dead_Space_2008/?curator_clanid=6800471",
+      "sub": "生存恐怖射击"
+    },
+    "17480": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。对应商店确认 Action/Strategy，并描述三方军队、陆海空交战；不使用 Uprising 资料代替原版。",
+      "reference": "https://store.steampowered.com/app/17480/_3/?curator_clanid=44849820",
+      "sub": "即时战略"
+    },
+    "21090": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。官方手册说明准星、枪械瞄准与射击操作。",
+      "reference": "https://store.steampowered.com/manual/21090",
+      "sub": "恐怖FPS"
+    },
+    "21110": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。合集手册独立 Extraction Point 章节说明武器与战斗；API 返回本体，未把该响应当作扩展的独立身份。",
+      "reference": "https://store.steampowered.com/manual/21090",
+      "sub": "恐怖FPS"
+    },
+    "21120": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。合集手册独立 Perseus Mandate 章节列出突击步枪、榴弹发射器和战斗；API 返回本体，身份依据为该扩展专章。",
+      "reference": "https://store.steampowered.com/manual/21090",
+      "sub": "恐怖FPS"
+    },
+    "34330": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类。对应 AppID 的公开 API 确认标题及 Strategy 类型；正文为空，本次仅确认粗主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=34330&l=english"
+    },
+    "104600": {
+      "main_category": "其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。对应商店页面 About the Digital Book 说明开发纪实数字书；不把 Portal 2 本体介绍当成解谜游戏依据。",
+      "reference": "https://store.steampowered.com/app/104600/Portal_2__The_Final_Hours/?l=english",
+      "sub": "开发纪实数字书"
+    },
+    "228300": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。对应商店明确 third-person action adventure、武术战斗和组合招式。",
+      "reference": "https://store.steampowered.com/app/228300/RememberMe/?l=english",
+      "sub": "第三人称格斗/探索"
+    },
+    "247000": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明数字桌游、掷骰移动、角色能力及争夺王冠。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=247000&l=english",
+      "sub": "骰子桌游"
+    },
+    "247080": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明随节拍移动、战斗和地牢挑战；节奏动作而非仅因 Indie 归入叙事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=247080&l=english",
+      "sub": "节奏地牢"
+    },
+    "251870": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文定义 Guide Game，并说明日本景点导览、同伴对话和关系发展；按实际导览叙事确认，不把未明确说明的视觉小说形式标为已核对。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=251870&l=english",
+      "sub": "旅行导览叙事"
+    },
+    "282800": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确多人数字桌游、骰子和卡牌；与 Talisman 的桌游粗类保持一致。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=282800&l=english",
+      "sub": "骰子卡牌桌游"
+    },
+    "286690": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确叙事射击、武器操作、潜行和生存；核对的是 Redux 版本。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=286690&l=english",
+      "sub": "生存FPS"
+    },
+    "287390": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确叙事射击与武器操作，且明确 Last Light Redux 版本。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=287390&l=english",
+      "sub": "生存FPS"
+    },
+    "290340": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明桌游、战术卡牌与争夺王位，RPG 是混合元素。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=290340&l=english",
+      "sub": "桌游/回合策略"
+    },
+    "307780": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。对应 AppID 商店正文明确格斗系列及不同角色招式变化。",
+      "reference": "https://store.steampowered.com/app/307780/Mortal_Kombat_X/?curator_clanid=32686107&l=english",
+      "sub": "格斗"
+    },
+    "311290": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 RTS 与 RPG 融合；项目保留即时战略主类并在子类表达混合玩法。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=311290&l=english",
+      "sub": "RTS/RPG混合"
+    },
+    "312660": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确二战射击、第三人称战斗和狙击。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=312660&l=english",
+      "sub": "狙击潜行"
+    },
+    "312670": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明以武器击退亡灵、第三人称动作和多人合作。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=312670&l=english",
+      "sub": "合作第三人称射击"
+    },
+    "312840": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确互动叙事与该高清重制版本，不因泛 RPG 标签单列角色扮演。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=312840&l=english",
+      "sub": "互动叙事"
+    },
+    "315810": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确视觉小说及电影化插画叙事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=315810&l=english",
+      "sub": "视觉小说"
+    },
+    "322330": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明收集资源、制作、建筑和合作生存；Simulation 粗类用于生存管理。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=322330&l=english",
+      "sub": "生存建造"
+    },
+    "356190": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明开放世界、攻占要塞和兽人军团；项目保留动作冒险粗类，未确认更多细项。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=356190&l=english",
+      "sub": "开放世界动作"
+    },
+    "365160": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明侦探探索、调查与环境生存；将旧独立的冒险主类纳入动作/冒险。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=365160&l=english",
+      "sub": "侦探生存冒险"
+    },
+    "382560": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确跑、跳、攀爬、越障；竞速计时不替代核心平台动作。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=382560&l=english",
+      "sub": "平台跑酷"
+    },
+    "396900": {
+      "main_category": "体育/竞速",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确赛车、赛道和车辆武器；不是策略/模拟主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=396900&l=english",
+      "sub": "战斗竞速"
+    },
+    "409710": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 shooter、枪械与基因异能，身份为 Remastered。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=409710&l=english",
+      "sub": "武器/异能射击"
+    },
+    "409720": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确第一人称射击及武器、Plasmids，身份为 Remastered。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=409720&l=english",
+      "sub": "武器/异能射击"
+    },
+    "412020": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确第一人称射击、战斗、潜行和生存。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=412020&l=english",
+      "sub": "生存FPS"
+    },
+    "413410": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明搜集线索、调查谋杀和庭审反驳；项目按核心推理玩法归组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=413410&l=english",
+      "sub": "调查/法庭推理"
+    },
+    "413420": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明谋杀调查、岛屿谜案与审判；与同系列推理粗类一致。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=413420&l=english",
+      "sub": "调查/法庭推理"
+    },
+    "420740": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明策划谋杀、栽赃和选择，采用故事与选择展示组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=420740&l=english",
+      "sub": "犯罪选择叙事"
+    },
+    "428660": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明宇航员调查月球设施和拯救地球；不使用体系之外的冒险主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=428660&l=english",
+      "sub": "科幻探索冒险"
+    },
+    "442070": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确多人画图与猜测错误答案。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=442070&l=english",
+      "sub": "派对猜画"
+    },
+    "460960": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明三段时代故事、谋杀选择与栽赃，沿用 The Deed 的叙事粗类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=460960&l=english",
+      "sub": "犯罪选择叙事"
+    },
+    "515960": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确第一人称心理恐怖、探索与追查真相；不因独立发行自动归叙事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=515960&l=english",
+      "sub": "心理恐怖冒险"
+    },
+    "527710": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明玩家为学院所有者、训练战士、发展产业与资源管理。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=527710&l=english",
+      "sub": "角斗士学院经营"
+    },
+    "552500": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确第一人称合作近战战斗；RPG 成长元素不改变本次动作选择。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=552500&l=english",
+      "sub": "合作近战动作"
+    },
+    "561770": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 point-and-click 冒险与选择；与已确认的点击冒险展示组一致。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=561770&l=english",
+      "sub": "点击冒险"
+    },
+    "567640": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确谋杀调查和揭示真相的审判，沿用同系列推理粗类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=567640&l=english",
+      "sub": "调查/法庭推理"
+    },
+    "573120": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 survival/management、身心状态与营地组织，RPG 属混合元素。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=573120&l=english",
+      "sub": "生存管理"
+    },
+    "594650": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。当前正文明确 extraction shooter；不继续沿用旧名称规则的大逃杀子类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=594650&l=english",
+      "sub": "撤离射击"
+    },
+    "601840": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确卡牌构筑、战斗与谈判两套卡组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=601840&l=english",
+      "sub": "卡牌构筑"
+    },
+    "666140": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确修复工坊、制作委托、种植和养殖。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=666140&l=english",
+      "sub": "工坊/农场经营"
+    },
+    "694280": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 shooter、武器和多人战役。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=694280&l=english",
+      "sub": "合作僵尸射击"
+    },
+    "728740": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确狙击、弹道与潜行，并确认 V2 Remastered 而非原版。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=728740&l=english",
+      "sub": "狙击潜行"
+    },
+    "736190": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确成长、学习、社交与高考的 life sim。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=736190&l=english",
+      "sub": "人生养成"
+    },
+    "908060": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 Talisman 第五版数字桌游；不把第四版说明替代版本确认。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=908060&l=english",
+      "sub": "骰子桌游"
+    },
+    "924970": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确合作第一人称射击及四人战役。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=924970&l=english",
+      "sub": "合作生存FPS"
+    },
+    "960910": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确多角色视角、心理悬疑和玩家选择推动故事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=960910&l=english",
+      "sub": "互动悬疑叙事"
+    },
+    "960990": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明演绎 Jodie 一生的心理惊悚与电影表演体验。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=960990&l=english",
+      "sub": "互动叙事"
+    },
+    "989790": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 audio-based action adventure 和战斗，RPG 属附加元素。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=989790&l=english",
+      "sub": "音频动作冒险"
+    },
+    "1016800": {
+      "main_category": "RPG",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义生存恐怖 RPG，包含非线性任务和角色选择；纠正旧名称射击主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1016800&l=english",
+      "sub": "生存恐怖RPG"
+    },
+    "1044490": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确视觉小说、异世界语言沟通与恋爱叙事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1044490&l=english",
+      "sub": "语言学习视觉小说"
+    },
+    "1051310": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确第一人称恐怖冒险、寻找女儿与探索宅邸。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1051310&l=english",
+      "sub": "第一人称恐怖冒险"
+    },
+    "1082930": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确调查记忆、解谜和寻找真相；采用项目解谜粗类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1082930&l=english",
+      "sub": "调查解谜"
+    },
+    "1097150": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明躲避、跳跃和障碍赛道的派对竞赛，不等同一般休闲或体育模拟。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1097150&l=english",
+      "sub": "多人障碍竞赛"
+    },
+    "1123450": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确绘画能力、探索与解谜；采用解谜展示组并保留冒险子类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1123450&l=english",
+      "sub": "绘画解谜冒险"
+    },
+    "1134700": {
+      "main_category": "RPG",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义 MMORPG，说明技能随使用成长及玩家控制世界，并明确没有预设职业；不因制作系统改成模拟。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1134700&l=english",
+      "sub": "沙盒MMORPG"
+    },
+    "1135260": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确操控战鸟、武器和空中缠斗；本次核对当前 Revolution Remaster。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1135260&l=english",
+      "sub": "飞行空战"
+    },
+    "1146310": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确破解系统与调查阴谋，按核心谜题体验粗分。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1146310&l=english",
+      "sub": "科幻调查解谜"
+    },
+    "1148760": {
+      "main_category": "RPG",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义 narrative RPG、技能成长及卡牌战斗；不直接接受旧叙事名称规则。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1148760&l=english",
+      "sub": "叙事/卡牌RPG"
+    },
+    "1167750": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确即时潜入与回合战术组合，策略为编辑选择。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1167750&l=english",
+      "sub": "回合战术/潜入"
+    },
+    "1178830": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 FPS 与动作融合、技能组合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1178830&l=english",
+      "sub": "动作FPS"
+    },
+    "1201270": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确生活切片、人物关系与心理成长故事；项目按叙事展示组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1201270&l=english",
+      "sub": "像素叙事冒险"
+    },
+    "1202200": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确修复牧场、种植和照顾恐龙。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1202200&l=english",
+      "sub": "恐龙牧场经营"
+    },
+    "1222140": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明玩家选择改变人类与仿生人的命运以及大量分支。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1222140&l=english",
+      "sub": "分支互动叙事"
+    },
+    "1234430": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确对抗恐怖生物、探索家庭与战争记忆，使用既有动作/冒险主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1234430&l=english",
+      "sub": "心理恐怖冒险"
+    },
+    "1282100": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确远程与近战、武器及合作 Boss 战；粗分射击并在子类保留混合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1282100&l=english",
+      "sub": "合作射击/RPG混合"
+    },
+    "1286680": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 shoot、loot、武器与多职业，射击主类保留 RPG 混合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1286680&l=english",
+      "sub": "刷宝射击/RPG混合"
+    },
+    "1294420": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义第三人称射击与轮滑动作结合；不是体育粗类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1294420&l=english",
+      "sub": "轮滑第三人称射击"
+    },
+    "1319460": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 retro FPS、武器切换与第一人称战斗。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1319460&l=english",
+      "sub": "复古FPS"
+    },
+    "1331210": {
+      "main_category": "RPG",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义 RPG，说明角色故事、机甲升级与回合战斗；不只因回合机制归策略。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1331210&l=english",
+      "sub": "机甲回合RPG"
+    },
+    "1334040": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确恐怖生存冒险与宅邸探索，与前作粗类保持一致。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1334040&l=english",
+      "sub": "第一人称恐怖冒险"
+    },
+    "1350200": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确互动电影三部曲、通过剪辑匹配寻找线索；粗类为编辑选择。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1350200&l=english",
+      "sub": "影像调查叙事"
+    },
+    "1359980": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 boomer-shooter，并说明武器与快节奏战斗。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1359980&l=english",
+      "sub": "复古FPS"
+    },
+    "1364100": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明侦探案件、对话选择和推理；采用项目解谜展示组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1364100&l=english",
+      "sub": "侦探调查"
+    },
+    "1416260": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 RTS 技能与对 AI 或人类的竞技，确认 Versus Edition。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1416260&l=english",
+      "sub": "即时战略对战"
+    },
+    "1425350": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义第一人称解谜与植物生长条件研究。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1425350&l=english",
+      "sub": "植物研究解谜"
+    },
+    "1425730": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 rail-shooter 和射击玩法；对应 Returns 版本。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1425730&l=english",
+      "sub": "轨道射击"
+    },
+    "1432100": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确进入书中世界、偷取神器的 narrative adventure；不用独立冒险主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1432100&l=english",
+      "sub": "叙事冒险"
+    },
+    "1435670": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明搜证、分析、审问和追踪嫌疑人。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1435670&l=english",
+      "sub": "侦探调查"
+    },
+    "1451810": {
+      "main_category": "体育/竞速",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确赛车、对手和奖杯，模拟建造元素不改变竞速主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1451810&l=english",
+      "sub": "开放世界赛车"
+    },
+    "1451940": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明安排主播生活、增长粉丝与多结局，采用养成展示组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1451940&l=english",
+      "sub": "主播养成/分支叙事"
+    },
+    "1488200": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明组建军队、回合战斗和地形士气，按战术核心归组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1488200&l=english",
+      "sub": "军团回合战术"
+    },
+    "1496790": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义开放世界 action RPG，描述城市巡逻、案件与战斗；主类采用动作/冒险的编辑选择，子类保留 RPG 混合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1496790&l=english",
+      "sub": "开放世界动作/RPG混合"
+    },
+    "1532690": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明弓箭、魔法与黑暗故事的混合体验，保留动作冒险粗类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1532690&l=english",
+      "sub": "弓箭战斗/探索"
+    },
+    "1577120": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文强调角色选择改变青少年命运及分支电影体验。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1577120&l=english",
+      "sub": "分支互动恐怖"
+    },
+    "1581770": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接说明回合战略、军队战术与英雄任务；子类保留 RPG。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1581770&l=english",
+      "sub": "回合策略/RPG混合"
+    },
+    "1590760": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确系列改为战术 RPG，按队伍战术核心粗分而非原系列横版动作。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1590760&l=english",
+      "sub": "回合战术RPG"
+    },
+    "1623940": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明探索、救妹妹和危险生物遭遇，纳入既有动作/冒险主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1623940&l=english",
+      "sub": "北欧恐怖冒险"
+    },
+    "1628130": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义 FMV 谋杀悬疑及家庭问答推动剧情。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1628130&l=english",
+      "sub": "真人互动悬疑"
+    },
+    "1632490": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确通过摄影、词汇与学习卡学习日语；项目采用休闲学习展示组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1632490&l=english",
+      "sub": "摄影语言学习"
+    },
+    "1661630": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义合作 platformer，角色能力共同越障；不因 Casual 粗标签改休闲。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1661630&l=english",
+      "sub": "合作平台跳跃"
+    },
+    "1669000": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 4X 战略、回合战术和发展阵营。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1669000&l=english",
+      "sub": "4X/回合战术"
+    },
+    "1709870": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义回合盗窃战术、侦察与计划；纠正旧动作名称主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1709870&l=english",
+      "sub": "回合潜行战术"
+    },
+    "1717270": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 block breaker，并保留新对战模式作为附加元素。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1717270&l=english",
+      "sub": "街机打砖块"
+    },
+    "1746030": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确搜证、审问与逻辑推理的案件玩法。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1746030&l=english",
+      "sub": "侦探推理"
+    },
+    "1771360": {
+      "main_category": "RPG",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 story-rich RPG-lite、探索、联盟和角色选择；不隐去 RPG 定义。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1771360&l=english",
+      "sub": "叙事选择RPG"
+    },
+    "1785650": {
+      "main_category": "体育/竞速",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确网球模拟、击球与球场竞技；纠正旧策略/模拟名称规则。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1785650&l=english",
+      "sub": "网球"
+    },
+    "1803400": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 deckbuilder、卡牌选择和战斗站位。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1803400&l=english",
+      "sub": "战术卡牌构筑"
+    },
+    "1808500": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文描述搜刮、装备、战斗与撤离，武器和交战为主要风险循环。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1808500&l=english",
+      "sub": "多人撤离射击"
+    },
+    "1808680": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确探索姆明谷、音乐和恢复环境的冒险，按冒险粗类归组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1808680&l=english",
+      "sub": "音乐叙事冒险"
+    },
+    "1813860": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确放松的水域探索、与动植物互动和发现秘密。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1813860&l=english",
+      "sub": "水域探索"
+    },
+    "1832640": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 match-3 和选择故事，采用三消核心展示组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1832640&l=english",
+      "sub": "三消/分支叙事"
+    },
+    "1920780": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明以歌曲与选择改变关系及调查命运的互动故事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1920780&l=english",
+      "sub": "互动音乐叙事"
+    },
+    "1921980": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确侦探案件、调查与分支选择；与其他调查展示组一致。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1921980&l=english",
+      "sub": "科幻侦探调查"
+    },
+    "1931010": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明修复澡堂、照顾精怪及经营日常。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1931010&l=english",
+      "sub": "澡堂经营"
+    },
+    "1990740": {
+      "main_category": "体育/竞速",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确卡丁车风格、赛道与计时；纠正旧模拟名称主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=1990740&l=english",
+      "sub": "街机赛车"
+    },
+    "2106670": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文强调即时战斗、技能与合作挑战，不是回合策略。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2106670&l=english",
+      "sub": "合作动作Roguelite"
+    },
+    "2113040": {
+      "main_category": "策略",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确卡牌机制、实时战斗和构筑组合，子类不标为回合制。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2113040&l=english",
+      "sub": "即时卡牌战斗"
+    },
+    "2132560": {
+      "main_category": "休闲/益智",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确侦探破案、寻找偷窃者与线索；保留冒险混合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2132560&l=english",
+      "sub": "侦探调查冒险"
+    },
+    "2144740": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确 FPP slasher 与赛博忍者战斗；泛策略标签不决定主类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2144740&l=english",
+      "sub": "第一人称近战/跑酷"
+    },
+    "2193540": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确实时 Arcana 攻击、近战和反复挑战。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2193540&l=english",
+      "sub": "合作魔法动作Roguelite"
+    },
+    "2240790": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接说明动漫风视觉小说与仪式选择体验。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2240790&l=english",
+      "sub": "恐怖视觉小说"
+    },
+    "2246340": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确追踪、击败怪物和制作装备，按狩猎动作粗分。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2246340&l=english",
+      "sub": "共斗狩猎"
+    },
+    "2262610": {
+      "main_category": "独立/其他",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明办公周末的短故事、人物对话与选择体验。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2262610&l=english",
+      "sub": "短篇视觉叙事"
+    },
+    "2312520": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明农场、畜牧、家园、社交与地牢；生活经营为编辑选择，保留 RPG 混合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2312520&l=english",
+      "sub": "农场经营/RPG混合"
+    },
+    "2393160": {
+      "main_category": "RPG",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文直接定义 RPG，说明魔法、角色升级及战斗式钓鱼；不是普通休闲垂钓。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2393160&l=english",
+      "sub": "钓鱼战斗RPG"
+    },
+    "2454890": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明双人沟通、监狱任务与生存；不因 Indie 标签自动判为叙事。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2454890&l=english",
+      "sub": "合作恐怖生存"
+    },
+    "2473640": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。短介绍明确城市建设与地下采集循环；不额外确认未提供的正文信息。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2473640&l=english",
+      "sub": "城市建设/Roguelite混合"
+    },
+    "2514400": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确服务车辆、炼油、布管与经营加油站。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2514400&l=english",
+      "sub": "合作加油站经营"
+    },
+    "2521600": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文说明制作、种植、烹饪、空间布置及社交，子类保留 RPG 混合。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2521600&l=english",
+      "sub": "太空生活经营/RPG混合"
+    },
+    "2533960": {
+      "main_category": "模拟经营",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确建造房屋和社区、自由创造；没有依据称为解谜。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2533960&l=english",
+      "sub": "自由房屋建造"
+    },
+    "2608270": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确枪战、29 种武器及枪械改装，保留潜行子类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2608270&l=english",
+      "sub": "战术潜行射击"
+    },
+    "2647820": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确驾驶机甲、挖矿、升级、探索与危险，未见视觉小说依据。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2647820&l=english",
+      "sub": "机甲采矿探索"
+    },
+    "2917600": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确武器、忍术与竞技生存，不沿用休闲名称规则。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2917600&l=english",
+      "sub": "多人竞技动作"
+    },
+    "2964400": {
+      "main_category": "动作/冒险",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。正文明确街机 shoot-em-up 与躲避弹幕；不是赛车，沿用项目横版/街机动作组。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=2964400&l=english",
+      "sub": "街机弹幕射击"
+    },
+    "3932890": {
+      "main_category": "射击",
+      "reason": "2026-10-11 批次02编辑复核；仅确认主类与子类。短介绍直接定义 extraction FPS、枪战与撤离；仅确认主类与此子类。",
+      "reference": "https://store.steampowered.com/api/appdetails?appids=3932890&l=english",
+      "sub": "撤离FPS"
     }
   }
 }
